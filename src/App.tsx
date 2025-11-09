@@ -10,6 +10,7 @@ import AddTransaction from "./pages/AddTransaction";
 import Savings from "./pages/Savings";
 import Statistics from "./pages/Statistics";
 import Settings from "./pages/Settings";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/statistics" element={<Statistics />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
+          <Route path="/install" element={<Install />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
