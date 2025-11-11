@@ -8,66 +8,66 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Ocean Theme - Shades of Blue and Teal */
-    --background: 200 25% 97%;
-    --foreground: 210 50% 12%;
+    /* Ocean Theme - More White with Vibrant Colors */
+    --background: 0 0% 100%;
+    --foreground: 210 50% 10%;
 
-    --card: 200 20% 98%;
-    --card-foreground: 210 50% 12%;
+    --card: 200 15% 99%;
+    --card-foreground: 210 50% 10%;
 
-    --popover: 200 20% 98%;
-    --popover-foreground: 210 50% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 50% 10%;
 
-    --primary: 195 85% 45%;
+    --primary: 195 95% 48%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 200 18% 92%;
-    --secondary-foreground: 210 50% 12%;
+    --secondary: 200 25% 95%;
+    --secondary-foreground: 210 50% 10%;
 
-    --muted: 200 18% 92%;
-    --muted-foreground: 200 12% 45%;
+    --muted: 200 20% 95%;
+    --muted-foreground: 200 15% 40%;
 
-    --accent: 180 65% 50%;
+    --accent: 180 85% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 70% 50%;
+    --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 200 18% 88%;
-    --input: 200 18% 88%;
-    --ring: 195 85% 45%;
+    --border: 200 20% 90%;
+    --input: 200 20% 90%;
+    --ring: 195 95% 48%;
 
     --radius: 1rem;
 
-    /* Financial colors - Ocean themed */
-    --income: 165 75% 42%;
+    /* Financial colors - Vibrant Ocean */
+    --income: 165 85% 45%;
     --income-foreground: 0 0% 100%;
-    --income-light: 165 75% 94%;
+    --income-light: 165 85% 96%;
     
-    --expense: 15 80% 55%;
+    --expense: 15 95% 60%;
     --expense-foreground: 0 0% 100%;
-    --expense-light: 15 80% 94%;
+    --expense-light: 15 95% 96%;
     
-    --savings: 190 80% 45%;
+    --savings: 190 90% 50%;
     --savings-foreground: 0 0% 100%;
-    --savings-light: 190 80% 94%;
+    --savings-light: 190 90% 96%;
 
-    /* Chart colors - Ocean palette */
-    --chart-1: 195 85% 45%;
-    --chart-2: 180 65% 50%;
-    --chart-3: 210 75% 55%;
-    --chart-4: 165 75% 42%;
-    --chart-5: 200 70% 50%;
+    /* Chart colors - Vibrant Ocean palette */
+    --chart-1: 195 95% 50%;
+    --chart-2: 180 85% 55%;
+    --chart-3: 210 85% 60%;
+    --chart-4: 165 85% 45%;
+    --chart-5: 200 80% 55%;
 
-    /* Sidebar - Ocean themed */
-    --sidebar-background: 200 20% 98%;
-    --sidebar-foreground: 210 50% 12%;
-    --sidebar-primary: 195 85% 45%;
+    /* Sidebar - Clean white with vibrant accents */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 210 50% 10%;
+    --sidebar-primary: 195 95% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 18% 92%;
-    --sidebar-accent-foreground: 210 50% 12%;
-    --sidebar-border: 200 18% 88%;
-    --sidebar-ring: 195 85% 45%;
+    --sidebar-accent: 200 25% 95%;
+    --sidebar-accent-foreground: 210 50% 10%;
+    --sidebar-border: 200 20% 90%;
+    --sidebar-ring: 195 95% 48%;
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

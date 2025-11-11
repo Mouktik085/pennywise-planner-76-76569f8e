@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface Account {
   id: string;
@@ -34,7 +35,10 @@ const Accounts = () => {
     balance: 0,
     bank_name: "",
     account_number: "",
+    icon: "💼",
   });
+
+  const emojiList = ["💼", "💳", "🏦", "💰", "🪙", "💵", "💴", "💶", "💷", "💸", "🤑", "🏧", "💎", "👛", "👜", "🎯", "📱", "🌟", "⭐", "🎁"];
 
   useEffect(() => {
     if (user) {
@@ -86,7 +90,7 @@ const Accounts = () => {
       
       setDialogOpen(false);
       setEditingAccount(null);
-      setFormData({ name: "", type: "cash", balance: 0, bank_name: "", account_number: "" });
+      setFormData({ name: "", type: "cash", balance: 0, bank_name: "", account_number: "", icon: "💼" });
       fetchAccounts();
     } catch (error: any) {
       toast({
@@ -155,6 +159,30 @@ const Accounts = () => {
               <DialogTitle>{editingAccount ? "Edit Account" : "Add New Account"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Icon</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-2xl">
+                      {formData.icon}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-2">
+                    <div className="grid grid-cols-5 gap-2">
+                      {emojiList.map((emoji) => (
+                        <Button
+                          key={emoji}
+                          variant="ghost"
+                          className="text-2xl h-12 w-12"
+                          onClick={() => setFormData({ ...formData, icon: emoji })}
+                        >
+                          {emoji}
+                        </Button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
               <div className="space-y-2">
                 <Label>Account Name</Label>
                 <Input
@@ -232,7 +260,7 @@ const Accounts = () => {
             <Card key={account.id}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  {getAccountIcon(account.type)}
+                  <span className="text-2xl">{account.icon || "💼"}</span>
                   {account.name}
                 </CardTitle>
               </CardHeader>
@@ -259,6 +287,7 @@ const Accounts = () => {
                         balance: account.balance,
                         bank_name: account.bank_name || "",
                         account_number: account.account_number || "",
+                        icon: account.icon || "💼",
                       });
                       setDialogOpen(true);
                     }}

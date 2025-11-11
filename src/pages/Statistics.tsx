@@ -46,11 +46,13 @@ const Statistics = () => {
           expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + Number(t.amount);
         });
 
-      const expenseChartData = Object.entries(expensesByCategory).map(([name, value], index) => ({
-        name,
-        value,
-        color: chartColors[index % chartColors.length],
-      }));
+      const expenseChartData = Object.entries(expensesByCategory)
+        .map(([name, value], index) => ({
+          name,
+          value,
+          fill: chartColors[index % chartColors.length],
+        }))
+        .sort((a, b) => b.value - a.value);
 
       setExpenseData(expenseChartData);
 
@@ -114,6 +116,14 @@ const Statistics = () => {
     );
   }
 
+  const totalIncome = monthlyData.reduce((sum, m) => sum + m.income, 0);
+  const totalExpenses = monthlyData.reduce((sum, m) => sum + m.expenses, 0);
+  const monthsWithIncome = monthlyData.filter(m => m.income > 0).length || 1;
+  const monthsWithExpenses = monthlyData.filter(m => m.expenses > 0).length || 1;
+  const avgIncome = totalIncome / monthsWithIncome;
+  const avgExpenses = totalExpenses / monthsWithExpenses;
+  const avgSavings = avgIncome - avgExpenses;
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -163,21 +173,21 @@ const Statistics = () => {
                 <h3 className="font-bold text-xl mb-4">Expense Distribution</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
-                    <Pie
-                      data={expenseData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
+                    <Pie 
+                      data={expenseData} 
+                      dataKey="value" 
+                      nameKey="name" 
+                      cx="50%" 
+                      cy="50%" 
+                      outerRadius={100}
+                      label={(entry) => `${entry.name}: ₹${entry.value.toFixed(0)}`}
                     >
                       {expenseData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip formatter={(value: number) => `₹${value.toFixed(2)}`} />
+                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
               </Card>
@@ -189,19 +199,19 @@ const Statistics = () => {
                 <div className="p-4 bg-income-light rounded-lg">
                   <p className="text-sm text-income font-semibold">Average Income</p>
                   <p className="text-2xl font-bold text-income">
-                    ₹{(monthlyData.reduce((sum, m) => sum + m.income, 0) / (monthlyData.length || 1)).toFixed(0)}
+                    ₹{avgIncome.toFixed(0)}
                   </p>
                 </div>
                 <div className="p-4 bg-expense-light rounded-lg">
                   <p className="text-sm text-expense font-semibold">Average Expenses</p>
                   <p className="text-2xl font-bold text-expense">
-                    ₹{(monthlyData.reduce((sum, m) => sum + m.expenses, 0) / (monthlyData.length || 1)).toFixed(0)}
+                    ₹{avgExpenses.toFixed(0)}
                   </p>
                 </div>
                 <div className="p-4 bg-savings-light rounded-lg">
                   <p className="text-sm text-savings font-semibold">Average Savings</p>
                   <p className="text-2xl font-bold text-savings">
-                    ₹{(trendData.reduce((sum, t) => sum + t.savings, 0) / (trendData.length || 1)).toFixed(0)}
+                    ₹{avgSavings.toFixed(0)}
                   </p>
                 </div>
               </div>
@@ -210,24 +220,50 @@ const Statistics = () => {
 
           <TabsContent value="expenses" className="space-y-6 mt-6">
             <Card className="p-6">
-              <h3 className="font-bold text-xl mb-4">Expense Breakdown</h3>
+              <h3 className="text-xl font-semibold mb-4">Category Distribution</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie 
+                    data={expenseData} 
+                    dataKey="value" 
+                    nameKey="name" 
+                    cx="50%" 
+                    cy="50%" 
+                    outerRadius={100}
+                    label={(entry) => {
+                      const total = expenseData.reduce((sum, c) => sum + c.value, 0);
+                      const percent = ((entry.value / total) * 100).toFixed(1);
+                      return `${entry.name}: ${percent}%`;
+                    }}
+                  >
+                    {expenseData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: number) => `₹${value.toFixed(2)}`} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
+
+            <Card className="p-6">
+              <h3 className="text-xl font-semibold mb-4">Expense Breakdown by Category</h3>
               <div className="space-y-4">
-                {expenseData.map((item) => {
-                  const total = expenseData.reduce((sum, i) => sum + i.value, 0);
-                  const percentage = (item.value / total) * 100;
+                {expenseData.map((category) => {
+                  const total = expenseData.reduce((sum, c) => sum + c.value, 0);
+                  const percentage = (category.value / total) * 100;
                   return (
-                    <div key={item.name} className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold">{item.name}</span>
-                        <span className="text-muted-foreground">₹{item.value.toLocaleString()}</span>
+                    <div key={category.name} className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-medium">{category.name}</span>
+                        <span className="font-semibold">₹{category.value.toFixed(2)} ({percentage.toFixed(1)}%)</span>
                       </div>
-                      <div className="h-3 bg-muted rounded-full overflow-hidden">
+                      <div className="w-full bg-secondary rounded-full h-3">
                         <div
-                          className="h-full"
-                          style={{ width: `${percentage}%`, backgroundColor: item.color }}
+                          className="h-3 rounded-full transition-all"
+                          style={{ width: `${percentage}%`, backgroundColor: category.fill }}
                         />
                       </div>
-                      <p className="text-sm text-muted-foreground">{percentage.toFixed(1)}% of total expenses</p>
                     </div>
                   );
                 })}
@@ -235,19 +271,23 @@ const Statistics = () => {
             </Card>
 
             <Card className="p-6">
-              <h3 className="font-bold text-xl mb-4">Top Spending Categories</h3>
+              <h3 className="text-xl font-semibold mb-4">Top Spending Categories</h3>
               <div className="space-y-3">
-                {expenseData
-                  .sort((a, b) => b.value - a.value)
-                  .map((item, index) => (
-                    <div key={item.name} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl font-bold text-muted-foreground">#{index + 1}</span>
-                        <span className="font-semibold">{item.name}</span>
-                      </div>
-                      <span className="font-bold text-expense">₹{item.value.toLocaleString()}</span>
+                {expenseData.slice(0, 5).map((category, index) => (
+                  <div key={category.name} className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg" style={{ backgroundColor: category.fill }}>
+                      {index + 1}
                     </div>
-                  ))}
+                    <div className="flex-1">
+                      <p className="font-semibold">{category.name}</p>
+                      <p className="text-sm text-muted-foreground">₹{category.value.toFixed(2)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-lg">₹{category.value.toFixed(0)}</p>
+                      <p className="text-xs text-muted-foreground">{((category.value / expenseData.reduce((sum, c) => sum + c.value, 0)) * 100).toFixed(1)}% of total</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </Card>
           </TabsContent>
@@ -308,8 +348,6 @@ const Statistics = () => {
                 <h3 className="font-bold text-xl mb-4">Financial Health Score</h3>
                 <div className="flex flex-col items-center justify-center py-8">
                   {(() => {
-                    const totalIncome = monthlyData.reduce((sum, m) => sum + m.income, 0);
-                    const totalExpenses = monthlyData.reduce((sum, m) => sum + m.expenses, 0);
                     const score = totalIncome > 0 ? Math.min(Math.round((1 - totalExpenses / totalIncome) * 100), 100) : 0;
                     return (
                       <>
