@@ -87,8 +87,8 @@ const Auth = () => {
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
           toast({
-            title: "Invalid credentials",
-            description: "Please check your email and password.",
+            title: "Account not found",
+            description: "Please sign up first or check your email and password.",
             variant: "destructive",
           });
         } else {
