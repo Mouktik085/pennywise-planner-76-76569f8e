@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { SMSPermissionHandler } from "@/components/SMSPermissionHandler";
 
 interface Account {
   id: string;
@@ -159,51 +160,7 @@ const Settings = () => {
         </Card>
 
         {/* SMS Auto-Import */}
-        <Card className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Database className="h-6 w-6 text-primary" />
-            </div>
-            <div className="flex-1 space-y-4">
-              <div>
-                <h3 className="font-bold text-xl">SMS Auto-Import</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Automatically read and import transactions from SMS (UPI, bank, card payments)
-                </p>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                <div className="space-y-0.5">
-                  <Label htmlFor="sms-sync">Enable SMS Sync</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Requires SMS permission on mobile device
-                  </p>
-                </div>
-                <Switch
-                  id="sms-sync"
-                  checked={smsSync}
-                  onCheckedChange={setSmsSync}
-                />
-              </div>
-
-              {smsSync && (
-                <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                  <p className="text-sm font-semibold text-primary mb-2">📱 Setup Required</p>
-                  <p className="text-sm text-muted-foreground">
-                    To enable auto-import, you'll need to:
-                  </p>
-                  <ul className="text-sm text-muted-foreground list-disc list-inside mt-2 space-y-1">
-                    <li>Grant SMS read permission</li>
-                    <li>Allow the app to run in background</li>
-                    <li>Configure trusted sender patterns</li>
-                  </ul>
-                </div>
-              )}
-              
-              <Button className="w-full" onClick={handleSaveSettings}>Save SMS Settings</Button>
-            </div>
-          </div>
-        </Card>
+        <SMSPermissionHandler />
 
         {/* Notifications */}
         <Card className="p-6">
