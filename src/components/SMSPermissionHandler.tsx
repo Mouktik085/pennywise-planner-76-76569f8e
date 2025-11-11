@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { useAuth } from "@/hooks/useAuth";
 import { SMSParser } from "@/services/smsParser";
+import { SmsRetriever } from "@capacitor-community/sms-retriever";
 
 export const SMSPermissionHandler = () => {
   const { user } = useAuth();
@@ -25,33 +26,58 @@ export const SMSPermissionHandler = () => {
     }
 
     try {
-      // For demo purposes, simulate permission grant
-      // In real implementation, you would use Capacitor SMS plugin
-      toast.info("SMS permission requested. This feature requires native Android/iOS build.");
+      // Request permission to read SMS
+      await SmsRetriever.requestPermission();
+      toast.success("SMS permission granted!");
       setHasPermission(true);
       
-      // Start monitoring (simulated)
+      // Start monitoring
       startSMSMonitoring();
     } catch (error) {
       console.error("Error requesting SMS permission:", error);
-      toast.error("Failed to request SMS permission");
+      toast.error("Failed to get SMS permission. Please enable it in app settings.");
     }
   };
 
-  const startSMSMonitoring = () => {
+  const startSMSMonitoring = async () => {
+    if (!user) {
+      toast.error("Please log in first");
+      return;
+    }
+
     setIsMonitoring(true);
     toast.success("SMS monitoring started! Bank transactions will be automatically imported.");
     
-    // In a real app with native build, you would:
-    // 1. Listen to incoming SMS using Capacitor SMS plugin
-    // 2. Filter for bank messages
-    // 3. Parse and save transactions
-    // Example:
-    // SmsRetriever.addListener('smsReceived', async (data) => {
-    //   if (user) {
-    //     await SMSParser.processAndSave(data.message, user.id);
-    //   }
-    // });
+    // Listen to incoming SMS messages
+    try {
+      await SmsRetriever.startWatch();
+      
+      SmsRetriever.addListener('smsReceived', async (data: any) => {
+        console.log('SMS received:', data.message);
+        
+        // Process and save the transaction
+        if (user) {
+          const success = await SMSParser.processAndSave(data.message, user.id);
+          if (success) {
+            toast.success("Transaction imported from SMS!");
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Error starting SMS watch:", error);
+      toast.error("Failed to start SMS monitoring");
+    }
+  };
+
+  const stopSMSMonitoring = async () => {
+    try {
+      await SmsRetriever.stopWatch();
+      SmsRetriever.removeAllListeners();
+      setIsMonitoring(false);
+      toast.info("SMS monitoring stopped");
+    } catch (error) {
+      console.error("Error stopping SMS watch:", error);
+    }
   };
 
   const testSMSParser = async () => {
@@ -156,7 +182,7 @@ export const SMSPermissionHandler = () => {
                   Test Import
                 </Button>
                 <Button 
-                  onClick={() => setIsMonitoring(false)} 
+                  onClick={stopSMSMonitoring} 
                   variant="outline" 
                   size="sm"
                   disabled={!isMonitoring}
