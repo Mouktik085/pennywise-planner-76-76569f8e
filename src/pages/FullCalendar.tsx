@@ -243,7 +243,7 @@ const FullCalendar = () => {
     const monthName = currentDate.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
 
     for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(<div key={`empty-${i}`} className="p-2 min-h-[100px] bg-muted/20"></div>);
+      days.push(<div key={`empty-${i}`} className="p-1 md:p-2 min-h-[70px] md:min-h-[100px] bg-muted/20"></div>);
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -255,28 +255,28 @@ const FullCalendar = () => {
       days.push(
         <div
           key={day}
-          className={`p-2 min-h-[100px] border border-border rounded-lg ${
+          className={`p-1 md:p-2 min-h-[70px] md:min-h-[100px] border border-border rounded-lg ${
             isToday ? 'bg-primary/10 border-primary' : 'bg-card'
           } hover:bg-muted/50 transition-colors`}
         >
-          <div className={`text-sm font-bold mb-1 ${isToday ? 'text-primary' : 'text-foreground'}`}>
+          <div className={`text-xs md:text-sm font-bold mb-1 ${isToday ? 'text-primary' : 'text-foreground'}`}>
             {day}
           </div>
           {dayTxns.length > 0 && (
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {income > 0 && (
-                <div className="text-xs text-income flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3" />
+                <div className="text-[10px] md:text-xs text-income flex items-center gap-0.5">
+                  <TrendingUp className="h-2 w-2 md:h-3 md:w-3" />
                   <span>₹{income.toFixed(0)}</span>
                 </div>
               )}
               {expense > 0 && (
-                <div className="text-xs text-expense flex items-center gap-1">
-                  <TrendingDown className="h-3 w-3" />
+                <div className="text-[10px] md:text-xs text-expense flex items-center gap-0.5">
+                  <TrendingDown className="h-2 w-2 md:h-3 md:w-3" />
                   <span>₹{expense.toFixed(0)}</span>
                 </div>
               )}
-              <div className={`text-xs font-semibold ${total >= 0 ? 'text-income' : 'text-expense'}`}>
+              <div className={`text-[10px] md:text-xs font-semibold ${total >= 0 ? 'text-income' : 'text-expense'}`}>
                 Net: ₹{total.toFixed(0)}
               </div>
             </div>
@@ -291,14 +291,14 @@ const FullCalendar = () => {
           <Button variant="outline" size="sm" onClick={() => navigatePeriod('prev')}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-2xl font-bold">{monthName}</h2>
+          <h2 className="text-lg md:text-2xl font-bold">{monthName}</h2>
           <Button variant="outline" size="sm" onClick={() => navigatePeriod('next')}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-1 md:gap-2">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="text-center font-semibold text-sm text-muted-foreground p-2">
+            <div key={day} className="text-center font-semibold text-[10px] md:text-sm text-muted-foreground p-1 md:p-2">
               {day}
             </div>
           ))}

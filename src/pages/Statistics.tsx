@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Statistics = () => {
   const { user } = useAuth();
@@ -14,6 +16,8 @@ const Statistics = () => {
   const [expenseData, setExpenseData] = useState<any[]>([]);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [trendData, setTrendData] = useState<any[]>([]);
+  const [viewPeriod, setViewPeriod] = useState<"day" | "week" | "month" | "year">("month");
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   const chartColors = [
     "hsl(var(--chart-1))",
@@ -27,14 +31,89 @@ const Statistics = () => {
     if (user) {
       fetchStatistics();
     }
-  }, [user]);
+  }, [user, viewPeriod, currentDate]);
+
+  const navigatePeriod = (direction: 'prev' | 'next') => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      switch (viewPeriod) {
+        case 'day':
+          newDate.setDate(prev.getDate() + (direction === 'next' ? 1 : -1));
+          break;
+        case 'week':
+          newDate.setDate(prev.getDate() + (direction === 'next' ? 7 : -7));
+          break;
+        case 'month':
+          newDate.setMonth(prev.getMonth() + (direction === 'next' ? 1 : -1));
+          break;
+        case 'year':
+          newDate.setFullYear(prev.getFullYear() + (direction === 'next' ? 1 : -1));
+          break;
+      }
+      return newDate;
+    });
+  };
+
+  const getPeriodLabel = () => {
+    switch (viewPeriod) {
+      case 'day':
+        return currentDate.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      case 'week':
+        const weekStart = new Date(currentDate);
+        weekStart.setDate(currentDate.getDate() - currentDate.getDay());
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        return `${weekStart.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      case 'month':
+        return currentDate.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+      case 'year':
+        return currentDate.getFullYear().toString();
+    }
+  };
+
+  const getDateRange = () => {
+    let startDate: Date, endDate: Date;
+    
+    switch (viewPeriod) {
+      case 'day':
+        startDate = new Date(currentDate);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(currentDate);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case 'week':
+        startDate = new Date(currentDate);
+        startDate.setDate(currentDate.getDate() - currentDate.getDay());
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case 'month':
+        startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59, 999);
+        break;
+      case 'year':
+        startDate = new Date(currentDate.getFullYear(), 0, 1);
+        endDate = new Date(currentDate.getFullYear(), 11, 31, 23, 59, 59, 999);
+        break;
+    }
+    
+    return { startDate, endDate };
+  };
 
   const fetchStatistics = async () => {
     try {
+      const { startDate, endDate } = getDateRange();
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const endDateStr = endDate.toISOString().split('T')[0];
+
       const { data: transactions, error } = await supabase
         .from("transactions")
         .select("*")
-        .eq("user_id", user?.id);
+        .eq("user_id", user?.id)
+        .gte("date", startDateStr)
+        .lte("date", endDateStr);
 
       if (error) throw error;
 
@@ -56,17 +135,59 @@ const Statistics = () => {
 
       setExpenseData(expenseChartData);
 
-      // Group by month for last 6 months
-      const monthlyStats: { [key: string]: { income: number; expenses: number } } = {};
-      const last6Months = Array.from({ length: 6 }, (_, i) => {
-        const d = new Date();
-        d.setMonth(d.getMonth() - i);
-        return d.toISOString().substring(0, 7);
-      }).reverse();
-
-      transactions.forEach((t) => {
-        const month = t.date.substring(0, 7);
-        if (last6Months.includes(month)) {
+      // Group by appropriate time period
+      let chartData: any[] = [];
+      
+      if (viewPeriod === 'day') {
+        const totalIncome = transactions.filter(t => t.type === "income").reduce((sum, t) => sum + Number(t.amount), 0);
+        const totalExpenses = transactions.filter(t => t.type === "expense").reduce((sum, t) => sum + Number(t.amount), 0);
+        chartData = [{ period: 'Today', income: totalIncome, expenses: totalExpenses }];
+      } else if (viewPeriod === 'week') {
+        const weekStats: { [key: string]: { income: number; expenses: number } } = {};
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        transactions.forEach((t) => {
+          const date = new Date(t.date);
+          const dayName = days[date.getDay()];
+          if (!weekStats[dayName]) {
+            weekStats[dayName] = { income: 0, expenses: 0 };
+          }
+          if (t.type === "income") {
+            weekStats[dayName].income += Number(t.amount);
+          } else {
+            weekStats[dayName].expenses += Number(t.amount);
+          }
+        });
+        chartData = days.map(day => ({
+          period: day,
+          income: weekStats[day]?.income || 0,
+          expenses: weekStats[day]?.expenses || 0,
+        }));
+      } else if (viewPeriod === 'month') {
+        const dailyStats: { [key: string]: { income: number; expenses: number } } = {};
+        transactions.forEach((t) => {
+          const day = t.date.substring(8, 10);
+          if (!dailyStats[day]) {
+            dailyStats[day] = { income: 0, expenses: 0 };
+          }
+          if (t.type === "income") {
+            dailyStats[day].income += Number(t.amount);
+          } else {
+            dailyStats[day].expenses += Number(t.amount);
+          }
+        });
+        const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+        chartData = Array.from({ length: Math.min(daysInMonth, 30) }, (_, i) => {
+          const day = String(i + 1).padStart(2, '0');
+          return {
+            period: String(i + 1),
+            income: dailyStats[day]?.income || 0,
+            expenses: dailyStats[day]?.expenses || 0,
+          };
+        });
+      } else if (viewPeriod === 'year') {
+        const monthlyStats: { [key: string]: { income: number; expenses: number } } = {};
+        transactions.forEach((t) => {
+          const month = t.date.substring(5, 7);
           if (!monthlyStats[month]) {
             monthlyStats[month] = { income: 0, expenses: 0 };
           }
@@ -75,24 +196,23 @@ const Statistics = () => {
           } else {
             monthlyStats[month].expenses += Number(t.amount);
           }
-        }
-      });
+        });
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        chartData = months.map((monthName, i) => {
+          const monthNum = String(i + 1).padStart(2, '0');
+          return {
+            period: monthName,
+            income: monthlyStats[monthNum]?.income || 0,
+            expenses: monthlyStats[monthNum]?.expenses || 0,
+          };
+        });
+      }
 
-      const monthlyChartData = last6Months.map((month) => {
-        const [year, monthNum] = month.split("-");
-        const date = new Date(parseInt(year), parseInt(monthNum) - 1);
-        return {
-          month: date.toLocaleDateString("en-US", { month: "short" }),
-          income: monthlyStats[month]?.income || 0,
-          expenses: monthlyStats[month]?.expenses || 0,
-        };
-      });
-
-      setMonthlyData(monthlyChartData);
+      setMonthlyData(chartData);
 
       // Savings trend
-      const savingsTrend = monthlyChartData.map((m) => ({
-        month: m.month,
+      const savingsTrend = chartData.map((m) => ({
+        month: m.period,
         savings: m.income - m.expenses,
       }));
 
@@ -127,20 +247,31 @@ const Statistics = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-foreground">Statistics</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground">Statistics</h1>
             <p className="text-muted-foreground mt-1">Visualize your financial data</p>
           </div>
-          <Select defaultValue="this-month">
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select period" />
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" onClick={() => navigatePeriod('prev')}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="text-center min-w-[180px]">
+              <p className="font-semibold text-sm md:text-base">{getPeriodLabel()}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => navigatePeriod('next')}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          <Select value={viewPeriod} onValueChange={(v) => setViewPeriod(v as any)}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="this-week">This Week</SelectItem>
-              <SelectItem value="this-month">This Month</SelectItem>
-              <SelectItem value="last-month">Last Month</SelectItem>
-              <SelectItem value="this-year">This Year</SelectItem>
+              <SelectItem value="day">Daily</SelectItem>
+              <SelectItem value="week">Weekly</SelectItem>
+              <SelectItem value="month">Monthly</SelectItem>
+              <SelectItem value="year">Yearly</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -159,7 +290,7 @@ const Statistics = () => {
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
+                    <XAxis dataKey="period" />
                     <YAxis />
                     <Tooltip />
                     <Legend />

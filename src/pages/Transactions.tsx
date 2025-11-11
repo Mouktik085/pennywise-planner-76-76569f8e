@@ -78,7 +78,13 @@ const Transactions = () => {
 
       if (error) throw error;
 
-      setTransactions(data || []);
+      // Filter out transfer-related transactions to avoid duplicates
+      const filteredData = (data || []).filter(t => 
+        t.category !== "Savings Transfer" && 
+        t.category !== "Savings Withdrawal"
+      );
+
+      setTransactions(filteredData);
     } catch (error) {
       console.error("Error fetching transactions:", error);
       toast.error("Failed to load transactions");
