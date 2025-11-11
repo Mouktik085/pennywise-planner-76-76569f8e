@@ -9,10 +9,10 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* Ocean Theme - More White with Vibrant Colors */
-    --background: 0 0% 100%;
+    --background: 200 20% 98%;
     --foreground: 210 50% 10%;
 
-    --card: 200 15% 99%;
+    --card: 0 0% 100%;
     --card-foreground: 210 50% 10%;
 
     --popover: 0 0% 100%;
@@ -21,43 +21,43 @@ All colors MUST be HSL.
     --primary: 195 95% 48%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 200 25% 95%;
+    --secondary: 188 85% 92%;
     --secondary-foreground: 210 50% 10%;
 
-    --muted: 200 20% 95%;
+    --muted: 210 40% 96%;
     --muted-foreground: 200 15% 40%;
 
-    --accent: 180 85% 55%;
+    --accent: 185 80% 55%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 200 20% 90%;
-    --input: 200 20% 90%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
     --ring: 195 95% 48%;
 
     --radius: 1rem;
 
     /* Financial colors - Vibrant Ocean */
-    --income: 165 85% 45%;
+    --income: 155 85% 42%;
     --income-foreground: 0 0% 100%;
-    --income-light: 165 85% 96%;
+    --income-light: 155 85% 92%;
     
-    --expense: 15 95% 60%;
+    --expense: 345 90% 58%;
     --expense-foreground: 0 0% 100%;
-    --expense-light: 15 95% 96%;
+    --expense-light: 345 90% 95%;
     
-    --savings: 190 90% 50%;
+    --savings: 200 95% 55%;
     --savings-foreground: 0 0% 100%;
-    --savings-light: 190 90% 96%;
+    --savings-light: 200 95% 95%;
 
     /* Chart colors - Vibrant Ocean palette */
     --chart-1: 195 95% 50%;
-    --chart-2: 180 85% 55%;
-    --chart-3: 210 85% 60%;
-    --chart-4: 165 85% 45%;
-    --chart-5: 200 80% 55%;
+    --chart-2: 185 80% 55%;
+    --chart-3: 200 95% 55%;
+    --chart-4: 155 85% 42%;
+    --chart-5: 345 90% 58%;
 
     /* Sidebar - Clean white with vibrant accents */
     --sidebar-background: 0 0% 100%;
@@ -75,53 +75,53 @@ All colors MUST be HSL.
 
   .dark {
     /* Dark Ocean Theme */
-    --background: 210 40% 8%;
-    --foreground: 200 20% 95%;
+    --background: 222 84% 5%;
+    --foreground: 210 40% 98%;
 
-    --card: 210 35% 12%;
-    --card-foreground: 200 20% 95%;
+    --card: 222 84% 5%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 210 35% 12%;
-    --popover-foreground: 200 20% 95%;
+    --popover: 222 84% 5%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 195 85% 50%;
+    --primary: 195 95% 48%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 30% 15%;
-    --secondary-foreground: 200 20% 95%;
+    --secondary: 217 33% 18%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 210 30% 15%;
-    --muted-foreground: 200 15% 60%;
+    --muted: 217 33% 18%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 180 70% 45%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 185 80% 35%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 65% 45%;
-    --destructive-foreground: 200 20% 95%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 210 30% 18%;
-    --input: 210 30% 18%;
-    --ring: 195 85% 50%;
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
+    --ring: 195 95% 48%;
 
     /* Financial colors - Dark ocean */
-    --income: 165 70% 45%;
+    --income: 155 85% 42%;
     --income-foreground: 0 0% 100%;
-    --income-light: 165 70% 18%;
+    --income-light: 155 85% 20%;
     
-    --expense: 15 75% 50%;
+    --expense: 345 90% 58%;
     --expense-foreground: 0 0% 100%;
-    --expense-light: 15 75% 18%;
+    --expense-light: 345 90% 30%;
     
-    --savings: 190 75% 48%;
+    --savings: 200 95% 55%;
     --savings-foreground: 0 0% 100%;
-    --savings-light: 190 75% 18%;
+    --savings-light: 200 95% 35%;
 
     /* Chart colors - Dark ocean */
-    --chart-1: 195 85% 50%;
-    --chart-2: 180 70% 45%;
-    --chart-3: 210 70% 55%;
-    --chart-4: 165 70% 45%;
-    --chart-5: 200 65% 50%;
+    --chart-1: 195 95% 50%;
+    --chart-2: 185 80% 45%;
+    --chart-3: 200 95% 55%;
+    --chart-4: 155 85% 42%;
+    --chart-5: 345 90% 58%;
 
     /* Sidebar - Dark ocean */
     --sidebar-background: 210 35% 12%;

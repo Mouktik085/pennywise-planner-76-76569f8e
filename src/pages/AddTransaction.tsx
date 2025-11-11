@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,13 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+interface Account {
+  id: string;
+  name: string;
+  balance: number;
+  icon?: string;
+}
+
 const AddTransaction = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -28,6 +35,29 @@ const AddTransaction = () => {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [accountId, setAccountId] = useState("");
+  const [accounts, setAccounts] = useState<Account[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      fetchAccounts();
+    }
+  }, [user]);
+
+  const fetchAccounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("accounts")
+        .select("id, name, balance, icon")
+        .eq("user_id", user?.id)
+        .order("name");
+
+      if (error) throw error;
+      setAccounts(data || []);
+    } catch (error: any) {
+      console.error("Error fetching accounts:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,18 +75,65 @@ const AddTransaction = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("transactions").insert({
+      const transactionAmount = parseFloat(amount);
+      
+      // Insert transaction
+      const { error: transError } = await supabase.from("transactions").insert({
         user_id: user.id,
         type: transactionType,
-        amount: parseFloat(amount),
+        amount: transactionAmount,
         category,
         description: description || null,
         date: format(date, "yyyy-MM-dd"),
         is_recurring: isRecurring,
         is_planned: isPlanned,
+        account_id: accountId || null,
       });
 
-      if (error) throw error;
+      if (transError) throw transError;
+
+      // Update account balance if account selected
+      if (accountId) {
+        const account = accounts.find(a => a.id === accountId);
+        if (account) {
+          const newBalance = transactionType === "income" 
+            ? account.balance + transactionAmount 
+            : account.balance - transactionAmount;
+          
+          const { error: accountError } = await supabase
+            .from("accounts")
+            .update({ balance: newBalance })
+            .eq("id", accountId);
+          
+          if (accountError) throw accountError;
+        }
+      }
+
+      // Update budget if expense
+      if (transactionType === "expense") {
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1;
+        const currentYear = currentDate.getFullYear();
+
+        const { data: budgetData, error: budgetFetchError } = await supabase
+          .from("budget")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("month", currentMonth)
+          .eq("year", currentYear)
+          .maybeSingle();
+
+        if (budgetFetchError) throw budgetFetchError;
+
+        if (budgetData) {
+          const { error: budgetUpdateError } = await supabase
+            .from("budget")
+            .update({ current_spent: budgetData.current_spent + transactionAmount })
+            .eq("id", budgetData.id);
+
+          if (budgetUpdateError) throw budgetUpdateError;
+        }
+      }
 
       toast.success("Transaction added successfully!");
       navigate("/transactions");
@@ -120,7 +197,24 @@ const AddTransaction = () => {
                       <SelectItem value="Bills">💡 Bills & Utilities</SelectItem>
                       <SelectItem value="Healthcare">🏥 Healthcare</SelectItem>
                       <SelectItem value="Education">📚 Education</SelectItem>
+                      <SelectItem value="Transfer">🔄 Transfer</SelectItem>
                       <SelectItem value="Other">📦 Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="account">Account (Optional)</Label>
+                  <Select value={accountId} onValueChange={setAccountId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((account) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          {account.icon} {account.name} (₹{account.balance.toFixed(2)})
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -209,7 +303,24 @@ const AddTransaction = () => {
                       <SelectItem value="Investment">📈 Investment</SelectItem>
                       <SelectItem value="Bonus">🎁 Bonus</SelectItem>
                       <SelectItem value="Gift">🎉 Gift</SelectItem>
+                      <SelectItem value="Transfer">🔄 Transfer</SelectItem>
                       <SelectItem value="Other">💰 Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="income-account">Account (Optional)</Label>
+                  <Select value={accountId} onValueChange={setAccountId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((account) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          {account.icon} {account.name} (₹{account.balance.toFixed(2)})
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

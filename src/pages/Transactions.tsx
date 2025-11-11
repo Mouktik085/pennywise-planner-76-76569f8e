@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Search, Calendar as CalendarIcon, TrendingUp, TrendingDown, Trash2 } from "lucide-react";
+import { Plus, Search, Calendar as CalendarIcon, TrendingUp, TrendingDown, Trash2, ArrowLeftRight } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -22,17 +22,28 @@ interface Transaction {
   description: string | null;
 }
 
+interface Transfer {
+  id: string;
+  from_account_id: string;
+  to_account_id: string;
+  amount: number;
+  date: string;
+  description: string | null;
+}
+
 const Transactions = () => {
   const { user } = useAuth();
   const [date, setDate] = useState<Date>();
   const [typeFilter, setTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
       fetchTransactions();
+      fetchTransfers();
     }
   }, [user, typeFilter, date, searchQuery]);
 
@@ -65,6 +76,31 @@ const Transactions = () => {
       toast.error("Failed to load transactions");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTransfers = async () => {
+    try {
+      let query = supabase
+        .from("transfers")
+        .select("*")
+        .order("date", { ascending: false });
+
+      if (date) {
+        query = query.eq("date", format(date, "yyyy-MM-dd"));
+      }
+
+      if (searchQuery) {
+        query = query.ilike("description", `%${searchQuery}%`);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      setTransfers(data || []);
+    } catch (error) {
+      console.error("Error fetching transfers:", error);
     }
   };
 
@@ -165,9 +201,39 @@ const Transactions = () => {
           </div>
         </Card>
 
+        {/* Transfers List */}
+        {transfers.length > 0 && typeFilter === "all" && (
+          <Card className="p-6">
+            <h2 className="text-2xl font-bold mb-4">Transfer History</h2>
+            <div className="space-y-3">
+              {transfers.map((transfer) => (
+                <div
+                  key={transfer.id}
+                  className="flex items-center justify-between p-4 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors border border-primary/20"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-full bg-primary/20 text-primary">
+                      <ArrowLeftRight className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-semibold">{transfer.description || "Transfer"}</p>
+                      <p className="text-sm text-muted-foreground">{transfer.date}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-primary">
+                      ₹{Number(transfer.amount).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
         {/* Transactions List */}
         <Card className="p-6">
-          {transactions.length === 0 ? (
+          {transactions.length === 0 && transfers.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground mb-4">
                 No transactions found. Start adding your income and expenses!
