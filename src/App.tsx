@@ -11,6 +11,7 @@ import Savings from "./pages/Savings";
 import Statistics from "./pages/Statistics";
 import Settings from "./pages/Settings";
 import Install from "./pages/Install";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/install" element={<Install />} />
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/transactions" element={<Transactions />} />
@@ -30,7 +33,6 @@ const App = () => (
             <Route path="/statistics" element={<Statistics />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
-          <Route path="/install" element={<Install />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

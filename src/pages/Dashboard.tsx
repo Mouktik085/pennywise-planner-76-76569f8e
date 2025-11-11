@@ -1,20 +1,90 @@
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Wallet, TrendingUp, TrendingDown, PiggyBank, Calendar } from "lucide-react";
+import { Plus, Wallet, TrendingUp, TrendingDown, PiggyBank } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+
+interface Transaction {
+  id: string;
+  type: string;
+  category: string;
+  amount: number;
+  date: string;
+  description: string | null;
+}
 
 const Dashboard = () => {
-  // Mock data - will be replaced with actual data
-  const totalIncome = 45000;
-  const totalExpenses = 28500;
-  const totalSavings = 12000;
+  const { user } = useAuth();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpenses, setTotalExpenses] = useState(0);
+  const [totalSavings, setTotalSavings] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
+
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch transactions
+      const { data: transactionsData, error: transError } = await supabase
+        .from("transactions")
+        .select("*")
+        .order("date", { ascending: false })
+        .limit(5);
+
+      if (transError) throw transError;
+
+      setTransactions(transactionsData || []);
+
+      // Calculate totals
+      const { data: allTransactions, error: allTransError } = await supabase
+        .from("transactions")
+        .select("type, amount");
+
+      if (allTransError) throw allTransError;
+
+      const income = allTransactions
+        ?.filter((t) => t.type === "income")
+        .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+
+      const expenses = allTransactions
+        ?.filter((t) => t.type === "expense")
+        .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+
+      setTotalIncome(income);
+      setTotalExpenses(expenses);
+
+      // Fetch savings
+      const { data: savingsData, error: savingsError } = await supabase
+        .from("savings_goals")
+        .select("current_amount");
+
+      if (savingsError) throw savingsError;
+
+      const savings = savingsData?.reduce((sum, s) => sum + Number(s.current_amount), 0) || 0;
+      setTotalSavings(savings);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const balance = totalIncome - totalExpenses;
 
-  const recentTransactions = [
-    { id: 1, type: "expense", category: "Food", amount: 450, date: "2025-01-15", description: "Grocery shopping" },
-    { id: 2, type: "income", category: "Salary", amount: 45000, date: "2025-01-10", description: "Monthly salary" },
-    { id: 3, type: "expense", category: "Transport", amount: 200, date: "2025-01-12", description: "Uber rides" },
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -116,44 +186,50 @@ const Dashboard = () => {
               <Button variant="ghost">View All</Button>
             </Link>
           </div>
-          <div className="space-y-3">
-            {recentTransactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`p-3 rounded-full ${
-                      transaction.type === "income"
-                        ? "bg-income-light text-income"
-                        : "bg-expense-light text-expense"
-                    }`}
-                  >
-                    {transaction.type === "income" ? (
-                      <TrendingUp className="h-5 w-5" />
-                    ) : (
-                      <TrendingDown className="h-5 w-5" />
-                    )}
+          {transactions.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              No transactions yet. Add your first transaction to get started!
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {transactions.map((transaction) => (
+                <div
+                  key={transaction.id}
+                  className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`p-3 rounded-full ${
+                        transaction.type === "income"
+                          ? "bg-income-light text-income"
+                          : "bg-expense-light text-expense"
+                      }`}
+                    >
+                      {transaction.type === "income" ? (
+                        <TrendingUp className="h-5 w-5" />
+                      ) : (
+                        <TrendingDown className="h-5 w-5" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold">{transaction.description || "No description"}</p>
+                      <p className="text-sm text-muted-foreground">{transaction.category}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold">{transaction.description}</p>
-                    <p className="text-sm text-muted-foreground">{transaction.category}</p>
+                  <div className="text-right">
+                    <p
+                      className={`font-bold ${
+                        transaction.type === "income" ? "text-income" : "text-expense"
+                      }`}
+                    >
+                      {transaction.type === "income" ? "+" : "-"}₹{Number(transaction.amount).toLocaleString()}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{transaction.date}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p
-                    className={`font-bold ${
-                      transaction.type === "income" ? "text-income" : "text-expense"
-                    }`}
-                  >
-                    {transaction.type === "income" ? "+" : "-"}₹{transaction.amount.toLocaleString()}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{transaction.date}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
     </div>
