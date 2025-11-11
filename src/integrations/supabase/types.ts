@@ -127,8 +127,13 @@ export type Database = {
           email: string | null
           id: string
           notification_bills: boolean | null
+          notification_budget_alerts: boolean | null
           notification_expenses: boolean | null
           notification_goals: boolean | null
+          notification_savings_milestones: boolean | null
+          notification_transaction_reminders: boolean | null
+          security_app_lock: boolean | null
+          security_hide_balance: boolean | null
           sms_auto_import: boolean | null
           theme_accent_color: string | null
           theme_primary_color: string | null
@@ -143,8 +148,13 @@ export type Database = {
           email?: string | null
           id?: string
           notification_bills?: boolean | null
+          notification_budget_alerts?: boolean | null
           notification_expenses?: boolean | null
           notification_goals?: boolean | null
+          notification_savings_milestones?: boolean | null
+          notification_transaction_reminders?: boolean | null
+          security_app_lock?: boolean | null
+          security_hide_balance?: boolean | null
           sms_auto_import?: boolean | null
           theme_accent_color?: string | null
           theme_primary_color?: string | null
@@ -159,8 +169,13 @@ export type Database = {
           email?: string | null
           id?: string
           notification_bills?: boolean | null
+          notification_budget_alerts?: boolean | null
           notification_expenses?: boolean | null
           notification_goals?: boolean | null
+          notification_savings_milestones?: boolean | null
+          notification_transaction_reminders?: boolean | null
+          security_app_lock?: boolean | null
+          security_hide_balance?: boolean | null
           sms_auto_import?: boolean | null
           theme_accent_color?: string | null
           theme_primary_color?: string | null

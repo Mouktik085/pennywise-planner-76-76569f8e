@@ -20,10 +20,19 @@ interface Account {
 const Settings = () => {
   const { user } = useAuth();
   const [smsSync, setSmsSync] = useState(false);
-  const [notifications, setNotifications] = useState(true);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedAccount, setSelectedAccount] = useState("");
   const [primaryColor, setPrimaryColor] = useState("#8B5CF6");
+  
+  // Notification settings
+  const [notifBudgetAlerts, setNotifBudgetAlerts] = useState(true);
+  const [notifTransactionReminders, setNotifTransactionReminders] = useState(true);
+  const [notifSavingsMilestones, setNotifSavingsMilestones] = useState(true);
+  
+  // Security settings
+  const [securityAppLock, setSecurityAppLock] = useState(false);
+  const [securityHideBalance, setSecurityHideBalance] = useState(false);
+  
   const [categories, setCategories] = useState([
     { id: 1, name: "Food & Dining", icon: "🍔", type: "expense" },
     { id: 2, name: "Transport", icon: "🚗", type: "expense" },
@@ -57,13 +66,18 @@ const Settings = () => {
         .from("profiles")
         .select("*")
         .eq("user_id", user?.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       if (data) {
         setSmsSync(data.sms_auto_import || false);
         setSelectedAccount(data.default_account_id || "");
         setPrimaryColor(data.theme_primary_color || "#8B5CF6");
+        setNotifBudgetAlerts(data.notification_budget_alerts ?? true);
+        setNotifTransactionReminders(data.notification_transaction_reminders ?? true);
+        setNotifSavingsMilestones(data.notification_savings_milestones ?? true);
+        setSecurityAppLock(data.security_app_lock || false);
+        setSecurityHideBalance(data.security_hide_balance || false);
       }
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -83,6 +97,11 @@ const Settings = () => {
           sms_auto_import: smsSync,
           default_account_id: selectedAccount || null,
           theme_primary_color: primaryColor,
+          notification_budget_alerts: notifBudgetAlerts,
+          notification_transaction_reminders: notifTransactionReminders,
+          notification_savings_milestones: notifSavingsMilestones,
+          security_app_lock: securityAppLock,
+          security_hide_balance: securityHideBalance,
         })
         .eq("user_id", user?.id);
 
@@ -126,14 +145,7 @@ const Settings = () => {
                 <Switch
                   id="sms-sync"
                   checked={smsSync}
-                  onCheckedChange={(checked) => {
-                    setSmsSync(checked);
-                    if (checked) {
-                      toast.info("SMS sync enabled. Grant permission when prompted.");
-                    } else {
-                      toast.info("SMS sync disabled");
-                    }
-                  }}
+                  onCheckedChange={setSmsSync}
                 />
               </div>
 
@@ -150,6 +162,8 @@ const Settings = () => {
                   </ul>
                 </div>
               )}
+              
+              <Button className="w-full" onClick={handleSaveSettings}>Save SMS Settings</Button>
             </div>
           </div>
         </Card>
@@ -174,7 +188,7 @@ const Settings = () => {
                     <Label>Budget Alerts</Label>
                     <p className="text-sm text-muted-foreground">Get notified when approaching budget limits</p>
                   </div>
-                  <Switch checked={notifications} onCheckedChange={setNotifications} />
+                  <Switch checked={notifBudgetAlerts} onCheckedChange={setNotifBudgetAlerts} />
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
@@ -182,7 +196,7 @@ const Settings = () => {
                     <Label>Transaction Reminders</Label>
                     <p className="text-sm text-muted-foreground">Remind to log daily expenses</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch checked={notifTransactionReminders} onCheckedChange={setNotifTransactionReminders} />
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
@@ -190,8 +204,10 @@ const Settings = () => {
                     <Label>Savings Milestones</Label>
                     <p className="text-sm text-muted-foreground">Celebrate when you reach savings goals</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch checked={notifSavingsMilestones} onCheckedChange={setNotifSavingsMilestones} />
                 </div>
+                
+                <Button className="w-full" onClick={handleSaveSettings}>Save Notification Settings</Button>
               </div>
             </div>
           </div>
@@ -311,7 +327,7 @@ const Settings = () => {
                   <Switch />
                 </div>
 
-                <Button className="w-full">Apply Theme</Button>
+                <Button className="w-full" onClick={handleSaveSettings}>Apply Theme</Button>
               </div>
             </div>
           </div>
@@ -374,7 +390,7 @@ const Settings = () => {
                     <Label>App Lock</Label>
                     <p className="text-sm text-muted-foreground">Require PIN/biometric to open app</p>
                   </div>
-                  <Switch />
+                  <Switch checked={securityAppLock} onCheckedChange={setSecurityAppLock} />
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
@@ -382,8 +398,10 @@ const Settings = () => {
                     <Label>Hide Balance</Label>
                     <p className="text-sm text-muted-foreground">Hide amounts on home screen</p>
                   </div>
-                  <Switch />
+                  <Switch checked={securityHideBalance} onCheckedChange={setSecurityHideBalance} />
                 </div>
+                
+                <Button className="w-full" onClick={handleSaveSettings}>Save Security Settings</Button>
               </div>
             </div>
           </div>
