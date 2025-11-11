@@ -10,6 +10,14 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Target, TrendingUp, Calendar, Trash2, Edit, PiggyBank } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+const emojiList = [
+  "🎯", "💰", "🏠", "🚗", "✈️", "🎓", "💍", "🎉", "🏖️", "🎮",
+  "📱", "💻", "🎸", "📚", "🏋️", "🎨", "🍕", "☕", "🌟", "💎",
+  "🎁", "🛍️", "🎭", "🏆", "🌈", "🔥", "⚡", "🌸", "🎪", "🚀",
+  "🏡", "🌴", "🎯", "🏖", "🎊", "🎀", "🌺", "🎵", "🎬", "📷"
+];
 
 interface SavingsGoal {
   id: string;
@@ -18,6 +26,7 @@ interface SavingsGoal {
   target_amount: number;
   current_amount: number;
   deadline?: string;
+  icon?: string;
 }
 
 const Savings = () => {
@@ -35,6 +44,7 @@ const Savings = () => {
     target_amount: 0,
     current_amount: 0,
     deadline: "",
+    icon: "🎯",
   });
 
   useEffect(() => {
@@ -87,7 +97,7 @@ const Savings = () => {
 
       setDialogOpen(false);
       setEditingGoal(null);
-      setFormData({ name: "", description: "", target_amount: 0, current_amount: 0, deadline: "" });
+      setFormData({ name: "", description: "", target_amount: 0, current_amount: 0, deadline: "", icon: "🎯" });
       fetchGoals();
     } catch (error: any) {
       toast({
@@ -183,6 +193,31 @@ const Savings = () => {
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
+                <Label>Icon</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full text-3xl h-16">
+                      {formData.icon}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80">
+                    <div className="grid grid-cols-8 gap-2">
+                      {emojiList.map((emoji) => (
+                        <Button
+                          key={emoji}
+                          type="button"
+                          variant="ghost"
+                          className="text-2xl h-12 w-12 p-0"
+                          onClick={() => setFormData({ ...formData, icon: emoji })}
+                        >
+                          {emoji}
+                        </Button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-2">
                 <Label>Goal Name</Label>
                 <Input
                   value={formData.name}
@@ -192,7 +227,7 @@ const Savings = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Description</Label>
+                <Label>Description (Optional)</Label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -281,7 +316,10 @@ const Savings = () => {
             return (
               <Card key={goal.id}>
                 <CardHeader>
-                  <CardTitle>{goal.name}</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <span className="text-2xl">{goal.icon || "🎯"}</span>
+                    {goal.name}
+                  </CardTitle>
                   {goal.description && (
                     <p className="text-sm text-muted-foreground">{goal.description}</p>
                   )}
@@ -325,6 +363,7 @@ const Savings = () => {
                           target_amount: goal.target_amount,
                           current_amount: goal.current_amount,
                           deadline: goal.deadline || "",
+                          icon: goal.icon || "🎯",
                         });
                         setDialogOpen(true);
                       }}

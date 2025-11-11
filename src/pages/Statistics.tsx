@@ -1,34 +1,118 @@
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
+import { useToast } from "@/hooks/use-toast";
 
 const Statistics = () => {
-  const expenseData = [
-    { name: "Food", value: 8500, color: "hsl(var(--chart-1))" },
-    { name: "Transport", value: 4200, color: "hsl(var(--chart-2))" },
-    { name: "Entertainment", value: 3800, color: "hsl(var(--chart-3))" },
-    { name: "Bills", value: 6000, color: "hsl(var(--chart-4))" },
-    { name: "Shopping", value: 6000, color: "hsl(var(--chart-5))" },
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [expenseData, setExpenseData] = useState<any[]>([]);
+  const [monthlyData, setMonthlyData] = useState<any[]>([]);
+  const [trendData, setTrendData] = useState<any[]>([]);
+
+  const chartColors = [
+    "hsl(var(--chart-1))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-4))",
+    "hsl(var(--chart-5))",
   ];
 
-  const monthlyData = [
-    { month: "Jan", income: 45000, expenses: 28500 },
-    { month: "Feb", income: 48000, expenses: 31000 },
-    { month: "Mar", income: 45000, expenses: 29500 },
-    { month: "Apr", income: 50000, expenses: 32000 },
-    { month: "May", income: 45000, expenses: 28500 },
-    { month: "Jun", income: 47000, expenses: 30000 },
-  ];
+  useEffect(() => {
+    if (user) {
+      fetchStatistics();
+    }
+  }, [user]);
 
-  const trendData = [
-    { month: "Jan", savings: 16500 },
-    { month: "Feb", savings: 17000 },
-    { month: "Mar", savings: 15500 },
-    { month: "Apr", savings: 18000 },
-    { month: "May", savings: 16500 },
-    { month: "Jun", savings: 17000 },
-  ];
+  const fetchStatistics = async () => {
+    try {
+      const { data: transactions, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user?.id);
+
+      if (error) throw error;
+
+      // Group expenses by category
+      const expensesByCategory: { [key: string]: number } = {};
+      transactions
+        .filter((t) => t.type === "expense")
+        .forEach((t) => {
+          expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + Number(t.amount);
+        });
+
+      const expenseChartData = Object.entries(expensesByCategory).map(([name, value], index) => ({
+        name,
+        value,
+        color: chartColors[index % chartColors.length],
+      }));
+
+      setExpenseData(expenseChartData);
+
+      // Group by month for last 6 months
+      const monthlyStats: { [key: string]: { income: number; expenses: number } } = {};
+      const last6Months = Array.from({ length: 6 }, (_, i) => {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        return d.toISOString().substring(0, 7);
+      }).reverse();
+
+      transactions.forEach((t) => {
+        const month = t.date.substring(0, 7);
+        if (last6Months.includes(month)) {
+          if (!monthlyStats[month]) {
+            monthlyStats[month] = { income: 0, expenses: 0 };
+          }
+          if (t.type === "income") {
+            monthlyStats[month].income += Number(t.amount);
+          } else {
+            monthlyStats[month].expenses += Number(t.amount);
+          }
+        }
+      });
+
+      const monthlyChartData = last6Months.map((month) => {
+        const [year, monthNum] = month.split("-");
+        const date = new Date(parseInt(year), parseInt(monthNum) - 1);
+        return {
+          month: date.toLocaleDateString("en-US", { month: "short" }),
+          income: monthlyStats[month]?.income || 0,
+          expenses: monthlyStats[month]?.expenses || 0,
+        };
+      });
+
+      setMonthlyData(monthlyChartData);
+
+      // Savings trend
+      const savingsTrend = monthlyChartData.map((m) => ({
+        month: m.month,
+        savings: m.income - m.expenses,
+      }));
+
+      setTrendData(savingsTrend);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -104,15 +188,21 @@ const Statistics = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-income-light rounded-lg">
                   <p className="text-sm text-income font-semibold">Average Income</p>
-                  <p className="text-2xl font-bold text-income">₹46,500</p>
+                  <p className="text-2xl font-bold text-income">
+                    ₹{(monthlyData.reduce((sum, m) => sum + m.income, 0) / (monthlyData.length || 1)).toFixed(0)}
+                  </p>
                 </div>
                 <div className="p-4 bg-expense-light rounded-lg">
                   <p className="text-sm text-expense font-semibold">Average Expenses</p>
-                  <p className="text-2xl font-bold text-expense">₹29,917</p>
+                  <p className="text-2xl font-bold text-expense">
+                    ₹{(monthlyData.reduce((sum, m) => sum + m.expenses, 0) / (monthlyData.length || 1)).toFixed(0)}
+                  </p>
                 </div>
                 <div className="p-4 bg-savings-light rounded-lg">
                   <p className="text-sm text-savings font-semibold">Average Savings</p>
-                  <p className="text-2xl font-bold text-savings">₹16,583</p>
+                  <p className="text-2xl font-bold text-savings">
+                    ₹{(trendData.reduce((sum, t) => sum + t.savings, 0) / (trendData.length || 1)).toFixed(0)}
+                  </p>
                 </div>
               </div>
             </Card>
@@ -187,54 +277,81 @@ const Statistics = () => {
               <Card className="p-6">
                 <h3 className="font-bold text-xl mb-4">Insights</h3>
                 <div className="space-y-3">
-                  <div className="p-4 bg-income-light rounded-lg">
-                    <p className="font-semibold text-income">📈 Great Job!</p>
-                    <p className="text-sm mt-1">Your savings increased by 8% this month</p>
-                  </div>
-                  <div className="p-4 bg-expense-light rounded-lg">
-                    <p className="font-semibold text-expense">⚠️ Watch Out</p>
-                    <p className="text-sm mt-1">Food expenses are 15% higher than usual</p>
-                  </div>
-                  <div className="p-4 bg-primary/10 rounded-lg">
-                    <p className="font-semibold text-primary">💡 Tip</p>
-                    <p className="text-sm mt-1">Try to reduce entertainment spending by 10%</p>
-                  </div>
+                  {trendData.length >= 2 && trendData[trendData.length - 1].savings > trendData[trendData.length - 2].savings && (
+                    <div className="p-4 bg-income-light rounded-lg">
+                      <p className="font-semibold text-income">📈 Great Job!</p>
+                      <p className="text-sm mt-1">Your savings are improving!</p>
+                    </div>
+                  )}
+                  {expenseData.length > 0 && (
+                    <div className="p-4 bg-expense-light rounded-lg">
+                      <p className="font-semibold text-expense">Top Expense</p>
+                      <p className="text-sm mt-1">
+                        {expenseData[0].name}: ₹{expenseData[0].value.toFixed(2)}
+                      </p>
+                    </div>
+                  )}
+                  {monthlyData.length > 0 && (
+                    <div className="p-4 bg-primary/10 rounded-lg">
+                      <p className="font-semibold text-primary">💡 Insight</p>
+                      <p className="text-sm mt-1">
+                        {monthlyData[monthlyData.length - 1].income > monthlyData[monthlyData.length - 1].expenses
+                          ? "You're spending wisely this month!"
+                          : "Consider reviewing your expenses"}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </Card>
 
               <Card className="p-6">
                 <h3 className="font-bold text-xl mb-4">Financial Health Score</h3>
                 <div className="flex flex-col items-center justify-center py-8">
-                  <div className="relative w-40 h-40">
-                    <svg className="w-full h-full" viewBox="0 0 100 100">
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
-                        stroke="hsl(var(--muted))"
-                        strokeWidth="10"
-                      />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
-                        stroke="hsl(var(--income))"
-                        strokeWidth="10"
-                        strokeDasharray={`${75 * 2.827} ${100 * 2.827}`}
-                        strokeLinecap="round"
-                        transform="rotate(-90 50 50)"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-4xl font-bold text-income">75</span>
-                    </div>
-                  </div>
-                  <p className="text-xl font-semibold mt-4">Good</p>
-                  <p className="text-sm text-muted-foreground text-center mt-2">
-                    You're managing your finances well. Keep up the good work!
-                  </p>
+                  {(() => {
+                    const totalIncome = monthlyData.reduce((sum, m) => sum + m.income, 0);
+                    const totalExpenses = monthlyData.reduce((sum, m) => sum + m.expenses, 0);
+                    const score = totalIncome > 0 ? Math.min(Math.round((1 - totalExpenses / totalIncome) * 100), 100) : 0;
+                    return (
+                      <>
+                        <div className="relative w-40 h-40">
+                          <svg className="w-full h-full" viewBox="0 0 100 100">
+                            <circle
+                              cx="50"
+                              cy="50"
+                              r="45"
+                              fill="none"
+                              stroke="hsl(var(--muted))"
+                              strokeWidth="10"
+                            />
+                            <circle
+                              cx="50"
+                              cy="50"
+                              r="45"
+                              fill="none"
+                              stroke="hsl(var(--income))"
+                              strokeWidth="10"
+                              strokeDasharray={`${score * 2.827} ${100 * 2.827}`}
+                              strokeLinecap="round"
+                              transform="rotate(-90 50 50)"
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-4xl font-bold text-income">{score}</span>
+                          </div>
+                        </div>
+                        <p className="text-xl font-semibold mt-4">
+                          {score >= 75 ? "Excellent" : score >= 50 ? "Good" : score >= 25 ? "Fair" : "Needs Improvement"}
+                        </p>
+                        <p className="text-sm text-muted-foreground text-center mt-2">
+                          {score >= 75
+                            ? "You're managing your finances excellently!"
+                            : score >= 50
+                            ? "You're doing well, keep it up!"
+                            : "Consider reviewing your spending habits"}
+                        </p>
+                      </>
+                    );
+                  })()}
                 </div>
               </Card>
             </div>

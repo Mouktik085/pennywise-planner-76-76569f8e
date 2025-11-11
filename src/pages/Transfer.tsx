@@ -18,13 +18,23 @@ interface Account {
   balance: number;
 }
 
+interface SavingsGoal {
+  id: string;
+  name: string;
+  current_amount: number;
+  icon?: string;
+}
+
 const Transfer = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
   const [fromAccountId, setFromAccountId] = useState("");
+  const [fromType, setFromType] = useState<"account" | "savings">("account");
   const [toAccountId, setToAccountId] = useState("");
+  const [toType, setToType] = useState<"account" | "savings">("account");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,6 +42,7 @@ const Transfer = () => {
   useEffect(() => {
     if (user) {
       fetchAccounts();
+      fetchSavingsGoals();
     }
   }, [user]);
 
@@ -54,22 +65,41 @@ const Transfer = () => {
     }
   };
 
+  const fetchSavingsGoals = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("savings_goals")
+        .select("id, name, current_amount, icon")
+        .eq("user_id", user?.id)
+        .order("name");
+
+      if (error) throw error;
+      setSavingsGoals(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!fromAccountId || !toAccountId) {
       toast({
         title: "Error",
-        description: "Please select both accounts",
+        description: "Please select both source and destination",
         variant: "destructive",
       });
       return;
     }
 
-    if (fromAccountId === toAccountId) {
+    if (fromAccountId === toAccountId && fromType === toType) {
       toast({
         title: "Error",
-        description: "Cannot transfer to the same account",
+        description: "Cannot transfer to the same place",
         variant: "destructive",
       });
       return;
@@ -88,18 +118,69 @@ const Transfer = () => {
     setLoading(true);
 
     try {
-      // Get current balances
-      const { data: fromAccount } = await supabase
-        .from("accounts")
-        .select("balance")
-        .eq("id", fromAccountId)
-        .single();
+      // Check source balance
+      let fromBalance = 0;
+      if (fromType === "account") {
+        const { data: fromAccount } = await supabase
+          .from("accounts")
+          .select("balance")
+          .eq("id", fromAccountId)
+          .single();
+        fromBalance = fromAccount?.balance || 0;
+      } else {
+        const { data: fromGoal } = await supabase
+          .from("savings_goals")
+          .select("current_amount")
+          .eq("id", fromAccountId)
+          .single();
+        fromBalance = fromGoal?.current_amount || 0;
+      }
 
-      if (!fromAccount || fromAccount.balance < transferAmount) {
+      if (fromBalance < transferAmount) {
         throw new Error("Insufficient balance");
       }
 
-      // Create transfer record
+      // Update source
+      if (fromType === "account") {
+        const { error } = await supabase
+          .from("accounts")
+          .update({ balance: fromBalance - transferAmount })
+          .eq("id", fromAccountId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("savings_goals")
+          .update({ current_amount: fromBalance - transferAmount })
+          .eq("id", fromAccountId);
+        if (error) throw error;
+      }
+
+      // Update destination
+      if (toType === "account") {
+        const { data: toAccount } = await supabase
+          .from("accounts")
+          .select("balance")
+          .eq("id", toAccountId)
+          .single();
+        const { error } = await supabase
+          .from("accounts")
+          .update({ balance: (toAccount?.balance || 0) + transferAmount })
+          .eq("id", toAccountId);
+        if (error) throw error;
+      } else {
+        const { data: toGoal } = await supabase
+          .from("savings_goals")
+          .select("current_amount")
+          .eq("id", toAccountId)
+          .single();
+        const { error } = await supabase
+          .from("savings_goals")
+          .update({ current_amount: (toGoal?.current_amount || 0) + transferAmount })
+          .eq("id", toAccountId);
+        if (error) throw error;
+      }
+
+      // Record transfer
       const { error: transferError } = await supabase
         .from("transfers")
         .insert([{
@@ -107,32 +188,11 @@ const Transfer = () => {
           from_account_id: fromAccountId,
           to_account_id: toAccountId,
           amount: transferAmount,
-          description,
+          description: description || `Transfer from ${fromType} to ${toType}`,
           date: new Date().toISOString().split('T')[0],
         }]);
 
       if (transferError) throw transferError;
-
-      // Update account balances
-      const { error: fromError } = await supabase
-        .from("accounts")
-        .update({ balance: fromAccount.balance - transferAmount })
-        .eq("id", fromAccountId);
-
-      if (fromError) throw fromError;
-
-      const { data: toAccount } = await supabase
-        .from("accounts")
-        .select("balance")
-        .eq("id", toAccountId)
-        .single();
-
-      const { error: toError } = await supabase
-        .from("accounts")
-        .update({ balance: (toAccount?.balance || 0) + transferAmount })
-        .eq("id", toAccountId);
-
-      if (toError) throw toError;
 
       toast({
         title: "Success",
@@ -163,33 +223,65 @@ const Transfer = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>From Account</Label>
-              <Select value={fromAccountId} onValueChange={setFromAccountId}>
+              <Label>From</Label>
+              <Select value={fromType} onValueChange={(v) => { setFromType(v as any); setFromAccountId(""); }}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select account" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.name} (₹{account.balance.toFixed(2)})
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="account">Account</SelectItem>
+                  <SelectItem value="savings">Savings Goal</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={fromAccountId} onValueChange={setFromAccountId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select source" />
+                </SelectTrigger>
+                <SelectContent>
+                  {fromType === "account" 
+                    ? accounts.map((account) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          {account.name} (₹{account.balance.toFixed(2)})
+                        </SelectItem>
+                      ))
+                    : savingsGoals.map((goal) => (
+                        <SelectItem key={goal.id} value={goal.id}>
+                          {goal.icon} {goal.name} (₹{goal.current_amount.toFixed(2)})
+                        </SelectItem>
+                      ))
+                  }
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>To Account</Label>
-              <Select value={toAccountId} onValueChange={setToAccountId}>
+              <Label>To</Label>
+              <Select value={toType} onValueChange={(v) => { setToType(v as any); setToAccountId(""); }}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select account" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.name} (₹{account.balance.toFixed(2)})
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="account">Account</SelectItem>
+                  <SelectItem value="savings">Savings Goal</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={toAccountId} onValueChange={setToAccountId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select destination" />
+                </SelectTrigger>
+                <SelectContent>
+                  {toType === "account" 
+                    ? accounts.map((account) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          {account.name} (₹{account.balance.toFixed(2)})
+                        </SelectItem>
+                      ))
+                    : savingsGoals.map((goal) => (
+                        <SelectItem key={goal.id} value={goal.id}>
+                          {goal.icon} {goal.name} (₹{goal.current_amount.toFixed(2)})
+                        </SelectItem>
+                      ))
+                  }
                 </SelectContent>
               </Select>
             </div>
