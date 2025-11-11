@@ -23,6 +23,7 @@ const Settings = () => {
   const [notifications, setNotifications] = useState(true);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedAccount, setSelectedAccount] = useState("");
+  const [primaryColor, setPrimaryColor] = useState("#8B5CF6");
   const [categories, setCategories] = useState([
     { id: 1, name: "Food & Dining", icon: "🍔", type: "expense" },
     { id: 2, name: "Transport", icon: "🚗", type: "expense" },
@@ -32,6 +33,7 @@ const Settings = () => {
   useEffect(() => {
     if (user) {
       fetchAccounts();
+      fetchSettings();
     }
   }, [user]);
 
@@ -49,13 +51,47 @@ const Settings = () => {
     }
   };
 
+  const fetchSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user?.id)
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setSmsSync(data.sms_auto_import || false);
+        setSelectedAccount(data.default_account_id || "");
+        setPrimaryColor(data.theme_primary_color || "#8B5CF6");
+      }
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+    }
+  };
+
   const handleAddCategory = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success("Category added successfully!");
   };
 
-  const handleSaveSettings = () => {
-    toast.success("Settings saved successfully!");
+  const handleSaveSettings = async () => {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          sms_auto_import: smsSync,
+          default_account_id: selectedAccount || null,
+          theme_primary_color: primaryColor,
+        })
+        .eq("user_id", user?.id);
+
+      if (error) throw error;
+      toast.success("Settings saved successfully!");
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      toast.error("Failed to save settings");
+    }
   };
 
   return (
@@ -249,7 +285,12 @@ const Settings = () => {
               <div className="space-y-3">
                 <div className="space-y-2">
                   <Label>Primary Color</Label>
-                  <Input type="color" defaultValue="#0EA5E9" className="h-12 w-24" />
+                  <Input 
+                    type="color" 
+                    value={primaryColor} 
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="h-12 w-24" 
+                  />
                 </div>
 
                 <div className="space-y-2">

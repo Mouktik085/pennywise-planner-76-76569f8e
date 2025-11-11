@@ -2,11 +2,35 @@ import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
 import { Home, Receipt, PiggyBank, BarChart3, Settings, Wallet, DollarSign, Calendar, Bell, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import appLogo from "@/assets/app-logo.png";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 
 const Layout = () => {
   const location = useLocation();
   const { user, loading } = useAuth();
+  const [username, setUsername] = useState<string>("");
+
+  useEffect(() => {
+    if (user) {
+      fetchUsername();
+    }
+  }, [user]);
+
+  const fetchUsername = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("user_id", user?.id)
+        .single();
+
+      if (error) throw error;
+      setUsername(data?.username || "User");
+    } catch (error) {
+      console.error("Error fetching username:", error);
+      setUsername("User");
+    }
+  };
 
   if (loading) {
     return (
@@ -37,14 +61,10 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top Header with Logo and Name */}
+      {/* Top Header with Username */}
       <div className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-b border-border z-50 px-4 py-1.5">
-        <div className="max-w-7xl mx-auto flex items-center gap-2">
-          <img src={appLogo} alt="App Logo" className="w-7 h-7 md:w-8 md:h-8" />
-          <div>
-            <h1 className="text-base md:text-lg font-bold text-primary">Budget Manager</h1>
-            <p className="text-[10px] md:text-xs font-['Pacifico'] text-primary/80">~ Mouktik</p>
-          </div>
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-base md:text-lg font-semibold text-foreground">Hello, {username}</h1>
         </div>
       </div>
       

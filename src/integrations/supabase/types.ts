@@ -122,26 +122,61 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string | null
+          default_account_id: string | null
+          default_currency: string | null
           email: string | null
           id: string
+          notification_bills: boolean | null
+          notification_expenses: boolean | null
+          notification_goals: boolean | null
+          sms_auto_import: boolean | null
+          theme_accent_color: string | null
+          theme_primary_color: string | null
           updated_at: string | null
           user_id: string
+          username: string | null
         }
         Insert: {
           created_at?: string | null
+          default_account_id?: string | null
+          default_currency?: string | null
           email?: string | null
           id?: string
+          notification_bills?: boolean | null
+          notification_expenses?: boolean | null
+          notification_goals?: boolean | null
+          sms_auto_import?: boolean | null
+          theme_accent_color?: string | null
+          theme_primary_color?: string | null
           updated_at?: string | null
           user_id: string
+          username?: string | null
         }
         Update: {
           created_at?: string | null
+          default_account_id?: string | null
+          default_currency?: string | null
           email?: string | null
           id?: string
+          notification_bills?: boolean | null
+          notification_expenses?: boolean | null
+          notification_goals?: boolean | null
+          sms_auto_import?: boolean | null
+          theme_accent_color?: string | null
+          theme_primary_color?: string | null
           updated_at?: string | null
           user_id?: string
+          username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_default_account_id_fkey"
+            columns: ["default_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       savings_goals: {
         Row: {

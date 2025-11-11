@@ -15,6 +15,7 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     // Check if user is already logged in
@@ -40,6 +41,16 @@ const Auth = () => {
 
     console.log("Attempting signup with:", email);
 
+    if (!username.trim()) {
+      toast({
+        title: "Invalid username",
+        description: "Username is required.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     if (password.length < 6) {
       toast({
         title: "Invalid password",
@@ -56,6 +67,9 @@ const Auth = () => {
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            username: username,
+          },
         },
       });
 
@@ -76,11 +90,20 @@ const Auth = () => {
           });
         }
       } else if (data.user) {
+        // Update profile with username
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({ username: username })
+          .eq("user_id", data.user.id);
+
+        if (profileError) {
+          console.error("Profile update error:", profileError);
+        }
+
         toast({
           title: "Success!",
-          description: "Account created successfully. Redirecting...",
+          description: "Account created successfully. Please check your email to verify your account.",
         });
-        // Will auto-redirect via onAuthStateChange
       }
     } catch (error: any) {
       console.error("Signup error:", error);
@@ -176,6 +199,18 @@ const Auth = () => {
             </TabsContent>
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-username">Username</Label>
+                  <Input
+                    id="signup-username"
+                    type="text"
+                    placeholder="Your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    autoComplete="username"
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
                   <Input
