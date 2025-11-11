@@ -81,17 +81,171 @@ const FullCalendar = () => {
     });
   };
 
-  const renderCalendar = () => {
+  const getWeekRange = (date: Date) => {
+    const start = new Date(date);
+    start.setDate(date.getDate() - date.getDay());
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    return { start, end };
+  };
+
+  const navigatePeriod = (direction: 'prev' | 'next') => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      switch (selectedView) {
+        case 'day':
+          newDate.setDate(prev.getDate() + (direction === 'next' ? 1 : -1));
+          break;
+        case 'week':
+          newDate.setDate(prev.getDate() + (direction === 'next' ? 7 : -7));
+          break;
+        case 'month':
+          newDate.setMonth(prev.getMonth() + (direction === 'next' ? 1 : -1));
+          break;
+        case 'year':
+          newDate.setFullYear(prev.getFullYear() + (direction === 'next' ? 1 : -1));
+          break;
+      }
+      return newDate;
+    });
+  };
+
+  const renderView = () => {
+    switch (selectedView) {
+      case 'day':
+        return renderDayView();
+      case 'week':
+        return renderWeekView();
+      case 'month':
+        return renderMonthView();
+      case 'year':
+        return renderYearView();
+      default:
+        return renderMonthView();
+    }
+  };
+
+  const renderDayView = () => {
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+    const dayTxns = getTransactionsForDate(dateStr);
+    const { income, expense, total } = calculateDailyTotal(dateStr);
+    const dayName = currentDate.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Button variant="outline" size="sm" onClick={() => navigatePeriod('prev')}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="text-2xl font-bold">{dayName}</h2>
+          <Button variant="outline" size="sm" onClick={() => navigatePeriod('next')}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+        <Card className="p-6">
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Income</p>
+              <p className="text-2xl font-bold text-income">₹{income.toFixed(2)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Expenses</p>
+              <p className="text-2xl font-bold text-expense">₹{expense.toFixed(2)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Net</p>
+              <p className={`text-2xl font-bold ${total >= 0 ? 'text-income' : 'text-expense'}`}>₹{total.toFixed(2)}</p>
+            </div>
+          </div>
+          {dayTxns.length > 0 ? (
+            <div className="space-y-2">
+              {dayTxns.map(txn => (
+                <div key={txn.id} className="flex justify-between items-center p-3 rounded bg-muted/50">
+                  <div>
+                    <p className="font-medium">{txn.description || "No description"}</p>
+                    <p className="text-sm text-muted-foreground">{txn.category}</p>
+                  </div>
+                  <p className={`font-bold ${txn.type === "income" ? "text-income" : "text-expense"}`}>
+                    {txn.type === "income" ? "+" : "-"}₹{Number(txn.amount).toFixed(2)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground">No transactions for this day</p>
+          )}
+        </Card>
+      </div>
+    );
+  };
+
+  const renderWeekView = () => {
+    const { start, end } = getWeekRange(currentDate);
+    const weekTxns = transactions.filter(t => {
+      const txnDate = new Date(t.date);
+      return txnDate >= start && txnDate <= end;
+    });
+    const income = weekTxns.filter(t => t.type === "income").reduce((sum, t) => sum + Number(t.amount), 0);
+    const expense = weekTxns.filter(t => t.type === "expense").reduce((sum, t) => sum + Number(t.amount), 0);
+    const weekName = `${start.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Button variant="outline" size="sm" onClick={() => navigatePeriod('prev')}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="text-2xl font-bold">{weekName}</h2>
+          <Button variant="outline" size="sm" onClick={() => navigatePeriod('next')}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+        <Card className="p-6">
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Income</p>
+              <p className="text-2xl font-bold text-income">₹{income.toFixed(2)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Expenses</p>
+              <p className="text-2xl font-bold text-expense">₹{expense.toFixed(2)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Net</p>
+              <p className={`text-2xl font-bold ${income - expense >= 0 ? 'text-income' : 'text-expense'}`}>₹{(income - expense).toFixed(2)}</p>
+            </div>
+          </div>
+          {weekTxns.length > 0 ? (
+            <div className="space-y-2">
+              {weekTxns.slice(0, 10).map(txn => (
+                <div key={txn.id} className="flex justify-between items-center p-3 rounded bg-muted/50">
+                  <div>
+                    <p className="font-medium">{txn.description || "No description"}</p>
+                    <p className="text-sm text-muted-foreground">{txn.category} • {txn.date}</p>
+                  </div>
+                  <p className={`font-bold ${txn.type === "income" ? "text-income" : "text-expense"}`}>
+                    {txn.type === "income" ? "+" : "-"}₹{Number(txn.amount).toFixed(2)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground">No transactions for this week</p>
+          )}
+        </Card>
+      </div>
+    );
+  };
+
+  const renderMonthView = () => {
     const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate);
     const days = [];
     const monthName = currentDate.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
 
-    // Add empty cells for days before the month starts
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(<div key={`empty-${i}`} className="p-2 min-h-[100px] bg-muted/20"></div>);
     }
 
-    // Add cells for each day of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const dayTxns = getTransactionsForDate(dateStr);
@@ -134,11 +288,11 @@ const FullCalendar = () => {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
+          <Button variant="outline" size="sm" onClick={() => navigatePeriod('prev')}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <h2 className="text-2xl font-bold">{monthName}</h2>
-          <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
+          <Button variant="outline" size="sm" onClick={() => navigatePeriod('next')}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -150,6 +304,77 @@ const FullCalendar = () => {
           ))}
           {days}
         </div>
+      </div>
+    );
+  };
+
+  const renderYearView = () => {
+    const year = currentDate.getFullYear();
+    const yearTxns = transactions.filter(t => t.date.startsWith(String(year)));
+    const income = yearTxns.filter(t => t.type === "income").reduce((sum, t) => sum + Number(t.amount), 0);
+    const expense = yearTxns.filter(t => t.type === "expense").reduce((sum, t) => sum + Number(t.amount), 0);
+
+    const monthlyData = Array.from({ length: 12 }, (_, i) => {
+      const monthStr = String(i + 1).padStart(2, '0');
+      const monthTxns = yearTxns.filter(t => t.date.startsWith(`${year}-${monthStr}`));
+      const monthIncome = monthTxns.filter(t => t.type === "income").reduce((sum, t) => sum + Number(t.amount), 0);
+      const monthExpense = monthTxns.filter(t => t.type === "expense").reduce((sum, t) => sum + Number(t.amount), 0);
+      return {
+        month: new Date(year, i).toLocaleDateString('en-IN', { month: 'short' }),
+        income: monthIncome,
+        expense: monthExpense,
+        net: monthIncome - monthExpense
+      };
+    });
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Button variant="outline" size="sm" onClick={() => navigatePeriod('prev')}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="text-2xl font-bold">{year}</h2>
+          <Button variant="outline" size="sm" onClick={() => navigatePeriod('next')}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+        <Card className="p-6">
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Annual Income</p>
+              <p className="text-2xl font-bold text-income">₹{income.toFixed(2)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Annual Expenses</p>
+              <p className="text-2xl font-bold text-expense">₹{expense.toFixed(2)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Annual Net</p>
+              <p className={`text-2xl font-bold ${income - expense >= 0 ? 'text-income' : 'text-expense'}`}>₹{(income - expense).toFixed(2)}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {monthlyData.map((data, idx) => (
+              <div key={idx} className="p-4 rounded bg-muted/50 border border-border">
+                <h3 className="font-semibold mb-2">{data.month}</h3>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Income:</span>
+                    <span className="text-income font-medium">₹{data.income.toFixed(0)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Expense:</span>
+                    <span className="text-expense font-medium">₹{data.expense.toFixed(0)}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-border pt-1">
+                    <span className="text-muted-foreground">Net:</span>
+                    <span className={`font-bold ${data.net >= 0 ? 'text-income' : 'text-expense'}`}>₹{data.net.toFixed(0)}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
       </div>
     );
   };
@@ -227,8 +452,8 @@ const FullCalendar = () => {
         </Tabs>
       </div>
 
-      {renderCalendar()}
-      {renderTransactionSummary()}
+      {renderView()}
+      {selectedView === 'month' && renderTransactionSummary()}
     </div>
   );
 };

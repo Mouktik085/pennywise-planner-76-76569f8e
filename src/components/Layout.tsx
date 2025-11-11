@@ -38,17 +38,17 @@ const Layout = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Header with Logo and Name */}
-      <div className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-b border-border z-50 px-4 py-2">
-        <div className="max-w-7xl mx-auto flex items-center gap-3">
-          <img src={appLogo} alt="App Logo" className="w-8 h-8 md:w-10 md:h-10" />
+      <div className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-b border-border z-50 px-4 py-1.5">
+        <div className="max-w-7xl mx-auto flex items-center gap-2">
+          <img src={appLogo} alt="App Logo" className="w-7 h-7 md:w-8 md:h-8" />
           <div>
-            <h1 className="text-lg md:text-xl font-bold text-primary">Budget Manager</h1>
-            <p className="text-xs md:text-sm font-['Pacifico'] text-primary/80">~ Mouktik</p>
+            <h1 className="text-base md:text-lg font-bold text-primary">Budget Manager</h1>
+            <p className="text-[10px] md:text-xs font-['Pacifico'] text-primary/80">~ Mouktik</p>
           </div>
         </div>
       </div>
       
-      <nav className="fixed bottom-0 left-0 right-0 md:top-14 md:bottom-auto bg-card border-t md:border-b md:border-t-0 border-border z-40 safe-area-inset-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 md:top-12 md:bottom-auto bg-card border-t md:border-b md:border-t-0 border-border z-40 safe-area-inset-bottom">
         <div className="max-w-7xl mx-auto px-2 md:px-4">
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:justify-start md:gap-6 py-2">
@@ -99,7 +99,7 @@ const Layout = () => {
           </div>
         </div>
       </nav>
-      <main className="pb-20 pt-16 md:pb-0 md:pt-24">
+      <main className="pb-20 pt-14 md:pb-0 md:pt-20">
         <Outlet />
       </main>
     </div>

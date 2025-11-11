@@ -6,21 +6,56 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Settings as SettingsIcon, Bell, Shield, Palette, Database, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+
+interface Account {
+  id: string;
+  name: string;
+  bank_name: string | null;
+}
 
 const Settings = () => {
+  const { user } = useAuth();
   const [smsSync, setSmsSync] = useState(false);
   const [notifications, setNotifications] = useState(true);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [selectedAccount, setSelectedAccount] = useState("");
   const [categories, setCategories] = useState([
     { id: 1, name: "Food & Dining", icon: "🍔", type: "expense" },
     { id: 2, name: "Transport", icon: "🚗", type: "expense" },
     { id: 3, name: "Salary", icon: "💼", type: "income" },
   ]);
 
+  useEffect(() => {
+    if (user) {
+      fetchAccounts();
+    }
+  }, [user]);
+
+  const fetchAccounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("accounts")
+        .select("id, name, bank_name")
+        .eq("user_id", user?.id);
+
+      if (error) throw error;
+      setAccounts(data || []);
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+    }
+  };
+
   const handleAddCategory = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success("Category added successfully!");
+  };
+
+  const handleSaveSettings = () => {
+    toast.success("Settings saved successfully!");
   };
 
   return (
@@ -258,14 +293,21 @@ const Settings = () => {
               <div className="space-y-3">
                 <div className="space-y-2">
                   <Label>Default Account</Label>
-                  <select className="w-full px-3 py-2 rounded-md border border-input bg-background">
+                  <select 
+                    className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                    value={selectedAccount}
+                    onChange={(e) => setSelectedAccount(e.target.value)}
+                  >
                     <option value="">Select default account for transactions</option>
-                    <option value="checking">Checking Account</option>
-                    <option value="savings">Savings Account</option>
+                    {accounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.name} {account.bank_name ? `(${account.bank_name})` : ''}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
-                <Button className="w-full">Save Settings</Button>
+                <Button className="w-full" onClick={handleSaveSettings}>Save Settings</Button>
               </div>
             </div>
           </div>

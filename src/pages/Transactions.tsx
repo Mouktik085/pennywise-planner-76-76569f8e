@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Search, Calendar as CalendarIcon, TrendingUp, TrendingDown, Trash2, ArrowLeftRight, Edit } from "lucide-react";
+import { Plus, Search, Calendar as CalendarIcon, TrendingUp, TrendingDown, Trash2, ArrowLeftRight, Edit, Edit2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
+import { EditTransferDialog } from "@/components/EditTransferDialog";
 
 interface Transaction {
   id: string;
@@ -44,6 +45,8 @@ const Transactions = () => {
   const [loading, setLoading] = useState(true);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingTransfer, setEditingTransfer] = useState<Transfer | null>(null);
+  const [showEditTransferDialog, setShowEditTransferDialog] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -129,6 +132,28 @@ const Transactions = () => {
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
     setShowEditDialog(true);
+  };
+
+  const handleEditTransfer = (transfer: Transfer) => {
+    setEditingTransfer(transfer);
+    setShowEditTransferDialog(true);
+  };
+
+  const handleDeleteTransfer = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("transfers")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast.success("Transfer deleted successfully");
+      fetchTransfers();
+    } catch (error) {
+      console.error("Error deleting transfer:", error);
+      toast.error("Failed to delete transfer");
+    }
   };
 
   if (loading) {
@@ -227,13 +252,33 @@ const Transactions = () => {
                     </div>
                     <div>
                       <p className="font-semibold">{transfer.description || "Transfer"}</p>
-                      <p className="text-sm text-muted-foreground">{transfer.date}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {transfer.from_type === 'account' ? 'Account' : 'Savings'} → {transfer.to_type === 'account' ? 'Account' : 'Savings'} • {transfer.date}
+                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="flex items-center gap-4">
                     <p className="font-bold text-primary">
                       ₹{Number(transfer.amount).toLocaleString()}
                     </p>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditTransfer(transfer)}
+                        className="text-primary hover:text-primary"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteTransfer(transfer.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -321,6 +366,13 @@ const Transactions = () => {
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
         onSuccess={fetchTransactions}
+      />
+
+      <EditTransferDialog
+        transfer={editingTransfer}
+        open={showEditTransferDialog}
+        onOpenChange={setShowEditTransferDialog}
+        onSuccess={fetchTransfers}
       />
     </div>
   );

@@ -239,38 +239,46 @@ const Transfer = () => {
         }
       }
 
-      // Also create transaction records for history
-      const transactionDate = new Date().toISOString().split('T')[0];
+      // Only create transaction records for account <-> savings transfers (not account <-> account)
+      const isAccountToSavings = fromType === 'account' && toType === 'savings';
+      const isSavingsToAccount = fromType === 'savings' && toType === 'account';
       
-      // Create expense transaction for the source
-      const { error: expenseError } = await supabase
-        .from("transactions")
-        .insert([{
-          user_id: user?.id,
-          type: "expense",
-          category: "Transfer",
-          amount: transferAmount,
-          date: transactionDate,
-          description: `Transfer to ${toType === "account" ? accounts.find(a => a.id === toAccountId)?.name : savingsGoals.find(g => g.id === toAccountId)?.name}`,
-          account_id: fromType === "account" ? fromAccountId : null,
-        }]);
+      if (isAccountToSavings || isSavingsToAccount) {
+        const transactionDate = new Date().toISOString().split('T')[0];
+        const transactions = [];
+        
+        if (isAccountToSavings) {
+          // Expense for the account when transferring to savings
+          transactions.push({
+            user_id: user?.id,
+            type: "expense",
+            category: "Savings Transfer",
+            amount: transferAmount,
+            date: transactionDate,
+            description: `Transfer to savings goal: ${savingsGoals.find(g => g.id === toAccountId)?.name}`,
+            account_id: fromAccountId,
+          });
+        } else if (isSavingsToAccount) {
+          // Income for the account when receiving from savings
+          transactions.push({
+            user_id: user?.id,
+            type: "income",
+            category: "Savings Withdrawal",
+            amount: transferAmount,
+            date: transactionDate,
+            description: `Withdrawal from savings: ${savingsGoals.find(g => g.id === fromAccountId)?.name}`,
+            account_id: toAccountId,
+          });
+        }
 
-      if (expenseError) console.error("Error creating expense transaction:", expenseError);
+        if (transactions.length > 0) {
+          const { error: txnError } = await supabase
+            .from("transactions")
+            .insert(transactions);
 
-      // Create income transaction for the destination
-      const { error: incomeError } = await supabase
-        .from("transactions")
-        .insert([{
-          user_id: user?.id,
-          type: "income",
-          category: "Transfer",
-          amount: transferAmount,
-          date: transactionDate,
-          description: `Transfer from ${fromType === "account" ? accounts.find(a => a.id === fromAccountId)?.name : savingsGoals.find(g => g.id === fromAccountId)?.name}`,
-          account_id: toType === "account" ? toAccountId : null,
-        }]);
-
-      if (incomeError) console.error("Error creating income transaction:", incomeError);
+          if (txnError) console.error("Error creating transaction:", txnError);
+        }
+      }
 
       toast({
         title: "Success",
