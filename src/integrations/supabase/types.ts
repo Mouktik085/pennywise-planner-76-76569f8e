@@ -149,6 +149,7 @@ export type Database = {
           current_amount: number | null
           deadline: string | null
           description: string | null
+          icon: string | null
           id: string
           name: string
           target_amount: number
@@ -159,6 +160,7 @@ export type Database = {
           current_amount?: number | null
           deadline?: string | null
           description?: string | null
+          icon?: string | null
           id?: string
           name: string
           target_amount: number
@@ -169,6 +171,7 @@ export type Database = {
           current_amount?: number | null
           deadline?: string | null
           description?: string | null
+          icon?: string | null
           id?: string
           name?: string
           target_amount?: number

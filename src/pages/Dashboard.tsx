@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Wallet, TrendingUp, TrendingDown, PiggyBank, Calendar, Bot } from "lucide-react";
+import { Plus, Wallet, TrendingUp, TrendingDown, PiggyBank, Bot } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AIChat } from "@/components/AIChat";
-import { CalendarWidget } from "@/components/CalendarWidget";
 
 interface Transaction {
   id: string;
@@ -25,7 +24,6 @@ const Dashboard = () => {
   const [totalSavings, setTotalSavings] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showAIChat, setShowAIChat] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -96,14 +94,6 @@ const Dashboard = () => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={() => setShowCalendar(!showCalendar)}
-              title="Calendar"
-            >
-              <Calendar className="h-4 w-4" />
-            </Button>
             <Button
               size="icon"
               variant="outline"

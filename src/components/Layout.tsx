@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
-import { Home, Receipt, PiggyBank, BarChart3, Settings, Wallet } from "lucide-react";
+import { Home, Receipt, PiggyBank, BarChart3, Settings, Wallet, DollarSign, Calendar, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -24,7 +24,10 @@ const Layout = () => {
     { path: "/accounts", icon: Wallet, label: "Accounts" },
     { path: "/transactions", icon: Receipt, label: "Transactions" },
     { path: "/savings", icon: PiggyBank, label: "Savings" },
+    { path: "/budget", icon: DollarSign, label: "Budget" },
     { path: "/statistics", icon: BarChart3, label: "Statistics" },
+    { path: "/calendar", icon: Calendar, label: "Calendar" },
+    { path: "/notifications", icon: Bell, label: "Notifications" },
     { path: "/settings", icon: Settings, label: "Settings" },
   ];
 
