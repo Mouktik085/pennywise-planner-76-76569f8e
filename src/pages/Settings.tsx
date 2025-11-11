@@ -19,6 +19,7 @@ interface Account {
 
 const Settings = () => {
   const { user } = useAuth();
+  const [username, setUsername] = useState("");
   const [smsSync, setSmsSync] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedAccount, setSelectedAccount] = useState("");
@@ -70,6 +71,7 @@ const Settings = () => {
 
       if (error) throw error;
       if (data) {
+        setUsername(data.username || "");
         setSmsSync(data.sms_auto_import || false);
         setSelectedAccount(data.default_account_id || "");
         setPrimaryColor(data.theme_primary_color || "#8B5CF6");
@@ -94,6 +96,7 @@ const Settings = () => {
       const { error } = await supabase
         .from("profiles")
         .update({
+          username: username.trim() || null,
           sms_auto_import: smsSync,
           default_account_id: selectedAccount || null,
           theme_primary_color: primaryColor,
@@ -106,7 +109,9 @@ const Settings = () => {
         .eq("user_id", user?.id);
 
       if (error) throw error;
-      toast.success("Settings saved successfully!");
+      toast.success("Settings saved successfully! Refresh the page to see changes.");
+      // Refresh settings to show saved values
+      await fetchSettings();
     } catch (error) {
       console.error("Error saving settings:", error);
       toast.error("Failed to save settings");
@@ -120,6 +125,38 @@ const Settings = () => {
           <h1 className="text-4xl font-bold text-foreground">Settings</h1>
           <p className="text-muted-foreground mt-1">Manage your app preferences</p>
         </div>
+
+        {/* Profile Settings */}
+        <Card className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <SettingsIcon className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1 space-y-4">
+              <div>
+                <h3 className="font-bold text-xl">Profile</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Update your personal information
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="username">Display Name</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Enter your name"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+                </div>
+                
+                <Button className="w-full" onClick={handleSaveSettings}>Save Profile</Button>
+              </div>
+            </div>
+          </div>
+        </Card>
 
         {/* SMS Auto-Import */}
         <Card className="p-6">
