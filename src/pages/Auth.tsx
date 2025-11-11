@@ -38,14 +38,28 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    console.log("Attempting signup with:", email);
+
+    if (password.length < 6) {
+      toast({
+        title: "Invalid password",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
         },
       });
+
+      console.log("Signup response:", { data, error });
 
       if (error) {
         if (error.message.includes("already registered")) {
@@ -55,18 +69,24 @@ const Auth = () => {
             variant: "destructive",
           });
         } else {
-          throw error;
+          toast({
+            title: "Signup failed",
+            description: error.message,
+            variant: "destructive",
+          });
         }
-      } else {
+      } else if (data.user) {
         toast({
-          title: "Account created!",
-          description: "You can now sign in with your credentials.",
+          title: "Success!",
+          description: "Account created successfully. Redirecting...",
         });
+        // Will auto-redirect via onAuthStateChange
       }
     } catch (error: any) {
+      console.error("Signup error:", error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to create account. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -165,10 +185,11 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    autoComplete="email"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password">Password (min 6 characters)</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -176,6 +197,7 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
+                    autoComplete="new-password"
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
