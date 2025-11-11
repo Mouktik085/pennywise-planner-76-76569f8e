@@ -180,7 +180,7 @@ const Transfer = () => {
         if (error) throw error;
       }
 
-      // Record transfer
+      // Record transfer in transfers table
       const { error: transferError } = await supabase
         .from("transfers")
         .insert([{
@@ -193,6 +193,39 @@ const Transfer = () => {
         }]);
 
       if (transferError) throw transferError;
+
+      // Also create transaction records for history
+      const transactionDate = new Date().toISOString().split('T')[0];
+      
+      // Create expense transaction for the source
+      const { error: expenseError } = await supabase
+        .from("transactions")
+        .insert([{
+          user_id: user?.id,
+          type: "expense",
+          category: "Transfer",
+          amount: transferAmount,
+          date: transactionDate,
+          description: `Transfer to ${toType === "account" ? accounts.find(a => a.id === toAccountId)?.name : savingsGoals.find(g => g.id === toAccountId)?.name}`,
+          account_id: fromType === "account" ? fromAccountId : null,
+        }]);
+
+      if (expenseError) console.error("Error creating expense transaction:", expenseError);
+
+      // Create income transaction for the destination
+      const { error: incomeError } = await supabase
+        .from("transactions")
+        .insert([{
+          user_id: user?.id,
+          type: "income",
+          category: "Transfer",
+          amount: transferAmount,
+          date: transactionDate,
+          description: `Transfer from ${fromType === "account" ? accounts.find(a => a.id === fromAccountId)?.name : savingsGoals.find(g => g.id === fromAccountId)?.name}`,
+          account_id: toType === "account" ? toAccountId : null,
+        }]);
+
+      if (incomeError) console.error("Error creating income transaction:", incomeError);
 
       toast({
         title: "Success",

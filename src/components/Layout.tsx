@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
 import { Home, Receipt, PiggyBank, BarChart3, Settings, Wallet, DollarSign, Calendar, Bell, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import appLogo from "@/assets/app-logo.png";
 
 const Layout = () => {
   const location = useLocation();
@@ -34,7 +35,18 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="fixed bottom-0 left-0 right-0 md:top-0 md:bottom-auto bg-card border-t md:border-b md:border-t-0 border-border z-50 safe-area-inset-bottom">
+      {/* Top Header with Logo and Name */}
+      <div className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-b border-border z-50 px-4 py-3">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
+          <img src={appLogo} alt="App Logo" className="w-10 h-10 md:w-12 md:h-12" />
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-primary">Budget Manager</h1>
+            <p className="text-sm md:text-base font-['Pacifico'] text-primary/80">~ Mouktik</p>
+          </div>
+        </div>
+      </div>
+      
+      <nav className="fixed bottom-0 left-0 right-0 md:top-16 md:bottom-auto bg-card border-t md:border-b md:border-t-0 border-border z-40 safe-area-inset-bottom">
         <div className="max-w-7xl mx-auto px-2 md:px-4">
           <div className="flex justify-around md:justify-start md:gap-8 py-2 md:py-3">
             {navItems.map((item) => {
@@ -59,7 +71,7 @@ const Layout = () => {
           </div>
         </div>
       </nav>
-      <main className="pb-20 md:pb-0 md:pt-20">
+      <main className="pb-20 pt-20 md:pb-0 md:pt-32">
         <Outlet />
       </main>
     </div>

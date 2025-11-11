@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Wallet, TrendingUp, TrendingDown, PiggyBank, Bot, Settings, Calendar as CalendarIconComponent, Repeat } from "lucide-react";
-import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate, Link } from "react-router-dom";
+import { Plus, TrendingUp, TrendingDown, Wallet, PiggyBank, Settings as SettingsIcon, Calendar as CalendarIcon, MessageSquare, Repeat, LogOut, Sparkles } from "lucide-react";
 import { AIChat } from "@/components/AIChat";
-import { CalendarWidget } from "@/components/CalendarWidget";
 
 interface Transaction {
   id: string;
@@ -19,20 +19,48 @@ interface Transaction {
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalSavings, setTotalSavings] = useState(0);
   const [totalAccountBalance, setTotalAccountBalance] = useState(0);
+  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
+  const [recurringTransactions, setRecurringTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAIChat, setShowAIChat] = useState(false);
-  const [recurringTransactions, setRecurringTransactions] = useState<Transaction[]>([]);
+  const [dailyInsight, setDailyInsight] = useState<string>("");
 
   useEffect(() => {
     if (user) {
       fetchDashboardData();
+      fetchDailyInsight();
     }
   }, [user]);
+
+  const fetchDailyInsight = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('daily-insights');
+      if (error) throw error;
+      setDailyInsight(data.insight);
+    } catch (error) {
+      console.error('Error fetching insight:', error);
+      setDailyInsight("💡 Keep tracking your expenses to build better financial habits!");
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/auth');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -45,7 +73,7 @@ const Dashboard = () => {
 
       if (transError) throw transError;
 
-      setTransactions(transactionsData || []);
+      setRecentTransactions(transactionsData || []);
 
       // Fetch recurring transactions
       const { data: recurringData, error: recurringError } = await supabase
@@ -115,48 +143,60 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Link to="/settings">
-              <Button
-                size="icon"
-                variant="outline"
-                title="Settings"
-                className="hover:bg-primary/10"
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link to="/calendar">
-              <Button
-                size="icon"
-                variant="outline"
-                title="Calendar"
-                className="hover:bg-primary/10"
-              >
-                <CalendarIconComponent className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={() => setShowAIChat(!showAIChat)}
-              title="AI Assistant"
-              className="hover:bg-primary/10"
-            >
-              <Bot className="h-4 w-4" />
+          <h1 className="text-4xl font-bold text-foreground">Budget Manager</h1>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-8">
+          <Link to="/settings">
+            <Button variant="outline" className="gap-2 bg-card hover:bg-card/80 shadow-md">
+              <SettingsIcon className="h-4 w-4" />
+              Settings
             </Button>
-            <div>
-              <h1 className="text-4xl font-bold text-foreground">Budget Manager</h1>
-              <p className="text-muted-foreground mt-1">Track your finances with ease</p>
-            </div>
-          </div>
+          </Link>
+          <Link to="/calendar">
+            <Button variant="outline" className="gap-2 bg-card hover:bg-card/80 shadow-md">
+              <CalendarIcon className="h-4 w-4" />
+              Calendar
+            </Button>
+          </Link>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowAIChat(true)}
+            className="gap-2 bg-card hover:bg-card/80 shadow-md"
+          >
+            <MessageSquare className="h-4 w-4" />
+            AI Chat
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleSignOut}
+            className="gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive shadow-md"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
           <Link to="/add-transaction">
-            <Button className="gap-2 shadow-lg shadow-primary/20">
+            <Button className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30">
               <Plus className="h-4 w-4" />
               Add Transaction
             </Button>
           </Link>
         </div>
+
+        {/* Daily AI Insight */}
+        {dailyInsight && (
+          <Card className="mb-6 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <Sparkles className="h-5 w-5 text-primary mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-sm text-primary mb-1">Today's Financial Tip</h3>
+                  <p className="text-sm text-foreground">{dailyInsight}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Widgets */}
         {showAIChat && <AIChat onClose={() => setShowAIChat(false)} />}
@@ -297,13 +337,13 @@ const Dashboard = () => {
               <Button variant="ghost">View All</Button>
             </Link>
           </div>
-          {transactions.length === 0 ? (
+          {recentTransactions.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
               No transactions yet. Add your first transaction to get started!
             </p>
           ) : (
             <div className="space-y-3">
-              {transactions.map((transaction) => (
+              {recentTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
                   className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"

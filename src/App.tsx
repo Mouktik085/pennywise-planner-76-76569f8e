@@ -10,7 +10,7 @@ import AddTransaction from "./pages/AddTransaction";
 import Savings from "./pages/Savings";
 import Statistics from "./pages/Statistics";
 import Budget from "./pages/Budget";
-import Calendar from "./pages/Calendar";
+import FullCalendar from "./pages/FullCalendar";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import Install from "./pages/Install";
@@ -37,7 +37,7 @@ const App = () => (
             <Route path="/savings" element={<Savings />} />
             <Route path="/statistics" element={<Statistics />} />
             <Route path="/budget" element={<Budget />} />
-            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/calendar" element={<FullCalendar />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/accounts" element={<Accounts />} />

@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Search, Calendar as CalendarIcon, TrendingUp, TrendingDown, Trash2, ArrowLeftRight } from "lucide-react";
+import { Plus, Search, Calendar as CalendarIcon, TrendingUp, TrendingDown, Trash2, ArrowLeftRight, Edit } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 
 interface Transaction {
   id: string;
@@ -39,6 +40,8 @@ const Transactions = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -119,6 +122,11 @@ const Transactions = () => {
       console.error("Error deleting transaction:", error);
       toast.error("Failed to delete transaction");
     }
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setShowEditDialog(true);
   };
 
   if (loading) {
@@ -280,14 +288,24 @@ const Transactions = () => {
                     >
                       {transaction.type === "income" ? "+" : "-"}₹{Number(transaction.amount).toLocaleString()}
                     </p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(transaction.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(transaction)}
+                        className="text-primary hover:text-primary"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(transaction.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -295,6 +313,13 @@ const Transactions = () => {
           )}
         </Card>
       </div>
+
+      <EditTransactionDialog
+        transaction={editingTransaction}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSuccess={fetchTransactions}
+      />
     </div>
   );
 };
