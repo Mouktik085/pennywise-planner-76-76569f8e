@@ -25,8 +25,10 @@ interface Transaction {
 
 interface Transfer {
   id: string;
-  from_account_id: string;
-  to_account_id: string;
+  from_id: string;
+  to_id: string;
+  from_type: string;
+  to_type: string;
   amount: number;
   date: string;
   description: string | null;

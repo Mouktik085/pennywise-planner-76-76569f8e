@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, Link } from "react-router-dom";
-import { Plus, TrendingUp, TrendingDown, Wallet, PiggyBank, Settings as SettingsIcon, Calendar as CalendarIcon, MessageSquare, Repeat, LogOut, Sparkles } from "lucide-react";
+import { Plus, TrendingUp, TrendingDown, Wallet, PiggyBank, Settings as SettingsIcon, Calendar as CalendarIcon, MessageSquare, Repeat, LogOut, Sparkles, Bell } from "lucide-react";
 import { AIChat } from "@/components/AIChat";
 
 interface Transaction {
@@ -139,46 +139,54 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-blue-50/30 to-cyan-50/20 dark:from-background dark:via-blue-950/10 dark:to-cyan-950/5 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-bold text-foreground">Budget Manager</h1>
+    <div className="min-h-screen bg-gradient-to-br from-background via-blue-50/30 to-cyan-50/20 dark:from-background dark:via-blue-950/10 dark:to-cyan-950/5 p-3 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+        {/* Header with Notifications */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <h1 className="text-2xl md:text-4xl font-bold text-foreground">Budget Manager</h1>
+          <Link to="/notifications">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">Notifications</span>
+            </Button>
+          </Link>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-2">
           <Link to="/settings">
-            <Button variant="outline" className="gap-2 bg-card hover:bg-card/80 shadow-md">
+            <Button variant="outline" size="sm" className="gap-2 bg-card hover:bg-card/80 shadow-md">
               <SettingsIcon className="h-4 w-4" />
-              Settings
+              <span className="hidden sm:inline">Settings</span>
             </Button>
           </Link>
           <Link to="/calendar">
-            <Button variant="outline" className="gap-2 bg-card hover:bg-card/80 shadow-md">
+            <Button variant="outline" size="sm" className="gap-2 bg-card hover:bg-card/80 shadow-md">
               <CalendarIcon className="h-4 w-4" />
-              Calendar
+              <span className="hidden sm:inline">Calendar</span>
             </Button>
           </Link>
           <Button 
             variant="outline" 
+            size="sm"
             onClick={() => setShowAIChat(true)}
             className="gap-2 bg-card hover:bg-card/80 shadow-md"
           >
             <MessageSquare className="h-4 w-4" />
-            AI Chat
+            <span className="hidden sm:inline">AI Chat</span>
           </Button>
           <Button 
-            variant="outline" 
+            variant="outline"
+            size="sm"
             onClick={handleSignOut}
             className="gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive shadow-md"
           >
             <LogOut className="h-4 w-4" />
-            Sign Out
+            <span className="hidden sm:inline">Sign Out</span>
           </Button>
           <Link to="/add-transaction">
-            <Button className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30">
+            <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30">
               <Plus className="h-4 w-4" />
-              Add Transaction
+              Add
             </Button>
           </Link>
         </div>
@@ -202,52 +210,52 @@ const Dashboard = () => {
         {showAIChat && <AIChat onClose={() => setShowAIChat(false)} />}
 
         {/* Balance Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-6 bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground border-0 shadow-xl shadow-primary/30">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                <Wallet className="h-6 w-6" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground border-0 shadow-xl shadow-primary/30">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <Wallet className="h-4 w-4 md:h-5 md:w-5" />
+                </div>
+                <p className="text-xs md:text-sm opacity-90">Balance</p>
               </div>
-              <div>
-                <p className="text-sm opacity-90">Total Balance</p>
-                <h3 className="text-2xl font-bold">₹{totalAccountBalance.toLocaleString()}</h3>
-              </div>
+              <h3 className="text-lg md:text-2xl font-bold">₹{totalAccountBalance.toLocaleString()}</h3>
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-income via-income/90 to-income/70 text-income-foreground border-0 shadow-xl shadow-income/20">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                <TrendingUp className="h-6 w-6" />
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-income via-income/90 to-income/70 text-income-foreground border-0 shadow-xl shadow-income/20">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <TrendingUp className="h-4 w-4 md:h-5 md:w-5" />
+                </div>
+                <p className="text-xs md:text-sm opacity-90">Income</p>
               </div>
-              <div>
-                <p className="text-sm opacity-90">Income</p>
-                <h3 className="text-2xl font-bold">₹{totalIncome.toLocaleString()}</h3>
-              </div>
+              <h3 className="text-lg md:text-2xl font-bold">₹{totalIncome.toLocaleString()}</h3>
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-expense via-expense/90 to-expense/70 text-expense-foreground border-0 shadow-xl shadow-expense/20">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                <TrendingDown className="h-6 w-6" />
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-expense via-expense/90 to-expense/70 text-expense-foreground border-0 shadow-xl shadow-expense/20">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <TrendingDown className="h-4 w-4 md:h-5 md:w-5" />
+                </div>
+                <p className="text-xs md:text-sm opacity-90">Expenses</p>
               </div>
-              <div>
-                <p className="text-sm opacity-90">Expenses</p>
-                <h3 className="text-2xl font-bold">₹{totalExpenses.toLocaleString()}</h3>
-              </div>
+              <h3 className="text-lg md:text-2xl font-bold">₹{totalExpenses.toLocaleString()}</h3>
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-savings via-savings/90 to-savings/70 text-savings-foreground border-0 shadow-xl shadow-savings/20">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                <PiggyBank className="h-6 w-6" />
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-savings via-savings/90 to-savings/70 text-savings-foreground border-0 shadow-xl shadow-savings/20">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <PiggyBank className="h-4 w-4 md:h-5 md:w-5" />
+                </div>
+                <p className="text-xs md:text-sm opacity-90">Savings</p>
               </div>
-              <div>
-                <p className="text-sm opacity-90">Savings</p>
-                <h3 className="text-2xl font-bold">₹{totalSavings.toLocaleString()}</h3>
-              </div>
+              <h3 className="text-lg md:text-2xl font-bold">₹{totalSavings.toLocaleString()}</h3>
             </div>
           </Card>
         </div>

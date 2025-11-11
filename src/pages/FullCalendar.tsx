@@ -22,7 +22,7 @@ const FullCalendar = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedView, setSelectedView] = useState<"month" | "week" | "day">("month");
+  const [selectedView, setSelectedView] = useState<"month" | "week" | "day" | "year">("month");
 
   useEffect(() => {
     if (user) {
@@ -212,9 +212,19 @@ const FullCalendar = () => {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Financial Calendar</h1>
-        <p className="text-muted-foreground">View your transactions in calendar format</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Financial Calendar</h1>
+          <p className="text-muted-foreground">View your transactions in calendar format</p>
+        </div>
+        <Tabs value={selectedView} onValueChange={(v) => setSelectedView(v as any)} className="w-full md:w-auto">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="day">Daily</TabsTrigger>
+            <TabsTrigger value="week">Weekly</TabsTrigger>
+            <TabsTrigger value="month">Monthly</TabsTrigger>
+            <TabsTrigger value="year">Yearly</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       {renderCalendar()}

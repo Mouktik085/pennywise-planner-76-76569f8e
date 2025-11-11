@@ -180,19 +180,64 @@ const Transfer = () => {
         if (error) throw error;
       }
 
-      // Record transfer in transfers table
+      // Record transfer in transfers table with proper type tracking
       const { error: transferError } = await supabase
         .from("transfers")
         .insert([{
           user_id: user?.id,
-          from_account_id: fromAccountId,
-          to_account_id: toAccountId,
+          from_id: fromAccountId,
+          to_id: toAccountId,
+          from_type: fromType,
+          to_type: toType,
           amount: transferAmount,
           description: description || `Transfer from ${fromType} to ${toType}`,
           date: new Date().toISOString().split('T')[0],
         }]);
 
       if (transferError) throw transferError;
+
+      // Update budget only when transferring account -> savings or savings -> account
+      // Reduce budget when: account -> savings goal
+      if (fromType === "account" && toType === "savings") {
+        const currentMonth = new Date().getMonth() + 1;
+        const currentYear = new Date().getFullYear();
+        
+        const { data: budgetData } = await supabase
+          .from("budget")
+          .select("current_spent, id")
+          .eq("month", currentMonth)
+          .eq("year", currentYear)
+          .maybeSingle();
+
+        if (budgetData) {
+          await supabase
+            .from("budget")
+            .update({ current_spent: Number(budgetData.current_spent) + transferAmount })
+            .eq("id", budgetData.id);
+        }
+      }
+      
+      // Increase budget when: savings goal -> account (reduces spent)
+      if (fromType === "savings" && toType === "account") {
+        const currentMonth = new Date().getMonth() + 1;
+        const currentYear = new Date().getFullYear();
+        
+        const { data: budgetData } = await supabase
+          .from("budget")
+          .select("current_spent, id")
+          .eq("month", currentMonth)
+          .eq("year", currentYear)
+          .maybeSingle();
+
+        if (budgetData && budgetData.current_spent > 0) {
+          await supabase
+            .from("budget")
+            .update({ 
+              current_spent: Math.max(0, Number(budgetData.current_spent) - transferAmount) 
+            })
+            .eq("id", budgetData.id);
+        }
+      }
 
       // Also create transaction records for history
       const transactionDate = new Date().toISOString().split('T')[0];

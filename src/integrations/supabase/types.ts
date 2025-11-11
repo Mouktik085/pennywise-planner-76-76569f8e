@@ -235,9 +235,11 @@ export type Database = {
           created_at: string
           date: string
           description: string | null
-          from_account_id: string
+          from_id: string
+          from_type: string
           id: string
-          to_account_id: string
+          to_id: string
+          to_type: string
           user_id: string
         }
         Insert: {
@@ -245,9 +247,11 @@ export type Database = {
           created_at?: string
           date?: string
           description?: string | null
-          from_account_id: string
+          from_id: string
+          from_type?: string
           id?: string
-          to_account_id: string
+          to_id: string
+          to_type?: string
           user_id: string
         }
         Update: {
@@ -255,27 +259,14 @@ export type Database = {
           created_at?: string
           date?: string
           description?: string | null
-          from_account_id?: string
+          from_id?: string
+          from_type?: string
           id?: string
-          to_account_id?: string
+          to_id?: string
+          to_type?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "transfers_from_account_id_fkey"
-            columns: ["from_account_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "transfers_to_account_id_fkey"
-            columns: ["to_account_id"]
-            isOneToOne: false
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
