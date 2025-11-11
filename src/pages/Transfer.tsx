@@ -199,11 +199,21 @@ const Transfer = () => {
         description: "Transfer completed successfully",
       });
 
-      navigate("/transactions");
+      // Reset form
+      setFromAccountId("");
+      setToAccountId("");
+      setAmount("");
+      setDescription("");
+
+      // Navigate after a short delay to ensure state updates
+      setTimeout(() => {
+        navigate("/transactions");
+      }, 500);
     } catch (error: any) {
+      console.error("Transfer error:", error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to complete transfer",
         variant: "destructive",
       });
     } finally {

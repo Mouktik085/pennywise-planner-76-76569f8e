@@ -81,7 +81,10 @@ const Savings = () => {
       if (editingGoal) {
         const { error } = await supabase
           .from("savings_goals")
-          .update(formData)
+          .update({
+            ...formData,
+            deadline: formData.deadline || null,
+          })
           .eq("id", editingGoal.id);
 
         if (error) throw error;
@@ -89,7 +92,11 @@ const Savings = () => {
       } else {
         const { error } = await supabase
           .from("savings_goals")
-          .insert([{ ...formData, user_id: user?.id }]);
+          .insert([{
+            ...formData,
+            deadline: formData.deadline || null,
+            user_id: user?.id
+          }]);
 
         if (error) throw error;
         toast({ title: "Goal created successfully" });

@@ -197,7 +197,51 @@ const Settings = () => {
           </div>
         </Card>
 
-        {/* Budget Settings */}
+        {/* Theme Customization */}
+        <Card className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <Palette className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1 space-y-4">
+              <div>
+                <h3 className="font-bold text-xl">Theme & Appearance</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Customize the look and feel of your app
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label>Primary Color</Label>
+                  <Input type="color" defaultValue="#0EA5E9" className="h-12 w-24" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Background Style</Label>
+                  <select className="w-full px-3 py-2 rounded-md border border-input bg-background">
+                    <option value="ocean">Ocean (Default)</option>
+                    <option value="minimal">Minimal White</option>
+                    <option value="dark">Dark Mode</option>
+                    <option value="sunset">Sunset</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label>Auto Dark Mode</Label>
+                    <p className="text-sm text-muted-foreground">Switch theme based on time</p>
+                  </div>
+                  <Switch />
+                </div>
+
+                <Button className="w-full">Apply Theme</Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Default Account */}
         <Card className="p-6">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-primary/10 rounded-lg">
@@ -205,24 +249,23 @@ const Settings = () => {
             </div>
             <div className="flex-1 space-y-4">
               <div>
-                <h3 className="font-bold text-xl">Budget Settings</h3>
+                <h3 className="font-bold text-xl">Transaction Settings</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Configure your monthly budget limits
+                  Set your preferred defaults
                 </p>
               </div>
 
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="monthly-budget">Monthly Budget Limit (₹)</Label>
-                  <Input id="monthly-budget" type="number" defaultValue={50000} />
+                  <Label>Default Account</Label>
+                  <select className="w-full px-3 py-2 rounded-md border border-input bg-background">
+                    <option value="">Select default account for transactions</option>
+                    <option value="checking">Checking Account</option>
+                    <option value="savings">Savings Account</option>
+                  </select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="savings-goal">Monthly Savings Target (₹)</Label>
-                  <Input id="savings-goal" type="number" defaultValue={15000} />
-                </div>
-
-                <Button className="w-full">Save Budget Settings</Button>
+                <Button className="w-full">Save Settings</Button>
               </div>
             </div>
           </div>

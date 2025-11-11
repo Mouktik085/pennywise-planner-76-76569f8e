@@ -23,9 +23,9 @@ const Dashboard = () => {
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalSavings, setTotalSavings] = useState(0);
+  const [totalAccountBalance, setTotalAccountBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showAIChat, setShowAIChat] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
   const [recurringTransactions, setRecurringTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
@@ -76,6 +76,15 @@ const Dashboard = () => {
       setTotalIncome(income);
       setTotalExpenses(expenses);
 
+      // Fetch account balances
+      const { data: accountsData, error: accountsError } = await supabase
+        .from("accounts")
+        .select("balance");
+
+      if (accountsError) throw accountsError;
+
+      const totalAccountBalance = accountsData?.reduce((sum, a) => sum + Number(a.balance), 0) || 0;
+
       // Fetch savings
       const { data: savingsData, error: savingsError } = await supabase
         .from("savings_goals")
@@ -85,14 +94,13 @@ const Dashboard = () => {
 
       const savings = savingsData?.reduce((sum, s) => sum + Number(s.current_amount), 0) || 0;
       setTotalSavings(savings);
+      setTotalAccountBalance(totalAccountBalance);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
     }
   };
-
-  const balance = totalIncome - totalExpenses;
 
   if (loading) {
     return (
@@ -118,15 +126,16 @@ const Dashboard = () => {
                 <Settings className="h-4 w-4" />
               </Button>
             </Link>
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={() => setShowCalendar(!showCalendar)}
-              title="Calendar"
-              className="hover:bg-primary/10"
-            >
-              <CalendarIconComponent className="h-4 w-4" />
-            </Button>
+            <Link to="/calendar">
+              <Button
+                size="icon"
+                variant="outline"
+                title="Calendar"
+                className="hover:bg-primary/10"
+              >
+                <CalendarIconComponent className="h-4 w-4" />
+              </Button>
+            </Link>
             <Button
               size="icon"
               variant="outline"
@@ -150,7 +159,6 @@ const Dashboard = () => {
         </div>
 
         {/* Widgets */}
-        {showCalendar && <CalendarWidget onClose={() => setShowCalendar(false)} />}
         {showAIChat && <AIChat onClose={() => setShowAIChat(false)} />}
 
         {/* Balance Cards */}
@@ -161,8 +169,8 @@ const Dashboard = () => {
                 <Wallet className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm opacity-90">Balance</p>
-                <h3 className="text-2xl font-bold">₹{balance.toLocaleString()}</h3>
+                <p className="text-sm opacity-90">Total Balance</p>
+                <h3 className="text-2xl font-bold">₹{totalAccountBalance.toLocaleString()}</h3>
               </div>
             </div>
           </Card>
