@@ -1,190 +1,378 @@
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, Target, TrendingUp, Calendar, Trash2, Edit, PiggyBank } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { PiggyBank, Plus, Target, TrendingUp } from "lucide-react";
-import { toast } from "sonner";
+
+interface SavingsGoal {
+  id: string;
+  name: string;
+  description?: string;
+  target_amount: number;
+  current_amount: number;
+  deadline?: string;
+}
 
 const Savings = () => {
-  const [open, setOpen] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [goals, setGoals] = useState<SavingsGoal[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null);
+  const [addMoneyDialog, setAddMoneyDialog] = useState<SavingsGoal | null>(null);
+  const [addAmount, setAddAmount] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    target_amount: 0,
+    current_amount: 0,
+    deadline: "",
+  });
 
-  const savingsGoals = [
-    {
-      id: 1,
-      name: "Emergency Fund",
-      description: "Save for unexpected expenses and emergencies",
-      target: 100000,
-      current: 45000,
-      icon: "🚨",
-    },
-    {
-      id: 2,
-      name: "Vacation to Bali",
-      description: "Dream vacation with family",
-      target: 150000,
-      current: 80000,
-      icon: "✈️",
-    },
-    {
-      id: 3,
-      name: "New Laptop",
-      description: "MacBook Pro for work",
-      target: 120000,
-      current: 95000,
-      icon: "💻",
-    },
-  ];
+  useEffect(() => {
+    if (user) {
+      fetchGoals();
+    }
+  }, [user]);
 
-  const handleAddGoal = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("Savings goal added successfully!");
-    setOpen(false);
+  const fetchGoals = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("savings_goals")
+        .select("*")
+        .eq("user_id", user?.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setGoals(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      if (editingGoal) {
+        const { error } = await supabase
+          .from("savings_goals")
+          .update(formData)
+          .eq("id", editingGoal.id);
+
+        if (error) throw error;
+        toast({ title: "Goal updated successfully" });
+      } else {
+        const { error } = await supabase
+          .from("savings_goals")
+          .insert([{ ...formData, user_id: user?.id }]);
+
+        if (error) throw error;
+        toast({ title: "Goal created successfully" });
+      }
+
+      setDialogOpen(false);
+      setEditingGoal(null);
+      setFormData({ name: "", description: "", target_amount: 0, current_amount: 0, deadline: "" });
+      fetchGoals();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddMoney = async () => {
+    if (!addMoneyDialog) return;
+    const amount = parseFloat(addAmount);
+    if (amount <= 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Amount must be greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("savings_goals")
+        .update({ current_amount: addMoneyDialog.current_amount + amount })
+        .eq("id", addMoneyDialog.id);
+
+      if (error) throw error;
+      toast({ title: "Money added successfully" });
+      setAddMoneyDialog(null);
+      setAddAmount("");
+      fetchGoals();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this goal?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("savings_goals")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      toast({ title: "Goal deleted successfully" });
+      fetchGoals();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const totalSaved = goals.reduce((sum, goal) => sum + goal.current_amount, 0);
+  const totalTarget = goals.reduce((sum, goal) => sum + goal.target_amount, 0);
+  const overallProgress = totalTarget > 0 ? (totalSaved / totalTarget) * 100 : 0;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground">Savings Goals</h1>
-            <p className="text-muted-foreground mt-1">Track and achieve your financial goals</p>
-          </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add Goal
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Savings Goals</h1>
+          <p className="text-muted-foreground">Track and achieve your financial targets</p>
+        </div>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => setEditingGoal(null)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Goal
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editingGoal ? "Edit Goal" : "Create New Goal"}</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Goal Name</Label>
+                <Input
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Emergency Fund"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="What is this goal for?"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Target Amount (₹)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={formData.target_amount}
+                  onChange={(e) => setFormData({ ...formData, target_amount: parseFloat(e.target.value) || 0 })}
+                  placeholder="100000"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Current Amount (₹)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={formData.current_amount}
+                  onChange={(e) => setFormData({ ...formData, current_amount: parseFloat(e.target.value) || 0 })}
+                  placeholder="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Deadline (Optional)</Label>
+                <Input
+                  type="date"
+                  value={formData.deadline}
+                  onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                />
+              </div>
+              <Button type="submit" className="w-full">
+                {editingGoal ? "Update" : "Create"} Goal
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Savings Goal</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleAddGoal} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="goal-name">Goal Name</Label>
-                  <Input id="goal-name" placeholder="e.g., New Car" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="goal-icon">Icon/Emoji</Label>
-                  <Input id="goal-icon" placeholder="🚗" maxLength={2} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="goal-target">Target Amount (₹)</Label>
-                  <Input id="goal-target" type="number" placeholder="500000" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="goal-current">Current Amount (₹)</Label>
-                  <Input id="goal-current" type="number" placeholder="0" defaultValue={0} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="goal-description">Description</Label>
-                  <Textarea id="goal-description" placeholder="Describe your goal..." rows={3} />
-                </div>
-                <Button type="submit" className="w-full">Create Goal</Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
 
-        {/* Summary Card */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-6 bg-gradient-to-br from-savings to-savings/80 text-savings-foreground border-0">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-white/20 rounded-lg">
-                <PiggyBank className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-sm opacity-90">Total Saved</p>
-                <h3 className="text-2xl font-bold">₹220,000</h3>
-              </div>
-            </div>
-          </Card>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Saved</CardTitle>
+            <PiggyBank className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">₹{totalSaved.toFixed(2)}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Target</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">₹{totalTarget.toFixed(2)}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Overall Progress</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{overallProgress.toFixed(1)}%</div>
+          </CardContent>
+        </Card>
+      </div>
 
-          <Card className="p-6 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-0">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-white/20 rounded-lg">
-                <Target className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-sm opacity-90">Total Target</p>
-                <h3 className="text-2xl font-bold">₹370,000</h3>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-gradient-to-br from-income to-income/80 text-income-foreground border-0">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-white/20 rounded-lg">
-                <TrendingUp className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-sm opacity-90">Progress</p>
-                <h3 className="text-2xl font-bold">59%</h3>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Savings Goals */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {savingsGoals.map((goal) => {
-            const progress = (goal.current / goal.target) * 100;
+      {goals.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Target className="w-12 h-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground text-center mb-4">No savings goals yet</p>
+            <Button onClick={() => setDialogOpen(true)}>Create your first goal</Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {goals.map((goal) => {
+            const progress = goal.target_amount > 0 ? (goal.current_amount / goal.target_amount) * 100 : 0;
             return (
-              <Card key={goal.id} className="p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-4xl">{goal.icon}</span>
-                    <div>
-                      <h3 className="font-bold text-xl">{goal.name}</h3>
-                      <p className="text-sm text-muted-foreground">{goal.description}</p>
+              <Card key={goal.id}>
+                <CardHeader>
+                  <CardTitle>{goal.name}</CardTitle>
+                  {goal.description && (
+                    <p className="text-sm text-muted-foreground">{goal.description}</p>
+                  )}
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Progress</span>
+                      <span>{progress.toFixed(1)}%</span>
+                    </div>
+                    <Progress value={progress} />
+                    <div className="flex justify-between text-sm">
+                      <span>₹{goal.current_amount.toFixed(2)}</span>
+                      <span>₹{goal.target_amount.toFixed(2)}</span>
                     </div>
                   </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="font-semibold">{progress.toFixed(0)}%</span>
+                  {goal.deadline && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="w-4 h-4" />
+                      <span>Deadline: {new Date(goal.deadline).toLocaleDateString()}</span>
                     </div>
-                    <Progress value={progress} className="h-3" />
-                  </div>
-
-                  <div className="flex justify-between items-center pt-2">
-                    <div>
-                      <p className="text-2xl font-bold text-savings">₹{goal.current.toLocaleString()}</p>
-                      <p className="text-sm text-muted-foreground">of ₹{goal.target.toLocaleString()}</p>
-                    </div>
-                    <Button size="sm" variant="outline">
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="flex-1"
+                      onClick={() => setAddMoneyDialog(goal)}
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
                       Add Money
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingGoal(goal);
+                        setFormData({
+                          name: goal.name,
+                          description: goal.description || "",
+                          target_amount: goal.target_amount,
+                          current_amount: goal.current_amount,
+                          deadline: goal.deadline || "",
+                        });
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDelete(goal.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
-
-                  <p className="text-sm text-muted-foreground pt-2">
-                    ₹{(goal.target - goal.current).toLocaleString()} remaining
-                  </p>
-                </div>
+                </CardContent>
               </Card>
             );
           })}
         </div>
+      )}
 
-        {/* Tips Card */}
-        <Card className="p-6 bg-gradient-to-r from-primary/10 to-savings/10 border-primary/20">
-          <h3 className="font-bold text-lg mb-2">💡 Savings Tips</h3>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• Set up automatic transfers to your savings goals</li>
-            <li>• Review and adjust your goals monthly</li>
-            <li>• Celebrate small milestones along the way</li>
-            <li>• Consider setting up multiple goals for different purposes</li>
-          </ul>
-        </Card>
-      </div>
+      <Dialog open={!!addMoneyDialog} onOpenChange={() => setAddMoneyDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Money to {addMoneyDialog?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Amount (₹)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={addAmount}
+                onChange={(e) => setAddAmount(e.target.value)}
+                placeholder="1000"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleAddMoney} className="flex-1">
+                Add Money
+              </Button>
+              <Button variant="outline" onClick={() => setAddMoneyDialog(null)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -13,6 +13,8 @@ import Settings from "./pages/Settings";
 import Install from "./pages/Install";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Accounts from "./pages/Accounts";
+import Transfer from "./pages/Transfer";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,8 @@ const App = () => (
             <Route path="/savings" element={<Savings />} />
             <Route path="/statistics" element={<Statistics />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/accounts" element={<Accounts />} />
+            <Route path="/transfer" element={<Transfer />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

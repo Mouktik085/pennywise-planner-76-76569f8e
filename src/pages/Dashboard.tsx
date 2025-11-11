@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Wallet, TrendingUp, TrendingDown, PiggyBank } from "lucide-react";
+import { Plus, Wallet, TrendingUp, TrendingDown, PiggyBank, Calendar, Bot } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { AIChat } from "@/components/AIChat";
+import { CalendarWidget } from "@/components/CalendarWidget";
 
 interface Transaction {
   id: string;
@@ -22,6 +24,8 @@ const Dashboard = () => {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalSavings, setTotalSavings] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -91,9 +95,27 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground">Budget Manager</h1>
-            <p className="text-muted-foreground mt-1">Track your finances with ease</p>
+          <div className="flex items-center gap-3">
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={() => setShowCalendar(!showCalendar)}
+              title="Calendar"
+            >
+              <Calendar className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={() => setShowAIChat(!showAIChat)}
+              title="AI Assistant"
+            >
+              <Bot className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-4xl font-bold text-foreground">Budget Manager</h1>
+              <p className="text-muted-foreground mt-1">Track your finances with ease</p>
+            </div>
           </div>
           <Link to="/add-transaction">
             <Button className="gap-2">
@@ -102,6 +124,10 @@ const Dashboard = () => {
             </Button>
           </Link>
         </div>
+
+        {/* AI Chat and Calendar */}
+        {showAIChat && <AIChat onClose={() => setShowAIChat(false)} />}
+        {showCalendar && <CalendarWidget onClose={() => setShowCalendar(false)} />}
 
         {/* Balance Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

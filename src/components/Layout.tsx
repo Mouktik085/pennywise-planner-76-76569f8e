@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
-import { Home, Receipt, PiggyBank, BarChart3, Settings } from "lucide-react";
+import { Home, Receipt, PiggyBank, BarChart3, Settings, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -21,6 +21,7 @@ const Layout = () => {
 
   const navItems = [
     { path: "/", icon: Home, label: "Dashboard" },
+    { path: "/accounts", icon: Wallet, label: "Accounts" },
     { path: "/transactions", icon: Receipt, label: "Transactions" },
     { path: "/savings", icon: PiggyBank, label: "Savings" },
     { path: "/statistics", icon: BarChart3, label: "Statistics" },
