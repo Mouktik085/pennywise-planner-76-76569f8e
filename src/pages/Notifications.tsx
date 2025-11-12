@@ -138,7 +138,7 @@ const Notifications = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-cyan-50/20 to-pink-50/10 dark:from-background dark:via-cyan-950/5 dark:to-pink-950/5 p-4 md:p-6">
+    <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
           <Link to="/">
