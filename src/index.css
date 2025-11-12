@@ -20,7 +20,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Vibrant Cyan/Teal Theme - Exact Original */
+    /* Beautiful Ocean/Beach Theme - Turquoise & Vibrant */
     --background: 0 0% 100%;
     --foreground: 0 0% 0%;
 
@@ -30,56 +30,58 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    --primary: 180 100% 50%;
+    --primary: 175 75% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 180 80% 96%;
-    --secondary-foreground: 180 100% 35%;
+    --secondary: 175 60% 96%;
+    --secondary-foreground: 175 75% 35%;
 
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 180 100% 45%;
+    --accent: 175 70% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 85% 62%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 180 100% 50%;
+    --ring: 175 75% 55%;
 
     --radius: 1rem;
 
     /* Financial colors - Bright & Vibrant */
-    --income: 140 75% 50%;
+    --income: 145 75% 50%;
     --income-foreground: 0 0% 100%;
-    --income-light: 140 75% 95%;
+    --income-light: 145 75% 95%;
     
     --expense: 0 85% 62%;
     --expense-foreground: 0 0% 100%;
     --expense-light: 0 85% 97%;
     
-    --savings: 270 75% 65%;
+    --savings: 260 70% 60%;
     --savings-foreground: 0 0% 100%;
-    --savings-light: 270 75% 95%;
+    --savings-light: 260 70% 95%;
 
-    /* Chart colors - Vibrant */
-    --chart-1: 180 100% 50%;
-    --chart-2: 140 75% 50%;
+    /* Chart colors - Vibrant Rainbow */
+    --chart-1: 175 75% 55%;
+    --chart-2: 145 75% 50%;
     --chart-3: 45 95% 55%;
-    --chart-4: 330 85% 65%;
+    --chart-4: 260 70% 60%;
     --chart-5: 0 85% 62%;
+    --chart-6: 330 85% 65%;
+    --chart-7: 30 95% 60%;
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 180 100% 50%;
+    --sidebar-primary: 175 75% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 180 100% 35%;
+    --sidebar-accent: 175 40% 96%;
+    --sidebar-accent-foreground: 175 75% 35%;
     --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 180 100% 50%;
+    --sidebar-ring: 175 75% 55%;
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
