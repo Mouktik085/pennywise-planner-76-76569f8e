@@ -187,13 +187,13 @@ All colors MUST be HSL.
     }
   }
 
-  /* Smooth transitions for better UX */
-  * {
-    transition: var(--transition-smooth);
+  /* Smooth transitions for better UX - only on interactive elements */
+  button:not(:disabled), a:not([aria-disabled="true"]), input, select, textarea {
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
   }
 
   /* Better touch feedback */
-  button:active, a:active {
+  button:active:not(:disabled), a:active:not([aria-disabled="true"]) {
     transform: scale(0.98);
   }
 }

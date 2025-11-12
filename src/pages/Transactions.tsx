@@ -125,7 +125,7 @@ const Transactions = () => {
         .from("transactions")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (fetchError) throw fetchError;
 
@@ -150,7 +150,7 @@ const Transactions = () => {
           .eq("user_id", user?.id)
           .eq("month", month)
           .eq("year", year)
-          .single();
+          .maybeSingle();
 
         if (budgetData) {
           const newSpent = Math.max(0, Number(budgetData.current_spent) - Number(transaction.amount));

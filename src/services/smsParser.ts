@@ -330,7 +330,7 @@ export class SMSParser {
           color: '#3b82f6',
         })
         .select('id, balance')
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error creating account:', error);

@@ -125,14 +125,14 @@ const Transfer = () => {
           .from("accounts")
           .select("balance")
           .eq("id", fromAccountId)
-          .single();
+          .maybeSingle();
         fromBalance = fromAccount?.balance || 0;
       } else {
         const { data: fromGoal } = await supabase
           .from("savings_goals")
           .select("current_amount")
           .eq("id", fromAccountId)
-          .single();
+          .maybeSingle();
         fromBalance = fromGoal?.current_amount || 0;
       }
 
@@ -161,7 +161,7 @@ const Transfer = () => {
           .from("accounts")
           .select("balance")
           .eq("id", toAccountId)
-          .single();
+          .maybeSingle();
         const { error } = await supabase
           .from("accounts")
           .update({ balance: (toAccount?.balance || 0) + transferAmount })
@@ -172,7 +172,7 @@ const Transfer = () => {
           .from("savings_goals")
           .select("current_amount")
           .eq("id", toAccountId)
-          .single();
+          .maybeSingle();
         const { error } = await supabase
           .from("savings_goals")
           .update({ current_amount: (toGoal?.current_amount || 0) + transferAmount })
