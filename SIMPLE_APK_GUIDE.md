@@ -114,26 +114,28 @@ The SMS auto-import feature will **ONLY work** after you:
 2. Install it on your phone
 3. Grant SMS permissions when the app asks
 
-**New Features Included:**
-- ✅ **Automatic Duplicate Detection** - Won't import the same transaction twice
-- ✅ **Manual SMS Import** - Paste SMS text manually if needed
-- ✅ **Smart Bank Recognition** - Recognizes major Indian banks automatically
-- ✅ **Auto Account Creation** - Creates bank accounts automatically from SMS
-
 It won't work in the browser - it needs to be a real app on your phone!
 
 ---
 
-## ✅ Security & Production Ready!
+## 🌐 Production Build (Important!)
 
-**Good news!** This app now includes:
-- ✅ **All Security Fixes Applied** - Authentication required for all APIs
-- ✅ **Input Validation** - All user inputs validated and sanitized
-- ✅ **Production Configuration** - App works offline and loads instantly
-- ✅ **Strong Password Requirements** - 8+ chars with complexity rules
-- ✅ **No Information Leakage** - All debug logs removed
+Before creating your final APK, edit `capacitor.config.ts`:
 
-Your `capacitor.config.ts` is already configured for production mode (no server URL), so your APK will work offline and load fast!
+**Change this:**
+```typescript
+server: {
+  url: 'https://3bf4ca69-0cfa-4dc2-bd7f-59d22f33b091.lovableproject.com?forceHideBadge=true',
+  cleartext: true
+}
+```
+
+**To this (remove the server section completely):**
+```typescript
+// Remove the entire server section for production
+```
+
+This makes your app work offline and load instantly!
 
 ---
 

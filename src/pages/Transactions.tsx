@@ -120,48 +120,12 @@ const Transactions = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      // Get transaction details before deleting
-      const { data: transaction, error: fetchError } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
-
-      if (fetchError) throw fetchError;
-
-      // Delete the transaction
       const { error } = await supabase
         .from("transactions")
         .delete()
         .eq("id", id);
 
       if (error) throw error;
-
-      // Update budget if it's an expense
-      if (transaction && transaction.type === "expense") {
-        const transactionDate = new Date(transaction.date);
-        const month = transactionDate.getMonth() + 1;
-        const year = transactionDate.getFullYear();
-
-        // Get current budget and subtract the amount
-        const { data: budgetData } = await supabase
-          .from("budget")
-          .select("current_spent")
-          .eq("user_id", user?.id)
-          .eq("month", month)
-          .eq("year", year)
-          .maybeSingle();
-
-        if (budgetData) {
-          const newSpent = Math.max(0, Number(budgetData.current_spent) - Number(transaction.amount));
-          await supabase
-            .from("budget")
-            .update({ current_spent: newSpent })
-            .eq("user_id", user?.id)
-            .eq("month", month)
-            .eq("year", year);
-        }
-      }
 
       toast.success("Transaction deleted successfully");
       fetchTransactions();

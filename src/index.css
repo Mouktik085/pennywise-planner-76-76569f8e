@@ -155,46 +155,4 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
-
-  /* Mobile Optimizations */
-  @media (max-width: 768px) {
-    /* Larger touch targets */
-    button, a {
-      min-height: 44px;
-      min-width: 44px;
-    }
-
-    /* Better text readability on mobile */
-    body {
-      -webkit-text-size-adjust: 100%;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    /* Prevent zoom on input focus */
-    input, select, textarea {
-      font-size: 16px;
-    }
-
-    /* Better scrolling on mobile */
-    * {
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /* Card spacing for mobile */
-    .card {
-      @apply rounded-xl shadow-sm;
-    }
-  }
-
-  /* Smooth transitions for better UX - only on interactive elements */
-  button:not(:disabled), a:not([aria-disabled="true"]), input, select, textarea {
-    transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
-  }
-
-  /* Better touch feedback */
-  button:active:not(:disabled), a:active:not([aria-disabled="true"]) {
-    transform: scale(0.98);
-  }
 }
-

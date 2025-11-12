@@ -39,6 +39,8 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    console.log("Attempting signup with:", email);
+
     if (!username.trim()) {
       toast({
         title: "Invalid username",
@@ -49,51 +51,10 @@ const Auth = () => {
       return;
     }
 
-    // Stronger password validation
-    if (password.length < 8) {
+    if (password.length < 6) {
       toast({
         title: "Invalid password",
-        description: "Password must be at least 8 characters long.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-    
-    if (!/[A-Z]/.test(password)) {
-      toast({
-        title: "Weak password",
-        description: "Password must contain at least one uppercase letter.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-    
-    if (!/[a-z]/.test(password)) {
-      toast({
-        title: "Weak password",
-        description: "Password must contain at least one lowercase letter.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-    
-    if (!/[0-9]/.test(password)) {
-      toast({
-        title: "Weak password",
-        description: "Password must contain at least one number.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-    
-    if (!/[^A-Za-z0-9]/.test(password)) {
-      toast({
-        title: "Weak password",
-        description: "Password must contain at least one special character.",
+        description: "Password must be at least 6 characters long.",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -110,9 +71,11 @@ const Auth = () => {
             username: username,
           },
         },
-    });
+      });
 
-    if (error) {
+      console.log("Signup response:", { data, error });
+
+      if (error) {
         if (error.message.includes("already registered")) {
           toast({
             title: "Account exists",
@@ -132,6 +95,10 @@ const Auth = () => {
           .from("profiles")
           .update({ username: username })
           .eq("user_id", data.user.id);
+
+        if (profileError) {
+          console.error("Profile update error:", profileError);
+        }
 
         toast({
           title: "Success!",

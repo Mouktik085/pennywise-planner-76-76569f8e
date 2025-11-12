@@ -36,40 +36,33 @@ export class SMSParser {
   ];
 
   static parseSMS(message: string): ParsedTransaction | null {
-    // Validate input
-    if (!message || typeof message !== 'string' || message.length > 500) {
-      return null;
-    }
-    
-    // Sanitize input
-    const sanitized = message.trim();
     try {
       // Check if it's a bank transaction SMS
-      if (!this.isBankSMS(sanitized)) {
+      if (!this.isBankSMS(message)) {
         return null;
       }
 
       // Extract amount
-      const amount = this.extractAmount(sanitized);
+      const amount = this.extractAmount(message);
       if (!amount) return null;
 
       // Determine transaction type
-      const type = this.getTransactionType(sanitized);
+      const type = this.getTransactionType(message);
 
       // Extract bank name
-      const bankName = this.extractBankName(sanitized);
+      const bankName = this.extractBankName(message);
 
       // Extract account number
-      const accountNumber = this.extractAccountNumber(sanitized);
+      const accountNumber = this.extractAccountNumber(message);
 
       // Extract or infer date
-      const date = this.extractDate(sanitized);
+      const date = this.extractDate(message);
 
       // Determine category
-      const category = this.determineCategory(sanitized, type);
+      const category = this.determineCategory(message, type);
 
       // Generate description
-      const description = this.generateDescription(sanitized, type, bankName);
+      const description = this.generateDescription(message, type, bankName);
 
       return {
         amount,
@@ -220,31 +213,8 @@ export class SMSParser {
 
   static async processAndSave(message: string, userId: string): Promise<boolean> {
     try {
-      // Validate message length
-      if (!message || message.length > 500) {
-        console.error('Invalid message length');
-        return false;
-      }
       const parsed = this.parseSMS(message);
       if (!parsed) return false;
-
-      // Check for duplicate transactions (same amount, bank, and date)
-      const dateStr = parsed.date.toISOString().split('T')[0];
-      const { data: existingTransactions, error: checkError } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("amount", parsed.amount)
-        .eq("date", dateStr)
-        .eq("type", parsed.type)
-        .ilike("description", `%${parsed.bankName}%`);
-
-      if (checkError) {
-        console.error("Error checking duplicates:", checkError);
-      } else if (existingTransactions && existingTransactions.length > 0) {
-        console.log("Duplicate transaction detected, skipping import");
-        return false;
-      }
 
       // Find or create account
       const account = await this.findOrCreateAccount(userId, parsed.bankName, parsed.accountNumber);
@@ -260,7 +230,7 @@ export class SMSParser {
           type: parsed.type,
           category: parsed.category,
           description: parsed.description,
-          date: dateStr,
+          date: parsed.date.toISOString().split('T')[0],
         });
 
       if (transactionError) {
@@ -330,7 +300,7 @@ export class SMSParser {
           color: '#3b82f6',
         })
         .select('id, balance')
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error('Error creating account:', error);

@@ -1,20 +1,18 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Smartphone, CheckCircle2, AlertCircle, MessageSquare } from "lucide-react";
+import { Smartphone, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { useAuth } from "@/hooks/useAuth";
 import { SMSParser } from "@/services/smsParser";
+import { SmsRetriever } from "@capacitor-community/sms-retriever";
 
 export const SMSPermissionHandler = () => {
   const { user } = useAuth();
   const [hasPermission, setHasPermission] = useState(false);
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [isNativePlatform, setIsNativePlatform] = useState(false);
-  const [manualSMS, setManualSMS] = useState("");
-  const [showManualImport, setShowManualImport] = useState(false);
 
   useEffect(() => {
     // Check if running on native platform
@@ -28,9 +26,6 @@ export const SMSPermissionHandler = () => {
     }
 
     try {
-      // Dynamically import SMS retriever only on native platform
-      const { SmsRetriever } = await import("@capacitor-community/sms-retriever");
-      
       // Request permission to read SMS
       await SmsRetriever.requestPermission();
       toast.success("SMS permission granted!");
@@ -55,9 +50,6 @@ export const SMSPermissionHandler = () => {
     
     // Listen to incoming SMS messages
     try {
-      // Dynamically import SMS retriever only on native platform
-      const { SmsRetriever } = await import("@capacitor-community/sms-retriever");
-      
       await SmsRetriever.startWatch();
       
       SmsRetriever.addListener('smsReceived', async (data: any) => {
@@ -79,9 +71,6 @@ export const SMSPermissionHandler = () => {
 
   const stopSMSMonitoring = async () => {
     try {
-      // Dynamically import SMS retriever only on native platform
-      const { SmsRetriever } = await import("@capacitor-community/sms-retriever");
-      
       await SmsRetriever.stopWatch();
       SmsRetriever.removeAllListeners();
       setIsMonitoring(false);
@@ -117,71 +106,22 @@ export const SMSPermissionHandler = () => {
     }
   };
 
-  const handleManualImport = async () => {
-    if (!user) {
-      toast.error("Please log in first");
-      return;
-    }
-
-    if (!manualSMS.trim()) {
-      toast.error("Please paste an SMS message");
-      return;
-    }
-
-    const success = await SMSParser.processAndSave(manualSMS, user.id);
-    if (success) {
-      toast.success("Transaction imported successfully!");
-      setManualSMS("");
-      setShowManualImport(false);
-    } else {
-      toast.error("Could not parse this SMS. Make sure it's a bank transaction SMS.");
-    }
-  };
-
   if (!isNativePlatform) {
     return (
-      <Card className="p-4 md:p-6 bg-muted/50">
-        <div className="flex items-start gap-3 md:gap-4">
-          <div className="p-2 md:p-3 bg-primary/10 rounded-lg">
-            <Smartphone className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+      <Card className="p-6 bg-muted/50">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-primary/10 rounded-lg">
+            <Smartphone className="h-6 w-6 text-primary" />
           </div>
-          <div className="flex-1 space-y-3">
-            <div>
-              <h3 className="font-bold text-base md:text-lg mb-1">SMS Auto-Import</h3>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                SMS auto-import is only available when the app is installed as an APK.
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <Button 
-                onClick={() => setShowManualImport(!showManualImport)} 
-                variant="outline" 
-                className="w-full"
-                size="sm"
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                {showManualImport ? "Hide Manual Import" : "Manual SMS Import"}
-              </Button>
-
-              {showManualImport && (
-                <div className="space-y-2 pt-2">
-                  <Textarea
-                    placeholder="Paste your bank SMS here..."
-                    value={manualSMS}
-                    onChange={(e) => setManualSMS(e.target.value)}
-                    className="min-h-[80px] text-sm"
-                  />
-                  <Button onClick={handleManualImport} className="w-full" size="sm">
-                    Import Transaction
-                  </Button>
-                </div>
-              )}
-
-              <Button onClick={testSMSParser} variant="outline" className="w-full" size="sm">
-                Test with Sample SMS
-              </Button>
-            </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-lg mb-2">SMS Auto-Import</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              SMS auto-import is only available when the app is installed on a mobile device as an APK.
+              Convert your app to APK to enable this feature.
+            </p>
+            <Button onClick={testSMSParser} variant="outline" className="w-full">
+              Test with Sample SMS (Demo)
+            </Button>
           </div>
         </div>
       </Card>
@@ -189,99 +129,73 @@ export const SMSPermissionHandler = () => {
   }
 
   return (
-    <Card className="p-4 md:p-6">
-      <div className="flex items-start gap-3 md:gap-4">
-        <div className="p-2 md:p-3 bg-primary/10 rounded-lg">
-          <Smartphone className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+    <Card className="p-6">
+      <div className="flex items-start gap-4">
+        <div className="p-3 bg-primary/10 rounded-lg">
+          <Smartphone className="h-6 w-6 text-primary" />
         </div>
-        <div className="flex-1 space-y-3 md:space-y-4">
+        <div className="flex-1 space-y-4">
           <div>
-            <h3 className="font-bold text-base md:text-lg mb-1 flex items-center gap-2">
+            <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
               SMS Auto-Import
               {hasPermission && (
-                <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
               )}
             </h3>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              Automatically import bank transactions from SMS
+            <p className="text-sm text-muted-foreground">
+              Automatically import bank transactions from SMS messages
             </p>
           </div>
 
           {!hasPermission ? (
             <div className="space-y-3">
-              <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                <p className="text-xs md:text-sm font-semibold text-primary mb-2">📱 Features</p>
-                <ul className="text-xs md:text-sm text-muted-foreground list-disc list-inside space-y-1">
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                <p className="text-sm font-semibold text-primary mb-2">📱 Features</p>
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
                   <li>Reads bank SMS automatically</li>
-                  <li>Duplicate detection prevents double entries</li>
-                  <li>Creates accounts automatically</li>
-                  <li>Updates balance in real-time</li>
-                  <li>Smart categorization</li>
+                  <li>Extracts transaction details (amount, bank, type)</li>
+                  <li>Creates accounts automatically if not found</li>
+                  <li>Updates your balance in real-time</li>
+                  <li>Categorizes transactions intelligently</li>
                 </ul>
               </div>
-              <Button onClick={requestSMSPermission} className="w-full" size="sm">
+              <Button onClick={requestSMSPermission} className="w-full">
                 Enable SMS Auto-Import
               </Button>
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <p className="text-xs md:text-sm font-semibold text-green-700 dark:text-green-400 mb-1">
+              <div className="p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <p className="text-sm font-semibold text-green-700 dark:text-green-400 mb-1">
                   {isMonitoring ? "✓ Monitoring Active" : "✓ Permission Granted"}
                 </p>
-                <p className="text-xs md:text-sm text-green-600 dark:text-green-500">
+                <p className="text-sm text-green-600 dark:text-green-500">
                   {isMonitoring 
-                    ? "Auto-importing bank transactions with duplicate detection"
+                    ? "We're automatically importing your bank transactions from SMS"
                     : "SMS permission granted. Monitoring will start automatically."
                   }
                 </p>
               </div>
               
-              <div className="space-y-2">
-                <Button 
-                  onClick={() => setShowManualImport(!showManualImport)} 
-                  variant="outline" 
-                  className="w-full"
-                  size="sm"
-                >
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Manual SMS Import
+              <div className="grid grid-cols-2 gap-2">
+                <Button onClick={testSMSParser} variant="outline" size="sm">
+                  Test Import
                 </Button>
-
-                {showManualImport && (
-                  <div className="space-y-2">
-                    <Textarea
-                      placeholder="Paste your bank SMS here..."
-                      value={manualSMS}
-                      onChange={(e) => setManualSMS(e.target.value)}
-                      className="min-h-[80px] text-sm"
-                    />
-                    <Button onClick={handleManualImport} className="w-full" size="sm">
-                      Import Transaction
-                    </Button>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-2">
-                  <Button onClick={testSMSParser} variant="outline" size="sm">
-                    Test Import
-                  </Button>
-                  <Button 
-                    onClick={stopSMSMonitoring} 
-                    variant="outline" 
-                    size="sm"
-                    disabled={!isMonitoring}
-                  >
-                    Stop
-                  </Button>
-                </div>
+                <Button 
+                  onClick={stopSMSMonitoring} 
+                  variant="outline" 
+                  size="sm"
+                  disabled={!isMonitoring}
+                >
+                  Stop Monitoring
+                </Button>
               </div>
             </div>
           )}
 
           <div className="text-xs text-muted-foreground">
             <AlertCircle className="h-3 w-3 inline mr-1" />
-            Only bank SMS will be read. Duplicates are automatically detected.
+            Only bank SMS messages will be read. Your privacy is protected.
           </div>
         </div>
       </div>

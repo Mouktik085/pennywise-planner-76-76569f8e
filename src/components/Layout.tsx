@@ -22,7 +22,7 @@ const Layout = () => {
         .from("profiles")
         .select("username")
         .eq("user_id", user?.id)
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
       setUsername(data?.username || "User");
