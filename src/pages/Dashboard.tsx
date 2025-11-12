@@ -8,6 +8,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { Plus, TrendingUp, TrendingDown, Wallet, PiggyBank, Settings as SettingsIcon, Calendar as CalendarIcon, MessageSquare, Repeat, LogOut, Sparkles, Bell } from "lucide-react";
 import { AIChat } from "@/components/AIChat";
 import { UpcomingReminders } from "@/components/UpcomingReminders";
+import { CurrencyAmount } from "@/components/CurrencyAmount";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Transaction {
   id: string;
@@ -22,12 +24,12 @@ const Dashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalSavings, setTotalSavings] = useState(0);
   const [totalAccountBalance, setTotalAccountBalance] = useState(0);
   const [creditCardLiability, setCreditCardLiability] = useState(0);
-  const [currency, setCurrency] = useState("₹");
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [recurringTransactions, setRecurringTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,20 +124,6 @@ const Dashboard = () => {
         .reduce((sum, a) => sum + Number(a.credit_used), 0) || 0;
       
       setCreditCardLiability(creditLiability);
-      
-      // Fetch user currency preference
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("preferred_currency")
-        .eq("user_id", user?.id)
-        .maybeSingle();
-      
-      if (profileData?.preferred_currency) {
-        const currencySymbols: Record<string, string> = {
-          'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥'
-        };
-        setCurrency(currencySymbols[profileData.preferred_currency] || '₹');
-      }
 
       // Fetch savings
       const { data: savingsData, error: savingsError } = await supabase
@@ -167,7 +155,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* Header with Notifications */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <h1 className="text-2xl md:text-4xl font-bold text-foreground">Budget Manager</h1>
+          <h1 className="text-2xl md:text-4xl font-bold text-foreground">{t('appTitle')}</h1>
           <Button 
             variant="outline" 
             size="sm" 
@@ -175,7 +163,7 @@ const Dashboard = () => {
             onClick={() => navigate('/notifications')}
           >
             <Bell className="h-4 w-4" />
-            <span className="hidden sm:inline">Notifications</span>
+            <span className="hidden sm:inline">{t('notifications')}</span>
           </Button>
         </div>
 
@@ -183,13 +171,13 @@ const Dashboard = () => {
           <Link to="/settings">
             <Button variant="outline" size="sm" className="gap-2 bg-card hover:bg-card/80 shadow-md">
               <SettingsIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Settings</span>
+              <span className="hidden sm:inline">{t('settings')}</span>
             </Button>
           </Link>
           <Link to="/calendar">
             <Button variant="outline" size="sm" className="gap-2 bg-card hover:bg-card/80 shadow-md">
               <CalendarIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Calendar</span>
+              <span className="hidden sm:inline">{t('calendar')}</span>
             </Button>
           </Link>
           <Button 
@@ -199,7 +187,7 @@ const Dashboard = () => {
             className="gap-2 bg-card hover:bg-card/80 shadow-md"
           >
             <MessageSquare className="h-4 w-4" />
-            <span className="hidden sm:inline">AI Chat</span>
+            <span className="hidden sm:inline">{t('aiAssistant')}</span>
           </Button>
           <Button 
             variant="outline"
@@ -208,12 +196,12 @@ const Dashboard = () => {
             className="gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive shadow-md"
           >
             <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Sign Out</span>
+            <span className="hidden sm:inline">{t('signOut')}</span>
           </Button>
           <Link to="/add-transaction">
             <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30">
               <Plus className="h-4 w-4" />
-              Add
+              {t('add')}
             </Button>
           </Link>
         </div>
@@ -247,9 +235,9 @@ const Dashboard = () => {
                 <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
                   <Wallet className="h-6 w-6 md:h-8 md:w-8" />
                 </div>
-                <p className="text-xs md:text-sm opacity-90 font-semibold">Balance</p>
+                <p className="text-xs md:text-sm opacity-90 font-semibold">{t('balance')}</p>
               </div>
-              <h3 className="text-xl md:text-3xl font-bold">{currency}{totalAccountBalance.toLocaleString()}</h3>
+              <h3 className="text-xl md:text-3xl font-bold"><CurrencyAmount amount={totalAccountBalance} /></h3>
             </div>
           </Card>
 
@@ -259,9 +247,9 @@ const Dashboard = () => {
                 <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
                   <TrendingDown className="h-6 w-6 md:h-8 md:w-8" />
                 </div>
-                <p className="text-xs md:text-sm opacity-90 font-semibold">Credit Card Due</p>
+                <p className="text-xs md:text-sm opacity-90 font-semibold">{t('creditCardDue')}</p>
               </div>
-              <h3 className="text-xl md:text-3xl font-bold">{currency}{creditCardLiability.toLocaleString()}</h3>
+              <h3 className="text-xl md:text-3xl font-bold"><CurrencyAmount amount={creditCardLiability} /></h3>
             </div>
           </Card>
 
@@ -271,9 +259,9 @@ const Dashboard = () => {
                 <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
                   <TrendingUp className="h-6 w-6 md:h-8 md:w-8" />
                 </div>
-                <p className="text-xs md:text-sm opacity-90 font-semibold">Income</p>
+                <p className="text-xs md:text-sm opacity-90 font-semibold">{t('income')}</p>
               </div>
-              <h3 className="text-xl md:text-3xl font-bold">{currency}{totalIncome.toLocaleString()}</h3>
+              <h3 className="text-xl md:text-3xl font-bold"><CurrencyAmount amount={totalIncome} /></h3>
             </div>
           </Card>
 
@@ -283,9 +271,9 @@ const Dashboard = () => {
                 <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
                   <TrendingDown className="h-6 w-6 md:h-8 md:w-8" />
                 </div>
-                <p className="text-xs md:text-sm opacity-90 font-semibold">Expenses</p>
+                <p className="text-xs md:text-sm opacity-90 font-semibold">{t('expenses')}</p>
               </div>
-              <h3 className="text-xl md:text-3xl font-bold">{currency}{totalExpenses.toLocaleString()}</h3>
+              <h3 className="text-xl md:text-3xl font-bold"><CurrencyAmount amount={totalExpenses} /></h3>
             </div>
           </Card>
 
@@ -295,9 +283,9 @@ const Dashboard = () => {
                 <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
                   <PiggyBank className="h-6 w-6 md:h-8 md:w-8" />
                 </div>
-                <p className="text-xs md:text-sm opacity-90 font-semibold">Savings</p>
+                <p className="text-xs md:text-sm opacity-90 font-semibold">{t('savings')}</p>
               </div>
-              <h3 className="text-xl md:text-3xl font-bold">{currency}{totalSavings.toLocaleString()}</h3>
+              <h3 className="text-xl md:text-3xl font-bold"><CurrencyAmount amount={totalSavings} /></h3>
             </div>
           </Card>
         </div>
@@ -369,7 +357,7 @@ const Dashboard = () => {
                         transaction.type === "income" ? "text-income" : "text-expense"
                       }`}
                     >
-                      {transaction.type === "income" ? "+" : "-"}₹{Number(transaction.amount).toLocaleString()}
+                      <CurrencyAmount amount={Number(transaction.amount)} showSign />
                     </p>
                     <p className="text-sm text-muted-foreground">{transaction.date}</p>
                   </div>
@@ -423,7 +411,7 @@ const Dashboard = () => {
                         transaction.type === "income" ? "text-income" : "text-expense"
                       }`}
                     >
-                      {transaction.type === "income" ? "+" : "-"}₹{Number(transaction.amount).toLocaleString()}
+                      <CurrencyAmount amount={Number(transaction.amount)} showSign />
                     </p>
                     <p className="text-sm text-muted-foreground">{transaction.date}</p>
                   </div>

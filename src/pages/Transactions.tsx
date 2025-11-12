@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 import { EditTransferDialog } from "@/components/EditTransferDialog";
 import { ManualSMSImport } from "@/components/ManualSMSImport";
+import { CurrencyAmount } from "@/components/CurrencyAmount";
 
 interface Transaction {
   id: string;
@@ -320,7 +321,7 @@ const Transactions = () => {
                   </div>
                   <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                     <p className="font-bold text-primary text-lg">
-                      ₹{Number(transfer.amount).toLocaleString()}
+                      <CurrencyAmount amount={Number(transfer.amount)} />
                     </p>
                     <div className="flex gap-1">
                       <Button
@@ -390,11 +391,9 @@ const Transactions = () => {
                   </div>
                   <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                     <p
-                      className={`font-bold text-lg ${
-                        transaction.type === "income" ? "text-income" : "text-expense"
-                      }`}
+                      className="font-bold text-lg"
                     >
-                      {transaction.type === "income" ? "+" : "-"}₹{Number(transaction.amount).toLocaleString()}
+                      <CurrencyAmount amount={Number(transaction.amount)} showSign />
                     </p>
                     <div className="flex gap-1">
                       <Button

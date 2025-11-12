@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { DollarSign, TrendingDown, Wallet, PiggyBank, PieChart as PieChartIcon } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { Link } from "react-router-dom";
+import { CurrencyAmount } from "@/components/CurrencyAmount";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface Budget {
   id?: string;
@@ -28,6 +30,7 @@ interface CategoryExpense {
 const Budget = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { format: formatCurrency } = useCurrency();
   const [budget, setBudget] = useState<Budget | null>(null);
   const [monthlyLimit, setMonthlyLimit] = useState("");
   const [savingsTarget, setSavingsTarget] = useState("");
@@ -224,7 +227,7 @@ const Budget = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{budget?.monthly_limit.toFixed(2) || "0.00"}</div>
+            <div className="text-2xl font-bold"><CurrencyAmount amount={budget?.monthly_limit || 0} /></div>
             <p className="text-xs text-muted-foreground">Monthly spending limit</p>
           </CardContent>
         </Card>
@@ -235,7 +238,7 @@ const Budget = () => {
             <TrendingDown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{budget?.current_spent.toFixed(2) || "0.00"}</div>
+            <div className="text-2xl font-bold"><CurrencyAmount amount={budget?.current_spent || 0} /></div>
             <p className="text-xs text-muted-foreground">Total expenses this month</p>
           </CardContent>
         </Card>
@@ -247,7 +250,7 @@ const Budget = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ₹{((budget?.monthly_limit || 0) - (budget?.current_spent || 0)).toFixed(2)}
+              <CurrencyAmount amount={(budget?.monthly_limit || 0) - (budget?.current_spent || 0)} />
             </div>
             <p className="text-xs text-muted-foreground">Available to spend</p>
           </CardContent>
@@ -259,7 +262,7 @@ const Budget = () => {
             <PiggyBank className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{savingsTarget || "0.00"}</div>
+            <div className="text-2xl font-bold"><CurrencyAmount amount={parseFloat(savingsTarget) || 0} /></div>
             <p className="text-xs text-muted-foreground">Monthly savings goal</p>
           </CardContent>
         </Card>
@@ -272,7 +275,7 @@ const Budget = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="monthly-limit">Monthly Budget Limit (₹)</Label>
+              <Label htmlFor="monthly-limit">Monthly Budget Limit</Label>
               <Input
                 id="monthly-limit"
                 type="number"
@@ -284,7 +287,7 @@ const Budget = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="savings-target">Monthly Savings Target (₹)</Label>
+              <Label htmlFor="savings-target">Monthly Savings Target</Label>
               <Input
                 id="savings-target"
                 type="number"
@@ -315,10 +318,10 @@ const Budget = () => {
               <Progress value={Math.min(percentage, 100)} />
               <p className="text-sm text-muted-foreground">
                 {percentage > 100
-                  ? `You've exceeded your budget by ₹${Math.abs(remaining).toFixed(2)}`
+                  ? <>You've exceeded your budget by <CurrencyAmount amount={Math.abs(remaining)} /></>
                   : percentage > 80
                   ? `⚠️ Warning: You're close to your budget limit!`
-                  : `You have ₹${remaining.toFixed(2)} remaining this month`}
+                  : <>You have <CurrencyAmount amount={remaining} /> remaining this month</>}
               </p>
             </div>
           </CardContent>
@@ -340,13 +343,13 @@ const Budget = () => {
                   cx="50%" 
                   cy="50%" 
                   outerRadius={100}
-                  label={(entry) => `${entry.name}: ₹${entry.value.toFixed(0)}`}
+                  label={(entry) => `${entry.name}: ${formatCurrency(entry.value)}`}
                 >
                   {categoryExpenses.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number) => `₹${value.toFixed(2)}`} />
+                <Tooltip formatter={(value: number) => formatCurrency(value)} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -357,7 +360,7 @@ const Budget = () => {
                 return (
                   <div key={category.name} className="flex justify-between items-center text-sm">
                     <span className="font-medium">{category.name}</span>
-                    <span className="text-muted-foreground">₹{category.value.toFixed(2)} ({percentage.toFixed(1)}%)</span>
+                    <span className="text-muted-foreground"><CurrencyAmount amount={category.value} /> ({percentage.toFixed(1)}%)</span>
                   </div>
                 );
               })}

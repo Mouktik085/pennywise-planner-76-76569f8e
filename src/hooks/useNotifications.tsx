@@ -21,11 +21,24 @@ export const useNotifications = () => {
         // Fetch user's notification settings
         const { data: profile } = await supabase
           .from('profiles')
-          .select('notification_budget_alerts, notification_transaction_reminders, notification_savings_milestones, reminder_days_before')
+          .select('notification_budget_alerts, notification_transaction_reminders, notification_savings_milestones, reminder_days_before, last_notification_check')
           .eq('user_id', user.id)
           .maybeSingle();
 
         if (!profile) return;
+
+        // Check if we already checked today
+        const lastCheck = profile.last_notification_check ? new Date(profile.last_notification_check) : null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (lastCheck) {
+          lastCheck.setHours(0, 0, 0, 0);
+          if (lastCheck.getTime() === today.getTime()) {
+            console.log('Notifications already checked today');
+            return; // Already checked today, skip
+          }
+        }
 
         const settings: NotificationSettings = {
           notification_budget_alerts: profile.notification_budget_alerts ?? true,
@@ -34,23 +47,29 @@ export const useNotifications = () => {
           reminder_days_before: profile.reminder_days_before || 2
         };
 
-        // Check budget alerts
+        // Check budget alerts (once per day)
         if (settings.notification_budget_alerts) {
           await checkBudgetAlerts();
         }
 
-        // Check upcoming transactions
+        // Check upcoming transactions (once per day)
         if (settings.notification_transaction_reminders) {
           await checkUpcomingTransactions(settings.reminder_days_before);
         }
 
-        // Check savings goals
+        // Check savings goals (once per day)
         if (settings.notification_savings_milestones) {
           await checkSavingsGoals();
         }
 
-        // Check credit card dues
+        // Check credit card dues (once per day)
         await checkCreditCardDues();
+
+        // Update last check time
+        await supabase
+          .from('profiles')
+          .update({ last_notification_check: new Date().toISOString() })
+          .eq('user_id', user.id);
 
       } catch (error) {
         console.error('Error checking notifications:', error);
@@ -60,8 +79,8 @@ export const useNotifications = () => {
     // Check immediately
     checkNotifications();
 
-    // Check every 30 minutes
-    const interval = setInterval(checkNotifications, 30 * 60 * 1000);
+    // Check once per day (every 24 hours)
+    const interval = setInterval(checkNotifications, 24 * 60 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [user]);

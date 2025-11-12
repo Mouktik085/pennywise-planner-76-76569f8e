@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Target, TrendingUp, Calendar, Trash2, Edit, PiggyBank } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CurrencyAmount } from "@/components/CurrencyAmount";
 
 const emojiList = [
   "🎯", "💰", "🏠", "🚗", "✈️", "🎓", "💍", "🎉", "🏖️", "🎮",
@@ -242,7 +243,7 @@ const Savings = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Target Amount (₹)</Label>
+                <Label>Target Amount</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -253,7 +254,7 @@ const Savings = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Current Amount (₹)</Label>
+                <Label>Current Amount</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -285,7 +286,7 @@ const Savings = () => {
             <PiggyBank className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{totalSaved.toFixed(2)}</div>
+            <div className="text-2xl font-bold"><CurrencyAmount amount={totalSaved} /></div>
           </CardContent>
         </Card>
         <Card>
@@ -294,7 +295,7 @@ const Savings = () => {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{totalTarget.toFixed(2)}</div>
+            <div className="text-2xl font-bold"><CurrencyAmount amount={totalTarget} /></div>
           </CardContent>
         </Card>
         <Card>
@@ -339,8 +340,8 @@ const Savings = () => {
                     </div>
                     <Progress value={progress} className="h-3" />
                     <div className="flex justify-between text-base font-bold">
-                      <span className="text-savings">₹{goal.current_amount.toFixed(2)}</span>
-                      <span className="text-muted-foreground">₹{goal.target_amount.toFixed(2)}</span>
+                      <span className="text-savings"><CurrencyAmount amount={goal.current_amount} /></span>
+                      <span className="text-muted-foreground"><CurrencyAmount amount={goal.target_amount} /></span>
                     </div>
                   </div>
                   {goal.deadline && (
@@ -399,7 +400,7 @@ const Savings = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Amount (₹)</Label>
+              <Label>Amount</Label>
               <Input
                 type="number"
                 step="0.01"
