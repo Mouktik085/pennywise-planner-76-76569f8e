@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +11,7 @@ import { AIChat } from "@/components/AIChat";
 import { UpcomingReminders } from "@/components/UpcomingReminders";
 import { CurrencyAmount } from "@/components/CurrencyAmount";
 import { useTranslation } from "@/hooks/useTranslation";
+import { startOfDay, startOfWeek, startOfMonth, startOfYear, endOfDay, endOfWeek, endOfMonth, endOfYear, format as formatDate } from "date-fns";
 
 interface Transaction {
   id: string;
@@ -35,13 +37,14 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showAIChat, setShowAIChat] = useState(false);
   const [dailyInsight, setDailyInsight] = useState<string>("");
+  const [timePeriod, setTimePeriod] = useState<"daily" | "weekly" | "monthly" | "yearly">("monthly");
 
   useEffect(() => {
     if (user) {
       fetchDashboardData();
       fetchDailyInsight();
     }
-  }, [user]);
+  }, [user, timePeriod]);
 
   const fetchDailyInsight = async () => {
     try {
@@ -66,8 +69,40 @@ const Dashboard = () => {
     }
   };
 
+  const getDateRange = () => {
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date;
+
+    switch (timePeriod) {
+      case "daily":
+        startDate = startOfDay(now);
+        endDate = endOfDay(now);
+        break;
+      case "weekly":
+        startDate = startOfWeek(now);
+        endDate = endOfWeek(now);
+        break;
+      case "monthly":
+        startDate = startOfMonth(now);
+        endDate = endOfMonth(now);
+        break;
+      case "yearly":
+        startDate = startOfYear(now);
+        endDate = endOfYear(now);
+        break;
+    }
+
+    return {
+      start: formatDate(startDate, "yyyy-MM-dd"),
+      end: formatDate(endDate, "yyyy-MM-dd")
+    };
+  };
+
   const fetchDashboardData = async () => {
     try {
+      const dateRange = getDateRange();
+
       // Fetch transactions
       const { data: transactionsData, error: transError } = await supabase
         .from("transactions")
@@ -90,10 +125,12 @@ const Dashboard = () => {
       if (recurringError) throw recurringError;
       setRecurringTransactions(recurringData || []);
 
-      // Calculate totals
+      // Calculate totals with date filtering
       const { data: allTransactions, error: allTransError } = await supabase
         .from("transactions")
-        .select("type, amount");
+        .select("type, amount, date")
+        .gte("date", dateRange.start)
+        .lte("date", dateRange.end);
 
       if (allTransError) throw allTransError;
 
@@ -153,18 +190,31 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background p-3 md:p-6">
       <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-        {/* Header with Notifications */}
+        {/* Header with Notifications and Time Period Filter */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h1 className="text-2xl md:text-4xl font-bold text-foreground">{t('appTitle')}</h1>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="gap-2"
-            onClick={() => navigate('/notifications')}
-          >
-            <Bell className="h-4 w-4" />
-            <span className="hidden sm:inline">{t('notifications')}</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Select value={timePeriod} onValueChange={(value: any) => setTimePeriod(value)}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+                <SelectItem value="yearly">Yearly</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => navigate('/notifications')}
+            >
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('notifications')}</span>
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
