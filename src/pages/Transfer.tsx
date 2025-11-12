@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeftRight } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Account {
   id: string;
@@ -31,6 +32,7 @@ const Transfer = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { format: formatCurrency } = useCurrency();
+  const { t } = useTranslation();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
   const [fromAccountId, setFromAccountId] = useState("");
@@ -315,25 +317,25 @@ const Transfer = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ArrowLeftRight className="w-5 h-5" />
-            Transfer Between Accounts
+            {t('transferBetweenAccounts')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>From</Label>
+              <Label>{t('from')}</Label>
               <Select value={fromType} onValueChange={(v) => { setFromType(v as any); setFromAccountId(""); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="account">Account</SelectItem>
-                  <SelectItem value="savings">Savings Goal</SelectItem>
+                  <SelectItem value="account">{t('account')}</SelectItem>
+                  <SelectItem value="savings">{t('savingsGoal')}</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={fromAccountId} onValueChange={setFromAccountId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select source" />
+                  <SelectValue placeholder={t('selectSource')} />
                 </SelectTrigger>
                 <SelectContent>
                   {fromType === "account" 
@@ -353,19 +355,19 @@ const Transfer = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>To</Label>
+              <Label>{t('to')}</Label>
               <Select value={toType} onValueChange={(v) => { setToType(v as any); setToAccountId(""); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="account">Account</SelectItem>
-                  <SelectItem value="savings">Savings Goal</SelectItem>
+                  <SelectItem value="account">{t('account')}</SelectItem>
+                  <SelectItem value="savings">{t('savingsGoal')}</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={toAccountId} onValueChange={setToAccountId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select destination" />
+                  <SelectValue placeholder={t('selectDestination')} />
                 </SelectTrigger>
                 <SelectContent>
                   {toType === "account" 
@@ -385,7 +387,7 @@ const Transfer = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Amount</Label>
+              <Label>{t('amount')}</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -397,20 +399,20 @@ const Transfer = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Description (Optional)</Label>
+              <Label>{t('descriptionOptional')}</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="What's this transfer for?"
+                placeholder={t('whatsThisFor')}
               />
             </div>
 
             <div className="flex gap-2">
               <Button type="submit" disabled={loading} className="flex-1">
-                {loading ? "Processing..." : "Transfer Money"}
+                {loading ? t('processing') : t('transferMoney')}
               </Button>
               <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-                Cancel
+                {t('cancel')}
               </Button>
             </div>
           </form>

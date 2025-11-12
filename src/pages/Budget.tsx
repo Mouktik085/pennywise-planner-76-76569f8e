@@ -212,7 +212,7 @@ const Budget = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t('monthlyBudget')}</h1>
-          <p className="text-muted-foreground">Set and track your spending limits</p>
+          <p className="text-muted-foreground">{t('trackSpending')}</p>
         </div>
         <Link to="/budget/allocation">
           <Button className="gap-2">
@@ -300,7 +300,7 @@ const Budget = () => {
               />
             </div>
             <Button type="submit" className="w-full">
-              {budget ? "Update Budget" : "Set Budget"}
+              {budget ? t('updateBudget') : t('setBudgetBtn')}
             </Button>
           </form>
         </CardContent>

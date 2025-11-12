@@ -188,22 +188,22 @@ const Savings = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">{t('savingsGoals')}</h1>
-          <p className="text-muted-foreground">Track and achieve your financial targets</p>
+          <p className="text-muted-foreground">{t('trackFinancialTargets')}</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => setEditingGoal(null)}>
               <Plus className="w-4 h-4 mr-2" />
-              Add Goal
+              {t('addGoal')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingGoal ? "Edit Goal" : "Create New Goal"}</DialogTitle>
+              <DialogTitle>{editingGoal ? t('editGoal') : t('createNewGoal')}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label>Icon</Label>
+                <Label>{t('icon')}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full text-3xl h-16">
@@ -228,7 +228,7 @@ const Savings = () => {
                 </Popover>
               </div>
               <div className="space-y-2">
-                <Label>Goal Name</Label>
+                <Label>{t('goalName')}</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -274,7 +274,7 @@ const Savings = () => {
                 />
               </div>
               <Button type="submit" className="w-full">
-                {editingGoal ? "Update" : "Create"} Goal
+                {editingGoal ? t('update') : t('create')} {t('savingsGoals').slice(0, -1)}
               </Button>
             </form>
           </DialogContent>
@@ -360,7 +360,7 @@ const Savings = () => {
                       onClick={() => setAddMoneyDialog(goal)}
                     >
                       <Plus className="w-5 h-5 mr-2" />
-                      Add Money
+                      {t('addMoney')}
                     </Button>
                     <Button
                       size="sm"

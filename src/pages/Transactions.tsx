@@ -231,7 +231,7 @@ const Transactions = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <h1 className="text-2xl sm:text-4xl font-bold text-foreground">{t('transactions')}</h1>
-            <p className="text-muted-foreground mt-1">Manage your income and expenses</p>
+            <p className="text-muted-foreground mt-1">{t('manageIncomeExpenses')}</p>
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
             <ManualSMSImport />

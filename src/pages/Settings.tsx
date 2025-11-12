@@ -191,7 +191,7 @@ const Settings = () => {
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
           <h1 className="text-4xl font-bold text-foreground">{t('settings')}</h1>
-          <p className="text-muted-foreground mt-1">Manage your app preferences</p>
+          <p className="text-muted-foreground mt-1">{t('managePreferences')}</p>
         </div>
 
         {/* Profile Settings */}
@@ -210,11 +210,11 @@ const Settings = () => {
               
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="username">Display Name</Label>
+                  <Label htmlFor="username">{t('displayName')}</Label>
                   <Input
                     id="username"
                     type="text"
-                    placeholder="Enter your name"
+                    placeholder={t('enterYourName')}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                   />
@@ -254,7 +254,7 @@ const Settings = () => {
                   </div>
                 </div>
                 
-                <Button className="w-full" onClick={handleSaveSettings}>Save Profile</Button>
+                <Button className="w-full" onClick={handleSaveSettings}>{t('saveProfile')}</Button>
               </div>
             </div>
           </div>
@@ -271,17 +271,17 @@ const Settings = () => {
             </div>
             <div className="flex-1 space-y-4">
               <div>
-                <h3 className="font-bold text-xl">Dark Mode</h3>
+                <h3 className="font-bold text-xl">{t('darkMode')}</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Switch between light and dark theme
+                  {t('switchTheme')}
                 </p>
               </div>
               
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div className="space-y-0.5">
-                  <Label>Dark Mode</Label>
+                  <Label>{t('darkMode')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    {theme === "dark" ? "Currently using dark theme" : "Currently using light theme"}
+                    {theme === "dark" ? t('currentlyDark') : t('currentlyLight')}
                   </p>
                 </div>
                 <Switch 
@@ -301,31 +301,31 @@ const Settings = () => {
             </div>
             <div className="flex-1 space-y-4">
               <div>
-                <h3 className="font-bold text-xl">Notifications</h3>
+                <h3 className="font-bold text-xl">{t('notifications')}</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Manage your notification preferences for browser, email, and SMS
+                  {t('notificationPreferences')}
                 </p>
               </div>
               
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label>Email Address (from your account)</Label>
+                  <Label>{t('emailFromAccount')}</Label>
                   <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border border-input">
                     <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm flex-1">{user?.email || 'No email address'}</span>
+                    <span className="text-sm flex-1">{user?.email || t('noEmail')}</span>
                     {user?.email && (
                       <Badge variant="outline" className="ml-auto bg-green-500/10 text-green-600 border-green-500/20">
-                        Verified
+                        {t('verified')}
                       </Badge>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Email notifications will be sent to this address
+                    {t('emailWillBeSent')}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Phone Number (for SMS notifications)</Label>
+                  <Label>{t('phoneForSMS')}</Label>
                   <div className="relative">
                     <Input
                       type="tel"
@@ -366,16 +366,16 @@ const Settings = () => {
 
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="space-y-0.5">
-                    <Label>Email Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Receive notifications via email</p>
+                    <Label>{t('emailNotifications')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('receiveEmail')}</p>
                   </div>
                   <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="space-y-0.5">
-                    <Label>SMS Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Receive notifications via SMS</p>
+                    <Label>{t('smsNotifications')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('receiveSMS')}</p>
                   </div>
                   <Switch checked={smsNotifications} onCheckedChange={setSmsNotifications} />
                 </div>
@@ -384,29 +384,29 @@ const Settings = () => {
 
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="space-y-0.5">
-                    <Label>Budget Alerts</Label>
-                    <p className="text-sm text-muted-foreground">Get notified when approaching budget limits</p>
+                    <Label>{t('budgetAlertsNotif')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('budgetAlertsDesc')}</p>
                   </div>
                   <Switch checked={notifBudgetAlerts} onCheckedChange={setNotifBudgetAlerts} />
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="space-y-0.5">
-                    <Label>Transaction Reminders</Label>
-                    <p className="text-sm text-muted-foreground">Remind about upcoming transactions</p>
+                    <Label>{t('transactionReminders')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('transactionRemindersDesc')}</p>
                   </div>
                   <Switch checked={notifTransactionReminders} onCheckedChange={setNotifTransactionReminders} />
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="space-y-0.5">
-                    <Label>Savings Milestones</Label>
-                    <p className="text-sm text-muted-foreground">Celebrate when you reach savings goals</p>
+                    <Label>{t('savingsMilestones')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('savingsMilestonesDesc')}</p>
                   </div>
                   <Switch checked={notifSavingsMilestones} onCheckedChange={setNotifSavingsMilestones} />
                 </div>
                 
-                <Button className="w-full" onClick={handleSaveSettings}>Save Notification Settings</Button>
+                <Button className="w-full" onClick={handleSaveSettings}>{t('saveNotificationSettings')}</Button>
               </div>
             </div>
           </div>
