@@ -173,6 +173,7 @@ const Settings = () => {
                       <option value="EUR">€ Euro (EUR)</option>
                       <option value="GBP">£ British Pound (GBP)</option>
                       <option value="JPY">¥ Japanese Yen (JPY)</option>
+                      <option value="PLN">zł Polish Zloty (PLN)</option>
                       <option value="AUD">A$ Australian Dollar (AUD)</option>
                       <option value="CAD">C$ Canadian Dollar (CAD)</option>
                     </select>
@@ -429,7 +430,13 @@ const Settings = () => {
                     <Label>App Lock</Label>
                     <p className="text-sm text-muted-foreground">Require PIN/biometric to open app</p>
                   </div>
-                  <Switch checked={securityAppLock} onCheckedChange={setSecurityAppLock} />
+                  <Switch 
+                    checked={securityAppLock} 
+                    onCheckedChange={(checked) => {
+                      setSecurityAppLock(checked);
+                      toast.success(checked ? "App Lock enabled" : "App Lock disabled");
+                    }} 
+                  />
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
@@ -437,7 +444,13 @@ const Settings = () => {
                     <Label>Hide Balance</Label>
                     <p className="text-sm text-muted-foreground">Hide amounts on home screen</p>
                   </div>
-                  <Switch checked={securityHideBalance} onCheckedChange={setSecurityHideBalance} />
+                  <Switch 
+                    checked={securityHideBalance} 
+                    onCheckedChange={(checked) => {
+                      setSecurityHideBalance(checked);
+                      toast.success(checked ? "Balance will be hidden" : "Balance will be visible");
+                    }} 
+                  />
                 </div>
                 
                 <Button className="w-full" onClick={handleSaveSettings}>Save Security Settings</Button>

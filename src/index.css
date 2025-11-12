@@ -20,66 +20,66 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Ocean Theme - More White with Vibrant Colors */
-    --background: 200 20% 98%;
-    --foreground: 210 50% 10%;
+    /* Vibrant Colorful Theme */
+    --background: 210 100% 97%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 50% 10%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 50% 10%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 195 95% 48%;
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 188 85% 92%;
-    --secondary-foreground: 210 50% 10%;
+    --secondary: 270 95% 95%;
+    --secondary-foreground: 262 83% 58%;
 
     --muted: 210 40% 96%;
-    --muted-foreground: 200 15% 40%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 185 80% 55%;
+    --accent: 199 89% 48%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 85% 60%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 195 95% 48%;
+    --ring: 262 83% 58%;
 
     --radius: 1rem;
 
-    /* Financial colors - Vibrant Ocean */
-    --income: 155 85% 42%;
+    /* Financial colors - Vibrant & Bold */
+    --income: 142 76% 36%;
     --income-foreground: 0 0% 100%;
-    --income-light: 155 85% 92%;
+    --income-light: 142 76% 94%;
     
-    --expense: 345 90% 58%;
+    --expense: 0 72% 51%;
     --expense-foreground: 0 0% 100%;
-    --expense-light: 345 90% 95%;
+    --expense-light: 0 72% 97%;
     
-    --savings: 200 95% 55%;
+    --savings: 45 93% 47%;
     --savings-foreground: 0 0% 100%;
-    --savings-light: 200 95% 95%;
+    --savings-light: 45 93% 95%;
 
-    /* Chart colors - Vibrant Ocean palette */
-    --chart-1: 195 95% 50%;
-    --chart-2: 185 80% 55%;
-    --chart-3: 200 95% 55%;
-    --chart-4: 155 85% 42%;
-    --chart-5: 345 90% 58%;
+    /* Chart colors - Rainbow palette */
+    --chart-1: 262 83% 58%;
+    --chart-2: 199 89% 48%;
+    --chart-3: 142 76% 36%;
+    --chart-4: 45 93% 47%;
+    --chart-5: 0 72% 51%;
 
-    /* Sidebar - Clean white with vibrant accents */
+    /* Sidebar - Colorful gradient */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 210 50% 10%;
-    --sidebar-primary: 195 95% 48%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 262 83% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 25% 95%;
-    --sidebar-accent-foreground: 210 50% 10%;
-    --sidebar-border: 200 20% 90%;
-    --sidebar-ring: 195 95% 48%;
+    --sidebar-accent: 270 95% 97%;
+    --sidebar-accent-foreground: 262 83% 58%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 262 83% 58%;
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

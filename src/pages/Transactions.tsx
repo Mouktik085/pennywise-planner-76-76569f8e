@@ -23,6 +23,7 @@ interface Transaction {
   amount: number;
   date: string;
   description: string | null;
+  account_id: string | null;
 }
 
 interface Transfer {
@@ -119,7 +120,7 @@ const Transactions = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, accountId?: string) => {
     try {
       // Get transaction details before deleting
       const { data: transactionData } = await supabase
@@ -134,6 +135,26 @@ const Transactions = () => {
         .eq("id", id);
 
       if (error) throw error;
+
+      // Update account balance if transaction had an account
+      if (transactionData && accountId) {
+        const { data: accountData } = await supabase
+          .from("accounts")
+          .select("balance")
+          .eq("id", accountId)
+          .single();
+
+        if (accountData) {
+          const newBalance = transactionData.type === "expense" 
+            ? accountData.balance + transactionData.amount 
+            : accountData.balance - transactionData.amount;
+          
+          await supabase
+            .from("accounts")
+            .update({ balance: newBalance })
+            .eq("id", accountId);
+        }
+      }
 
       // Update budget if it was an expense
       if (transactionData && transactionData.type === "expense") {
@@ -386,7 +407,7 @@ const Transactions = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(transaction.id)}
+                        onClick={() => handleDelete(transaction.id, transaction.account_id || undefined)}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />

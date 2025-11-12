@@ -43,8 +43,9 @@ const Accounts = () => {
     icon: "💼",
     is_credit_card: false,
     credit_limit: 0,
-    bill_date: 1,
-    due_date: 5,
+    credit_used: 0,
+    bill_date: undefined as number | undefined,
+    due_date: undefined as number | undefined,
   });
 
   const emojiList = ["💼", "💳", "🏦", "💰", "🪙", "💵", "💴", "💶", "💷", "💸", "🤑", "🏧", "💎", "👛", "👜", "🎯", "📱", "🌟", "⭐", "🎁"];
@@ -99,7 +100,19 @@ const Accounts = () => {
       
       setDialogOpen(false);
       setEditingAccount(null);
-      setFormData({ name: "", type: "cash", balance: 0, bank_name: "", account_number: "", icon: "💼", is_credit_card: false, credit_limit: 0, bill_date: 1, due_date: 5 });
+      setFormData({ 
+        name: "", 
+        type: "cash", 
+        balance: 0, 
+        bank_name: "", 
+        account_number: "", 
+        icon: "💼", 
+        is_credit_card: false, 
+        credit_limit: 0, 
+        credit_used: 0,
+        bill_date: undefined, 
+        due_date: undefined 
+      });
       fetchAccounts();
     } catch (error: any) {
       toast({
@@ -361,8 +374,9 @@ const Accounts = () => {
                         icon: account.icon || "💼",
                         is_credit_card: account.is_credit_card || false,
                         credit_limit: account.credit_limit || 0,
-                        bill_date: account.bill_date || 1,
-                        due_date: account.due_date || 5,
+                        credit_used: account.credit_used || 0,
+                        bill_date: account.bill_date,
+                        due_date: account.due_date,
                       });
                       setDialogOpen(true);
                     }}

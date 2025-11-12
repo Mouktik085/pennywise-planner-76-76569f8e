@@ -45,8 +45,27 @@ const AddTransaction = () => {
   useEffect(() => {
     if (user) {
       fetchAccounts();
+      fetchDefaultAccount();
     }
   }, [user]);
+
+  const fetchDefaultAccount = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("default_account_id")
+        .eq("user_id", user?.id)
+        .single();
+
+      if (error) throw error;
+      
+      if (data?.default_account_id) {
+        setAccountId(data.default_account_id);
+      }
+    } catch (error) {
+      console.error("Error fetching default account:", error);
+    }
+  };
 
   const fetchAccounts = async () => {
     try {
