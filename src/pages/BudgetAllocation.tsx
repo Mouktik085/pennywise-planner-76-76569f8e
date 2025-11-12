@@ -4,12 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, Save, PieChart, TrendingDown, AlertCircle } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ArrowLeft, Save, TrendingDown } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface CategoryBudget {
   id?: string;
@@ -17,102 +16,91 @@ interface CategoryBudget {
   percentage: number;
   allocated_amount: number;
   spent_amount: number;
-  emoji: string;
+  icon: string;
 }
 
-const expenseCategories = [
-  { name: "Food", emoji: "🍔" },
-  { name: "Transport", emoji: "🚗" },
-  { name: "Shopping", emoji: "🛍️" },
-  { name: "Entertainment", emoji: "🎬" },
-  { name: "Bills", emoji: "💡" },
-  { name: "Healthcare", emoji: "🏥" },
-  { name: "Education", emoji: "📚" },
-  { name: "Other", emoji: "📦" },
+const defaultCategories = [
+  { category: "Food", icon: "🍔" },
+  { category: "Transport", icon: "🚗" },
+  { category: "Shopping", icon: "🛍️" },
+  { category: "Entertainment", icon: "🎬" },
+  { category: "Bills", icon: "💡" },
+  { category: "Healthcare", icon: "🏥" },
+  { category: "Education", icon: "📚" },
+  { category: "Other", icon: "📦" },
 ];
 
 const BudgetAllocation = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [monthlyBudget, setMonthlyBudget] = useState(0);
-  const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudget[]>(
-    expenseCategories.map(cat => ({
-      category: cat.name,
-      percentage: 0,
-      allocated_amount: 0,
-      spent_amount: 0,
-      emoji: cat.emoji,
-    }))
-  );
+  const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudget[]>([]);
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
+    if (user) {
+      fetchBudgetData();
     }
-    fetchBudgetData();
-  }, [user, navigate]);
+  }, [user]);
 
   const fetchBudgetData = async () => {
     try {
-      const currentDate = new Date();
-      const month = currentDate.getMonth() + 1;
-      const year = currentDate.getFullYear();
-
-      // Fetch total monthly budget
-      const { data: budgetData } = await supabase
+      // Fetch main budget
+      const { data: budgetData, error: budgetError } = await supabase
         .from("budget")
         .select("*")
         .eq("user_id", user?.id)
-        .eq("month", month)
-        .eq("year", year)
+        .eq("month", currentMonth)
+        .eq("year", currentYear)
         .maybeSingle();
 
-      if (budgetData) {
-        setMonthlyBudget(budgetData.monthly_limit);
-      }
+      if (budgetError) throw budgetError;
+      
+      const totalBudget = budgetData?.monthly_limit || 0;
+      setMonthlyBudget(totalBudget);
 
       // Fetch category budgets
-      const { data: categoryData, error } = await supabase
+      const { data: categoryData, error: categoryError } = await supabase
         .from("category_budgets")
         .select("*")
         .eq("user_id", user?.id)
-        .eq("month", month)
-        .eq("year", year);
+        .eq("month", currentMonth)
+        .eq("year", currentYear);
 
-      if (error) throw error;
+      if (categoryError && categoryError.code !== 'PGRST116') throw categoryError;
 
-      // Fetch actual spending per category
-      const { data: transactionsData } = await supabase
+      // Merge with default categories
+      const budgets = defaultCategories.map(def => {
+        const existing = categoryData?.find(c => c.category === def.category);
+        return {
+          id: existing?.id,
+          category: def.category,
+          icon: def.icon,
+          percentage: existing?.percentage || 0,
+          allocated_amount: existing?.allocated_amount || 0,
+          spent_amount: existing?.spent_amount || 0,
+        };
+      });
+
+      // Fetch actual spending
+      const { data: transactions } = await supabase
         .from("transactions")
         .select("category, amount")
         .eq("user_id", user?.id)
         .eq("type", "expense")
-        .gte("date", `${year}-${String(month).padStart(2, '0')}-01`)
-        .lte("date", `${year}-${String(month).padStart(2, '0')}-31`);
+        .gte("date", `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`);
 
-      // Calculate spent amounts per category
-      const spentByCategory: Record<string, number> = {};
-      transactionsData?.forEach(t => {
-        spentByCategory[t.category] = (spentByCategory[t.category] || 0) + Number(t.amount);
+      // Update spent amounts
+      budgets.forEach(budget => {
+        const spent = transactions
+          ?.filter(t => t.category === budget.category)
+          .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+        budget.spent_amount = spent;
       });
 
-      // Update category budgets with fetched data
-      const updatedBudgets = expenseCategories.map(cat => {
-        const existing = categoryData?.find(cb => cb.category === cat.name);
-        return {
-          id: existing?.id,
-          category: cat.name,
-          percentage: existing?.percentage || 0,
-          allocated_amount: existing?.allocated_amount || 0,
-          spent_amount: spentByCategory[cat.name] || 0,
-          emoji: cat.emoji,
-        };
-      });
-
-      setCategoryBudgets(updatedBudgets);
+      setCategoryBudgets(budgets);
     } catch (error) {
       console.error("Error fetching budget data:", error);
       toast.error("Failed to load budget data");
@@ -121,73 +109,57 @@ const BudgetAllocation = () => {
     }
   };
 
-  const handlePercentageChange = (category: string, newPercentage: number) => {
-    setCategoryBudgets(prev => prev.map(cb => 
-      cb.category === category 
-        ? { 
-            ...cb, 
-            percentage: newPercentage,
-            allocated_amount: (monthlyBudget * newPercentage) / 100
-          }
-        : cb
-    ));
+  const handlePercentageChange = (category: string, value: string) => {
+    const percentage = parseFloat(value) || 0;
+    setCategoryBudgets(prev =>
+      prev.map(b =>
+        b.category === category
+          ? {
+              ...b,
+              percentage,
+              allocated_amount: (monthlyBudget * percentage) / 100,
+            }
+          : b
+      )
+    );
   };
 
   const handleSave = async () => {
-    // Validate total percentage
-    const totalPercentage = categoryBudgets.reduce((sum, cb) => sum + cb.percentage, 0);
-    if (totalPercentage > 100) {
-      toast.error(`Total percentage is ${totalPercentage}%. Must be 100% or less.`);
-      return;
-    }
-
-    if (monthlyBudget === 0) {
-      toast.error("Please set a monthly budget first");
-      return;
-    }
-
     setSaving(true);
     try {
-      const currentDate = new Date();
-      const month = currentDate.getMonth() + 1;
-      const year = currentDate.getFullYear();
+      const totalPercentage = categoryBudgets.reduce((sum, b) => sum + b.percentage, 0);
+      
+      if (totalPercentage > 100) {
+        toast.error("Total percentage cannot exceed 100%");
+        setSaving(false);
+        return;
+      }
 
-      // Update or insert total budget
-      const { error: budgetError } = await supabase
-        .from("budget")
-        .upsert({
-          user_id: user?.id,
-          month,
-          year,
-          monthly_limit: monthlyBudget,
-          current_spent: 0,
-        }, {
-          onConflict: 'user_id,month,year'
-        });
+      // Save or update category budgets
+      for (const budget of categoryBudgets) {
+        if (budget.percentage > 0) {
+          const data = {
+            user_id: user?.id,
+            category: budget.category,
+            percentage: budget.percentage,
+            allocated_amount: budget.allocated_amount,
+            spent_amount: budget.spent_amount,
+            month: currentMonth,
+            year: currentYear,
+          };
 
-      if (budgetError) throw budgetError;
-
-      // Save category budgets
-      const categoriesToSave = categoryBudgets
-        .filter(cb => cb.percentage > 0)
-        .map(cb => ({
-          id: cb.id,
-          user_id: user?.id,
-          category: cb.category,
-          percentage: cb.percentage,
-          allocated_amount: cb.allocated_amount,
-          spent_amount: cb.spent_amount,
-          month,
-          year,
-        }));
-
-      const { error: categoryError } = await supabase
-        .from("category_budgets")
-        .upsert(categoriesToSave, {
-          onConflict: 'user_id,category,month,year'
-        });
-
-      if (categoryError) throw categoryError;
+          if (budget.id) {
+            await supabase
+              .from("category_budgets")
+              .update(data)
+              .eq("id", budget.id);
+          } else {
+            await supabase
+              .from("category_budgets")
+              .insert(data);
+          }
+        }
+      }
 
       toast.success("Budget allocation saved successfully!");
       fetchBudgetData();
@@ -199,8 +171,8 @@ const BudgetAllocation = () => {
     }
   };
 
-  const totalPercentage = categoryBudgets.reduce((sum, cb) => sum + cb.percentage, 0);
-  const remainingPercentage = 100 - totalPercentage;
+  const totalAllocated = categoryBudgets.reduce((sum, b) => sum + b.percentage, 0);
+  const remaining = 100 - totalAllocated;
 
   if (loading) {
     return (
@@ -211,8 +183,8 @@ const BudgetAllocation = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-3 md:p-6">
+      <div className="max-w-5xl mx-auto space-y-4 md:space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Link to="/budget">
@@ -222,115 +194,115 @@ const BudgetAllocation = () => {
           </Link>
           <div>
             <h1 className="text-3xl md:text-4xl font-bold">Budget Allocation</h1>
-            <p className="text-muted-foreground mt-1">Set spending percentages for each category</p>
+            <p className="text-sm md:text-base text-muted-foreground mt-1">
+              Set spending percentages for each category
+            </p>
           </div>
         </div>
 
-        {/* Monthly Budget */}
-        <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5" />
-              Monthly Budget
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="monthly-budget">Total Monthly Budget (₹)</Label>
-                <Input
-                  id="monthly-budget"
-                  type="number"
-                  step="100"
-                  value={monthlyBudget}
-                  onChange={(e) => {
-                    const newBudget = parseFloat(e.target.value) || 0;
-                    setMonthlyBudget(newBudget);
-                    // Recalculate allocated amounts
-                    setCategoryBudgets(prev => prev.map(cb => ({
-                      ...cb,
-                      allocated_amount: (newBudget * cb.percentage) / 100
-                    })));
-                  }}
-                  placeholder="50000"
-                  className="text-2xl font-bold"
-                />
+        {/* Monthly Budget Overview */}
+        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Monthly Budget</p>
+                <p className="text-2xl md:text-3xl font-bold">₹{monthlyBudget.toLocaleString()}</p>
               </div>
-
-              <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-lg">
-                <div>
-                  <p className="text-sm text-muted-foreground">Allocated</p>
-                  <p className="text-2xl font-bold text-primary">{totalPercentage.toFixed(1)}%</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Remaining</p>
-                  <p className={`text-2xl font-bold ${remainingPercentage < 0 ? 'text-destructive' : 'text-green-600'}`}>
-                    {remainingPercentage.toFixed(1)}%
-                  </p>
-                </div>
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground mb-1">
+                  {totalAllocated >= 100 ? "Fully Allocated" : "Remaining"}
+                </p>
+                <p className={`text-2xl md:text-3xl font-bold ${remaining < 0 ? "text-red-500" : "text-green-600"}`}>
+                  {remaining.toFixed(0)}%
+                </p>
               </div>
-
-              {remainingPercentage < 0 && (
-                <div className="flex items-center gap-2 p-3 bg-destructive/10 text-destructive rounded-lg">
-                  <AlertCircle className="h-4 w-4" />
-                  <p className="text-sm font-medium">Total exceeds 100%! Please adjust allocations.</p>
-                </div>
-              )}
-
-              <Progress value={totalPercentage} className="h-3" />
             </div>
+            <Progress value={totalAllocated} className="mt-4 h-3" />
           </CardContent>
         </Card>
 
+        {monthlyBudget === 0 && (
+          <Card className="bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800">
+            <CardContent className="pt-6">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                ⚠️ Please set your monthly budget first in the Budget page before allocating to categories.
+              </p>
+              <Link to="/budget">
+                <Button variant="outline" className="mt-3">
+                  Go to Budget Page
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Category Allocations */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {categoryBudgets.map((cb) => {
-            const spentPercentage = cb.allocated_amount > 0 
-              ? (cb.spent_amount / cb.allocated_amount) * 100 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+          {categoryBudgets.map((budget) => {
+            const spendingPercentage = budget.allocated_amount > 0
+              ? (budget.spent_amount / budget.allocated_amount) * 100
               : 0;
 
             return (
-              <Card key={cb.category}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <span className="text-2xl">{cb.emoji}</span>
-                    {cb.category}
+              <Card key={budget.category} className="hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                    <span className="text-xl md:text-2xl">{budget.icon}</span>
+                    {budget.category}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 md:space-y-4">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label>Allocation</Label>
-                      <span className="text-sm font-bold">{cb.percentage.toFixed(1)}%</span>
+                      <Label htmlFor={`percentage-${budget.category}`} className="text-sm">
+                        Allocation %
+                      </Label>
+                      <span className="text-sm font-medium">
+                        {budget.percentage}%
+                      </span>
                     </div>
-                    <Slider
-                      value={[cb.percentage]}
-                      onValueChange={([value]) => handlePercentageChange(cb.category, value)}
-                      max={100}
-                      step={1}
-                      className="py-2"
+                    <Input
+                      id={`percentage-${budget.category}`}
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      value={budget.percentage}
+                      onChange={(e) =>
+                        handlePercentageChange(budget.category, e.target.value)
+                      }
+                      className="text-right"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Allocated</span>
-                      <span className="font-semibold">₹{cb.allocated_amount.toFixed(0)}</span>
+                      <span className="font-semibold">
+                        ₹{budget.allocated_amount.toFixed(0)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Spent</span>
-                      <span className={`font-semibold ${spentPercentage > 100 ? 'text-destructive' : 'text-green-600'}`}>
-                        ₹{cb.spent_amount.toFixed(0)}
+                      <span
+                        className={`font-semibold ${
+                          spendingPercentage > 100
+                            ? "text-red-600"
+                            : "text-green-600"
+                        }`}
+                      >
+                        ₹{budget.spent_amount.toFixed(0)}
                       </span>
                     </div>
-                    <Progress 
-                      value={Math.min(spentPercentage, 100)} 
-                      className={`h-2 ${spentPercentage > 100 ? '[&>div]:bg-destructive' : ''}`}
+                    <Progress
+                      value={Math.min(spendingPercentage, 100)}
+                      className="h-2"
                     />
-                    {spentPercentage > 100 && (
-                      <p className="text-xs text-destructive flex items-center gap-1">
+                    {spendingPercentage > 100 && (
+                      <p className="text-xs text-red-600 flex items-center gap-1">
                         <TrendingDown className="h-3 w-3" />
-                        Over budget by ₹{(cb.spent_amount - cb.allocated_amount).toFixed(0)}
+                        Over budget by ₹
+                        {(budget.spent_amount - budget.allocated_amount).toFixed(0)}
                       </p>
                     )}
                   </div>
@@ -341,15 +313,30 @@ const BudgetAllocation = () => {
         </div>
 
         {/* Save Button */}
-        <Button 
-          onClick={handleSave} 
-          className="w-full gap-2"
-          size="lg"
-          disabled={saving || remainingPercentage < 0 || monthlyBudget === 0}
-        >
-          <Save className="h-4 w-4" />
-          {saving ? "Saving..." : "Save Budget Allocation"}
-        </Button>
+        <Card className="sticky bottom-3 md:bottom-6 bg-background/95 backdrop-blur-sm border-2">
+          <CardContent className="p-3 md:p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Total Allocated: <span className="font-semibold">{totalAllocated.toFixed(1)}%</span>
+                </p>
+                {remaining < 0 && (
+                  <p className="text-xs text-red-600">
+                    ⚠️ You've allocated more than 100%
+                  </p>
+                )}
+              </div>
+              <Button
+                onClick={handleSave}
+                disabled={saving || remaining < 0}
+                className="gap-2 w-full sm:w-auto"
+              >
+                <Save className="h-4 w-4" />
+                {saving ? "Saving..." : "Save Allocation"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
