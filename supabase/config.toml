@@ -56,7 +56,7 @@ enabled = true
 policy = "per_worker"
 
 [functions.ai-chat]
-verify_jwt = false
+verify_jwt = true
 
 [functions.daily-insights]
 verify_jwt = true

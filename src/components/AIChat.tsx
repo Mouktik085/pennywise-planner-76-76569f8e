@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { X, Send, Bot, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,6 +20,7 @@ export const AIChat = ({ onClose }: AIChatProps) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -93,8 +95,28 @@ export const AIChat = ({ onClose }: AIChatProps) => {
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
-
+    
     const userMessage = input.trim();
+    
+    // Validate message length
+    if (userMessage.length > 2000) {
+      toast({
+        title: "Message too long",
+        description: "Please keep your message under 2000 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (messages.length >= 50) {
+      toast({
+        title: "Message limit reached",
+        description: "Please start a new conversation.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);

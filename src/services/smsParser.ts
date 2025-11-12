@@ -36,33 +36,40 @@ export class SMSParser {
   ];
 
   static parseSMS(message: string): ParsedTransaction | null {
+    // Validate input
+    if (!message || typeof message !== 'string' || message.length > 500) {
+      return null;
+    }
+    
+    // Sanitize input
+    const sanitized = message.trim();
     try {
       // Check if it's a bank transaction SMS
-      if (!this.isBankSMS(message)) {
+      if (!this.isBankSMS(sanitized)) {
         return null;
       }
 
       // Extract amount
-      const amount = this.extractAmount(message);
+      const amount = this.extractAmount(sanitized);
       if (!amount) return null;
 
       // Determine transaction type
-      const type = this.getTransactionType(message);
+      const type = this.getTransactionType(sanitized);
 
       // Extract bank name
-      const bankName = this.extractBankName(message);
+      const bankName = this.extractBankName(sanitized);
 
       // Extract account number
-      const accountNumber = this.extractAccountNumber(message);
+      const accountNumber = this.extractAccountNumber(sanitized);
 
       // Extract or infer date
-      const date = this.extractDate(message);
+      const date = this.extractDate(sanitized);
 
       // Determine category
-      const category = this.determineCategory(message, type);
+      const category = this.determineCategory(sanitized, type);
 
       // Generate description
-      const description = this.generateDescription(message, type, bankName);
+      const description = this.generateDescription(sanitized, type, bankName);
 
       return {
         amount,
@@ -213,6 +220,11 @@ export class SMSParser {
 
   static async processAndSave(message: string, userId: string): Promise<boolean> {
     try {
+      // Validate message length
+      if (!message || message.length > 500) {
+        console.error('Invalid message length');
+        return false;
+      }
       const parsed = this.parseSMS(message);
       if (!parsed) return false;
 
