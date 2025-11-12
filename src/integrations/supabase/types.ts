@@ -19,10 +19,15 @@ export type Database = {
           account_number: string | null
           balance: number
           bank_name: string | null
+          bill_date: number | null
           color: string | null
           created_at: string
+          credit_limit: number | null
+          credit_used: number | null
+          due_date: number | null
           icon: string | null
           id: string
+          is_credit_card: boolean | null
           name: string
           type: string
           updated_at: string
@@ -32,10 +37,15 @@ export type Database = {
           account_number?: string | null
           balance?: number
           bank_name?: string | null
+          bill_date?: number | null
           color?: string | null
           created_at?: string
+          credit_limit?: number | null
+          credit_used?: number | null
+          due_date?: number | null
           icon?: string | null
           id?: string
+          is_credit_card?: boolean | null
           name: string
           type: string
           updated_at?: string
@@ -45,10 +55,15 @@ export type Database = {
           account_number?: string | null
           balance?: number
           bank_name?: string | null
+          bill_date?: number | null
           color?: string | null
           created_at?: string
+          credit_limit?: number | null
+          credit_used?: number | null
+          due_date?: number | null
           icon?: string | null
           id?: string
+          is_credit_card?: boolean | null
           name?: string
           type?: string
           updated_at?: string
@@ -132,6 +147,9 @@ export type Database = {
           notification_goals: boolean | null
           notification_savings_milestones: boolean | null
           notification_transaction_reminders: boolean | null
+          preferred_currency: string | null
+          preferred_language: string | null
+          reminder_days_before: number | null
           security_app_lock: boolean | null
           security_hide_balance: boolean | null
           sms_auto_import: boolean | null
@@ -153,6 +171,9 @@ export type Database = {
           notification_goals?: boolean | null
           notification_savings_milestones?: boolean | null
           notification_transaction_reminders?: boolean | null
+          preferred_currency?: string | null
+          preferred_language?: string | null
+          reminder_days_before?: number | null
           security_app_lock?: boolean | null
           security_hide_balance?: boolean | null
           sms_auto_import?: boolean | null
@@ -174,6 +195,9 @@ export type Database = {
           notification_goals?: boolean | null
           notification_savings_milestones?: boolean | null
           notification_transaction_reminders?: boolean | null
+          preferred_currency?: string | null
+          preferred_language?: string | null
+          reminder_days_before?: number | null
           security_app_lock?: boolean | null
           security_hide_balance?: boolean | null
           sms_auto_import?: boolean | null
@@ -240,6 +264,7 @@ export type Database = {
           id: string
           is_planned: boolean | null
           is_recurring: boolean | null
+          recurring_frequency: string | null
           type: string
           user_id: string
         }
@@ -253,6 +278,7 @@ export type Database = {
           id?: string
           is_planned?: boolean | null
           is_recurring?: boolean | null
+          recurring_frequency?: string | null
           type: string
           user_id: string
         }
@@ -266,6 +292,7 @@ export type Database = {
           id?: string
           is_planned?: boolean | null
           is_recurring?: boolean | null
+          recurring_frequency?: string | null
           type?: string
           user_id?: string
         }

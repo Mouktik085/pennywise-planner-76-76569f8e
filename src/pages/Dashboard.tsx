@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate, Link } from "react-router-dom";
 import { Plus, TrendingUp, TrendingDown, Wallet, PiggyBank, Settings as SettingsIcon, Calendar as CalendarIcon, MessageSquare, Repeat, LogOut, Sparkles, Bell } from "lucide-react";
 import { AIChat } from "@/components/AIChat";
+import { UpcomingReminders } from "@/components/UpcomingReminders";
 
 interface Transaction {
   id: string;
@@ -25,6 +26,8 @@ const Dashboard = () => {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalSavings, setTotalSavings] = useState(0);
   const [totalAccountBalance, setTotalAccountBalance] = useState(0);
+  const [creditCardLiability, setCreditCardLiability] = useState(0);
+  const [currency, setCurrency] = useState("₹");
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [recurringTransactions, setRecurringTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,14 +107,37 @@ const Dashboard = () => {
       setTotalIncome(income);
       setTotalExpenses(expenses);
 
-      // Fetch account balances
+      // Fetch account balances and credit card liability
       const { data: accountsData, error: accountsError } = await supabase
         .from("accounts")
-        .select("balance");
+        .select("balance, is_credit_card, credit_used");
 
       if (accountsError) throw accountsError;
 
-      const totalAccountBalance = accountsData?.reduce((sum, a) => sum + Number(a.balance), 0) || 0;
+      const regularAccountBalance = accountsData
+        ?.filter(a => !a.is_credit_card)
+        .reduce((sum, a) => sum + Number(a.balance), 0) || 0;
+      
+      const creditLiability = accountsData
+        ?.filter(a => a.is_credit_card)
+        .reduce((sum, a) => sum + Number(a.credit_used), 0) || 0;
+      
+      setTotalAccountBalance(regularAccountBalance);
+      setCreditCardLiability(creditLiability);
+      
+      // Fetch user currency preference
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("preferred_currency")
+        .eq("user_id", user?.id)
+        .maybeSingle();
+      
+      if (profileData?.preferred_currency) {
+        const currencySymbols: Record<string, string> = {
+          'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥'
+        };
+        setCurrency(currencySymbols[profileData.preferred_currency] || '₹');
+      }
 
       // Fetch savings
       const { data: savingsData, error: savingsError } = await supabase
@@ -206,11 +232,14 @@ const Dashboard = () => {
           </Card>
         )}
 
+        {/* Upcoming Reminders */}
+        <UpcomingReminders />
+
         {/* Widgets */}
         {showAIChat && <AIChat onClose={() => setShowAIChat(false)} />}
 
         {/* Balance Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
           <Card className="p-4 md:p-6 bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground border-0 shadow-xl shadow-primary/30">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
@@ -219,7 +248,19 @@ const Dashboard = () => {
                 </div>
                 <p className="text-xs md:text-sm opacity-90">Balance</p>
               </div>
-              <h3 className="text-lg md:text-2xl font-bold">₹{totalAccountBalance.toLocaleString()}</h3>
+              <h3 className="text-lg md:text-2xl font-bold">{currency}{totalAccountBalance.toLocaleString()}</h3>
+            </div>
+          </Card>
+
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-red-500 via-red-500/90 to-red-500/70 text-white border-0 shadow-xl shadow-red-500/20">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <TrendingDown className="h-4 w-4 md:h-5 md:w-5" />
+                </div>
+                <p className="text-xs md:text-sm opacity-90">Credit Card Due</p>
+              </div>
+              <h3 className="text-lg md:text-2xl font-bold">{currency}{creditCardLiability.toLocaleString()}</h3>
             </div>
           </Card>
 
@@ -231,7 +272,7 @@ const Dashboard = () => {
                 </div>
                 <p className="text-xs md:text-sm opacity-90">Income</p>
               </div>
-              <h3 className="text-lg md:text-2xl font-bold">₹{totalIncome.toLocaleString()}</h3>
+              <h3 className="text-lg md:text-2xl font-bold">{currency}{totalIncome.toLocaleString()}</h3>
             </div>
           </Card>
 
@@ -243,7 +284,7 @@ const Dashboard = () => {
                 </div>
                 <p className="text-xs md:text-sm opacity-90">Expenses</p>
               </div>
-              <h3 className="text-lg md:text-2xl font-bold">₹{totalExpenses.toLocaleString()}</h3>
+              <h3 className="text-lg md:text-2xl font-bold">{currency}{totalExpenses.toLocaleString()}</h3>
             </div>
           </Card>
 
@@ -255,7 +296,7 @@ const Dashboard = () => {
                 </div>
                 <p className="text-xs md:text-sm opacity-90">Savings</p>
               </div>
-              <h3 className="text-lg md:text-2xl font-bold">₹{totalSavings.toLocaleString()}</h3>
+              <h3 className="text-lg md:text-2xl font-bold">{currency}{totalSavings.toLocaleString()}</h3>
             </div>
           </Card>
         </div>

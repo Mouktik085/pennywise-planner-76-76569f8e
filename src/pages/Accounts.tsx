@@ -20,6 +20,11 @@ interface Account {
   account_number?: string;
   icon?: string;
   color?: string;
+  is_credit_card?: boolean;
+  credit_limit?: number;
+  credit_used?: number;
+  bill_date?: number;
+  due_date?: number;
 }
 
 const Accounts = () => {
@@ -36,6 +41,10 @@ const Accounts = () => {
     bank_name: "",
     account_number: "",
     icon: "💼",
+    is_credit_card: false,
+    credit_limit: 0,
+    bill_date: 1,
+    due_date: 5,
   });
 
   const emojiList = ["💼", "💳", "🏦", "💰", "🪙", "💵", "💴", "💶", "💷", "💸", "🤑", "🏧", "💎", "👛", "👜", "🎯", "📱", "🌟", "⭐", "🎁"];
@@ -90,7 +99,7 @@ const Accounts = () => {
       
       setDialogOpen(false);
       setEditingAccount(null);
-      setFormData({ name: "", type: "cash", balance: 0, bank_name: "", account_number: "", icon: "💼" });
+      setFormData({ name: "", type: "cash", balance: 0, bank_name: "", account_number: "", icon: "💼", is_credit_card: false, credit_limit: 0, bill_date: 1, due_date: 5 });
       fetchAccounts();
     } catch (error: any) {
       toast({
@@ -201,13 +210,53 @@ const Accounts = () => {
                   <SelectContent>
                     <SelectItem value="cash">Cash</SelectItem>
                     <SelectItem value="bank">Bank</SelectItem>
-                    <SelectItem value="card">Card</SelectItem>
+                    <SelectItem value="card">Debit Card</SelectItem>
+                    <SelectItem value="credit_card">Credit Card</SelectItem>
                     <SelectItem value="upi">UPI</SelectItem>
                     <SelectItem value="savings">Savings</SelectItem>
                     <SelectItem value="piggy_bank">Piggy Bank</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              
+              {formData.type === "credit_card" && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Credit Limit</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={formData.credit_limit}
+                      onChange={(e) => setFormData({ ...formData, credit_limit: parseFloat(e.target.value) || 0, is_credit_card: true })}
+                      placeholder="50000"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Bill Generation Date (Day of Month)</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={formData.bill_date}
+                      onChange={(e) => setFormData({ ...formData, bill_date: parseInt(e.target.value) || 1 })}
+                      placeholder="1"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Payment Due Date (Day of Month)</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={formData.due_date}
+                      onChange={(e) => setFormData({ ...formData, due_date: parseInt(e.target.value) || 5 })}
+                      placeholder="5"
+                    />
+                  </div>
+                </>
+              )}
+              
               {(formData.type === "bank" || formData.type === "card" || formData.type === "upi") && (
                 <>
                   <div className="space-y-2">
@@ -228,16 +277,19 @@ const Accounts = () => {
                   </div>
                 </>
               )}
-              <div className="space-y-2">
-                <Label>Initial Balance</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.balance}
-                  onChange={(e) => setFormData({ ...formData, balance: parseFloat(e.target.value) || 0 })}
-                  placeholder="0.00"
-                />
-              </div>
+              
+              {formData.type !== "credit_card" && (
+                <div className="space-y-2">
+                  <Label>Initial Balance</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formData.balance}
+                    onChange={(e) => setFormData({ ...formData, balance: parseFloat(e.target.value) || 0 })}
+                    placeholder="0.00"
+                  />
+                </div>
+              )}
               <Button type="submit" className="w-full">
                 {editingAccount ? "Update" : "Create"} Account
               </Button>
@@ -265,10 +317,29 @@ const Accounts = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Balance</span>
-                  <span className="text-2xl font-bold">₹{account.balance.toFixed(2)}</span>
-                </div>
+                {account.is_credit_card ? (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Used / Limit</span>
+                      <span className="text-2xl font-bold">₹{account.credit_used?.toFixed(2)} / ₹{account.credit_limit?.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Available</span>
+                      <span className="text-lg font-semibold text-green-600">₹{((account.credit_limit || 0) - (account.credit_used || 0)).toFixed(2)}</span>
+                    </div>
+                    {account.bill_date && (
+                      <p className="text-sm text-muted-foreground">Bill Date: {account.bill_date}th of every month</p>
+                    )}
+                    {account.due_date && (
+                      <p className="text-sm text-muted-foreground">Due Date: {account.due_date}th of every month</p>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Balance</span>
+                    <span className="text-2xl font-bold">₹{account.balance.toFixed(2)}</span>
+                  </div>
+                )}
                 {account.bank_name && (
                   <p className="text-sm text-muted-foreground">{account.bank_name}</p>
                 )}
@@ -288,6 +359,10 @@ const Accounts = () => {
                         bank_name: account.bank_name || "",
                         account_number: account.account_number || "",
                         icon: account.icon || "💼",
+                        is_credit_card: account.is_credit_card || false,
+                        credit_limit: account.credit_limit || 0,
+                        bill_date: account.bill_date || 1,
+                        due_date: account.due_date || 5,
                       });
                       setDialogOpen(true);
                     }}

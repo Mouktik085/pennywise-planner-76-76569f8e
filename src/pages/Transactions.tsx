@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Search, Calendar as CalendarIcon, TrendingUp, TrendingDown, Trash2, ArrowLeftRight, Edit, Edit2 } from "lucide-react";
+import { Plus, Search, Calendar as CalendarIcon, TrendingUp, TrendingDown, Trash2, ArrowLeftRight, Edit, Edit2, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 import { EditTransferDialog } from "@/components/EditTransferDialog";
+import { ManualSMSImport } from "@/components/ManualSMSImport";
 
 interface Transaction {
   id: string;
@@ -120,12 +121,41 @@ const Transactions = () => {
 
   const handleDelete = async (id: string) => {
     try {
+      // Get transaction details before deleting
+      const { data: transactionData } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("id", id)
+        .single();
+      
       const { error } = await supabase
         .from("transactions")
         .delete()
         .eq("id", id);
 
       if (error) throw error;
+
+      // Update budget if it was an expense
+      if (transactionData && transactionData.type === "expense") {
+        const transDate = new Date(transactionData.date);
+        const month = transDate.getMonth() + 1;
+        const year = transDate.getFullYear();
+
+        const { data: budgetData } = await supabase
+          .from("budget")
+          .select("*")
+          .eq("user_id", user?.id)
+          .eq("month", month)
+          .eq("year", year)
+          .maybeSingle();
+
+        if (budgetData) {
+          await supabase
+            .from("budget")
+            .update({ current_spent: Math.max(0, budgetData.current_spent - transactionData.amount) })
+            .eq("id", budgetData.id);
+        }
+      }
 
       toast.success("Transaction deleted successfully");
       fetchTransactions();
@@ -179,12 +209,15 @@ const Transactions = () => {
             <h1 className="text-4xl font-bold text-foreground">Transactions</h1>
             <p className="text-muted-foreground mt-1">Manage your income and expenses</p>
           </div>
-          <Link to="/add-transaction">
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Transaction
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <ManualSMSImport />
+            <Link to="/add-transaction">
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add Transaction
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Filters */}

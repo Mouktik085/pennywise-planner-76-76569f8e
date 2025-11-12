@@ -25,6 +25,8 @@ const Settings = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedAccount, setSelectedAccount] = useState("");
   const [primaryColor, setPrimaryColor] = useState("#8B5CF6");
+  const [currency, setCurrency] = useState("INR");
+  const [language, setLanguage] = useState("en");
   
   // Notification settings
   const [notifBudgetAlerts, setNotifBudgetAlerts] = useState(true);
@@ -76,6 +78,8 @@ const Settings = () => {
         setSmsSync(data.sms_auto_import || false);
         setSelectedAccount(data.default_account_id || "");
         setPrimaryColor(data.theme_primary_color || "#8B5CF6");
+        setCurrency(data.preferred_currency || "INR");
+        setLanguage(data.preferred_language || "en");
         setNotifBudgetAlerts(data.notification_budget_alerts ?? true);
         setNotifTransactionReminders(data.notification_transaction_reminders ?? true);
         setNotifSavingsMilestones(data.notification_savings_milestones ?? true);
@@ -101,6 +105,8 @@ const Settings = () => {
           sms_auto_import: smsSync,
           default_account_id: selectedAccount || null,
           theme_primary_color: primaryColor,
+          preferred_currency: currency,
+          preferred_language: language,
           notification_budget_alerts: notifBudgetAlerts,
           notification_transaction_reminders: notifTransactionReminders,
           notification_savings_milestones: notifSavingsMilestones,
@@ -151,6 +157,45 @@ const Settings = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                   />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currency">Currency</Label>
+                    <select
+                      id="currency"
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                      className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                    >
+                      <option value="INR">₹ Indian Rupee (INR)</option>
+                      <option value="USD">$ US Dollar (USD)</option>
+                      <option value="EUR">€ Euro (EUR)</option>
+                      <option value="GBP">£ British Pound (GBP)</option>
+                      <option value="JPY">¥ Japanese Yen (JPY)</option>
+                      <option value="AUD">A$ Australian Dollar (AUD)</option>
+                      <option value="CAD">C$ Canadian Dollar (CAD)</option>
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="language">Language</Label>
+                    <select
+                      id="language"
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                    >
+                      <option value="en">English</option>
+                      <option value="hi">हिन्दी (Hindi)</option>
+                      <option value="es">Español (Spanish)</option>
+                      <option value="fr">Français (French)</option>
+                      <option value="de">Deutsch (German)</option>
+                      <option value="zh">中文 (Chinese)</option>
+                      <option value="ja">日本語 (Japanese)</option>
+                      <option value="pt">Português (Portuguese)</option>
+                    </select>
+                  </div>
                 </div>
                 
                 <Button className="w-full" onClick={handleSaveSettings}>Save Profile</Button>

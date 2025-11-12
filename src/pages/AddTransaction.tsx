@@ -22,6 +22,9 @@ interface Account {
   name: string;
   balance: number;
   icon?: string;
+  is_credit_card?: boolean;
+  credit_limit?: number;
+  credit_used?: number;
 }
 
 const AddTransaction = () => {
@@ -30,6 +33,7 @@ const AddTransaction = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [isRecurring, setIsRecurring] = useState(false);
   const [isPlanned, setIsPlanned] = useState(false);
+  const [recurringFrequency, setRecurringFrequency] = useState("monthly");
   const [transactionType, setTransactionType] = useState("expense");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
@@ -48,7 +52,7 @@ const AddTransaction = () => {
     try {
       const { data, error } = await supabase
         .from("accounts")
-        .select("id, name, balance, icon")
+        .select("id, name, balance, icon, is_credit_card, credit_limit, credit_used")
         .eq("user_id", user?.id)
         .order("name");
 
@@ -77,6 +81,23 @@ const AddTransaction = () => {
     try {
       const transactionAmount = parseFloat(amount);
       
+      // Check for duplicates
+      const { data: recentTransactions } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("amount", transactionAmount)
+        .eq("category", category)
+        .gte("created_at", new Date(Date.now() - 5 * 60 * 1000).toISOString());
+      
+      if (recentTransactions && recentTransactions.length > 0) {
+        const confirmDuplicate = confirm("A similar transaction was added recently. Do you want to continue?");
+        if (!confirmDuplicate) {
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
       // Insert transaction
       const { error: transError } = await supabase.from("transactions").insert({
         user_id: user.id,
@@ -87,6 +108,7 @@ const AddTransaction = () => {
         date: format(date, "yyyy-MM-dd"),
         is_recurring: isRecurring,
         is_planned: isPlanned,
+        recurring_frequency: isRecurring ? recurringFrequency : null,
         account_id: accountId || null,
       });
 
@@ -96,42 +118,60 @@ const AddTransaction = () => {
       if (accountId) {
         const account = accounts.find(a => a.id === accountId);
         if (account) {
-          const newBalance = transactionType === "income" 
-            ? account.balance + transactionAmount 
-            : account.balance - transactionAmount;
-          
-          const { error: accountError } = await supabase
-            .from("accounts")
-            .update({ balance: newBalance })
-            .eq("id", accountId);
-          
-          if (accountError) throw accountError;
+          if (account.is_credit_card) {
+            // For credit cards, update credit_used
+            const newCreditUsed = transactionType === "expense" 
+              ? (account.credit_used || 0) + transactionAmount 
+              : (account.credit_used || 0) - transactionAmount;
+            
+            const { error: accountError } = await supabase
+              .from("accounts")
+              .update({ credit_used: Math.max(0, newCreditUsed) })
+              .eq("id", accountId);
+            
+            if (accountError) throw accountError;
+          } else {
+            // For regular accounts, update balance
+            const newBalance = transactionType === "income" 
+              ? account.balance + transactionAmount 
+              : account.balance - transactionAmount;
+            
+            const { error: accountError } = await supabase
+              .from("accounts")
+              .update({ balance: newBalance })
+              .eq("id", accountId);
+            
+            if (accountError) throw accountError;
+          }
         }
       }
 
-      // Update budget if expense
+      // Update budget if expense (not from credit card)
       if (transactionType === "expense") {
-        const currentDate = new Date();
-        const currentMonth = currentDate.getMonth() + 1;
-        const currentYear = currentDate.getFullYear();
+        const account = accounts.find(a => a.id === accountId);
+        if (!account?.is_credit_card) {
+          const currentDate = new Date();
+          const currentMonth = currentDate.getMonth() + 1;
+          const currentYear = currentDate.getFullYear();
 
-        const { data: budgetData, error: budgetFetchError } = await supabase
-          .from("budget")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("month", currentMonth)
-          .eq("year", currentYear)
-          .maybeSingle();
-
-        if (budgetFetchError) throw budgetFetchError;
-
-        if (budgetData) {
-          const { error: budgetUpdateError } = await supabase
+          const { data: budgetData, error: budgetFetchError } = await supabase
             .from("budget")
-            .update({ current_spent: budgetData.current_spent + transactionAmount })
-            .eq("id", budgetData.id);
+            .select("*")
+            .eq("user_id", user.id)
+            .eq("month", currentMonth)
+            .eq("year", currentYear)
+            .maybeSingle();
 
-          if (budgetUpdateError) throw budgetUpdateError;
+          if (budgetFetchError) throw budgetFetchError;
+
+          if (budgetData) {
+            const { error: budgetUpdateError } = await supabase
+              .from("budget")
+              .update({ current_spent: budgetData.current_spent + transactionAmount })
+              .eq("id", budgetData.id);
+
+            if (budgetUpdateError) throw budgetUpdateError;
+          }
         }
       }
 
@@ -212,7 +252,7 @@ const AddTransaction = () => {
                     <SelectContent>
                       {accounts.map((account) => (
                         <SelectItem key={account.id} value={account.id}>
-                          {account.icon} {account.name} (₹{account.balance.toFixed(2)})
+                          {account.icon} {account.name} {account.is_credit_card ? `(Available: ₹${((account.credit_limit || 0) - (account.credit_used || 0)).toFixed(2)})` : `(₹${account.balance.toFixed(2)})`}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -262,6 +302,23 @@ const AddTransaction = () => {
                     onCheckedChange={setIsRecurring}
                   />
                 </div>
+
+                {isRecurring && (
+                  <div className="space-y-2">
+                    <Label>Recurring Frequency</Label>
+                    <Select value={recurringFrequency} onValueChange={setRecurringFrequency}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="yearly">Yearly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="space-y-0.5">
@@ -318,7 +375,7 @@ const AddTransaction = () => {
                     <SelectContent>
                       {accounts.map((account) => (
                         <SelectItem key={account.id} value={account.id}>
-                          {account.icon} {account.name} (₹{account.balance.toFixed(2)})
+                          {account.icon} {account.name} {account.is_credit_card ? `(Available: ₹${((account.credit_limit || 0) - (account.credit_used || 0)).toFixed(2)})` : `(₹${account.balance.toFixed(2)})`}
                         </SelectItem>
                       ))}
                     </SelectContent>
