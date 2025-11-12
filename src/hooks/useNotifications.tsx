@@ -91,6 +91,8 @@ export const useNotifications = () => {
           }
         });
         console.log('Email notification sent:', type);
+        // Add delay to avoid rate limiting (Resend free: 2 req/sec)
+        await new Promise(resolve => setTimeout(resolve, 600));
       } catch (error) {
         console.error('Error sending email notification:', error);
       }
@@ -107,6 +109,8 @@ export const useNotifications = () => {
           }
         });
         console.log('SMS notification sent:', type);
+        // Add delay between requests
+        await new Promise(resolve => setTimeout(resolve, 600));
       } catch (error) {
         console.error('Error sending SMS notification:', error);
       }

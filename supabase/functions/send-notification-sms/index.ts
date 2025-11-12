@@ -39,6 +39,9 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Twilio credentials not configured");
     }
 
+    // NOTE: Twilio Trial accounts can only send to verified numbers
+    // Verify numbers at: https://console.twilio.com/us1/develop/phone-numbers/manage/verified
+
     let message = "";
 
     switch (type) {

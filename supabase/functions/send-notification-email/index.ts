@@ -79,6 +79,9 @@ const handler = async (req: Request): Promise<Response> => {
         break;
     }
 
+    // NOTE: To send to all users, verify your domain at resend.com/domains
+    // Then update from address to: "Budget Manager <notifications@yourdomain.com>"
+    // Or use Resend's free subdomain: "Budget Manager <notifications@yourproject.resend.dev>"
     const emailResponse = await resend.emails.send({
       from: "Budget Manager <onboarding@resend.dev>",
       to: [to],
