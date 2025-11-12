@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { useAuth } from "@/hooks/useAuth";
 import { SMSParser } from "@/services/smsParser";
-import { SmsRetriever } from "@capacitor-community/sms-retriever";
 
 export const SMSPermissionHandler = () => {
   const { user } = useAuth();
@@ -29,6 +28,9 @@ export const SMSPermissionHandler = () => {
     }
 
     try {
+      // Dynamically import SMS retriever only on native platform
+      const { SmsRetriever } = await import("@capacitor-community/sms-retriever");
+      
       // Request permission to read SMS
       await SmsRetriever.requestPermission();
       toast.success("SMS permission granted!");
@@ -53,6 +55,9 @@ export const SMSPermissionHandler = () => {
     
     // Listen to incoming SMS messages
     try {
+      // Dynamically import SMS retriever only on native platform
+      const { SmsRetriever } = await import("@capacitor-community/sms-retriever");
+      
       await SmsRetriever.startWatch();
       
       SmsRetriever.addListener('smsReceived', async (data: any) => {
@@ -74,6 +79,9 @@ export const SMSPermissionHandler = () => {
 
   const stopSMSMonitoring = async () => {
     try {
+      // Dynamically import SMS retriever only on native platform
+      const { SmsRetriever } = await import("@capacitor-community/sms-retriever");
+      
       await SmsRetriever.stopWatch();
       SmsRetriever.removeAllListeners();
       setIsMonitoring(false);
