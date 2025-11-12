@@ -21,7 +21,7 @@ export const useTheme = () => {
         .from("profiles")
         .select("theme_primary_color, theme_accent_color")
         .eq("user_id", user?.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
