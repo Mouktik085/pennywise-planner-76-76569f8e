@@ -222,7 +222,7 @@ const Transactions = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-cyan-50/20 to-pink-50/10 dark:from-background dark:via-cyan-950/5 dark:to-pink-950/5 p-3 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -242,8 +242,8 @@ const Transactions = () => {
         </div>
 
         {/* Filters */}
-        <Card className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="p-4 md:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -270,7 +270,7 @@ const Transactions = () => {
                 <Button
                   variant="outline"
                   className={cn(
-                    "justify-start text-left font-normal",
+                    "justify-start text-left font-normal w-full",
                     !date && "text-muted-foreground"
                   )}
                 >
@@ -278,7 +278,7 @@ const Transactions = () => {
                   {date ? format(date, "PPP") : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={date}
@@ -289,7 +289,7 @@ const Transactions = () => {
             </Popover>
 
             {date && (
-              <Button variant="outline" onClick={() => setDate(undefined)}>
+              <Button variant="outline" onClick={() => setDate(undefined)} className="w-full">
                 Clear Date
               </Button>
             )}

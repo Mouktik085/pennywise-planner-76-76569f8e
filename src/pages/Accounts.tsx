@@ -81,9 +81,20 @@ const Accounts = () => {
     e.preventDefault();
     
     try {
+      const isCreditCard = formData.type === "credit_card";
+      
       const accountData = {
-        ...formData,
-        is_credit_card: formData.type === "credit_card"
+        name: formData.name,
+        type: formData.type,
+        balance: isCreditCard ? 0 : formData.balance,
+        bank_name: formData.bank_name || null,
+        account_number: formData.account_number || null,
+        icon: formData.icon,
+        is_credit_card: isCreditCard,
+        credit_limit: isCreditCard ? formData.credit_limit : 0,
+        credit_used: isCreditCard ? 0 : 0,
+        bill_date: isCreditCard && formData.bill_date ? formData.bill_date : null,
+        due_date: isCreditCard && formData.due_date ? formData.due_date : null,
       };
       
       if (editingAccount) {
@@ -149,11 +160,13 @@ const Accounts = () => {
     }
   };
 
-  const getAccountIcon = (type: string) => {
+  const getAccountIcon = (type: string, isCreditCard?: boolean) => {
+    if (isCreditCard) return <CreditCard className="w-6 h-6" />;
     switch (type) {
       case "cash": return <Wallet className="w-6 h-6" />;
       case "bank": return <Building className="w-6 h-6" />;
       case "card": return <CreditCard className="w-6 h-6" />;
+      case "credit_card": return <CreditCard className="w-6 h-6" />;
       case "piggy_bank": return <PiggyBank className="w-6 h-6" />;
       default: return <Wallet className="w-6 h-6" />;
     }
@@ -168,20 +181,21 @@ const Accounts = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Accounts</h1>
-          <p className="text-muted-foreground">Manage your payment accounts</p>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setEditingAccount(null)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Account
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
+    <div className="min-h-screen bg-gradient-to-br from-background via-cyan-50/20 to-pink-50/10 dark:from-background dark:via-cyan-950/5 dark:to-pink-950/5 p-3 md:p-6">
+      <div className="container mx-auto space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Accounts</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">Manage your payment accounts</p>
+          </div>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setEditingAccount(null)} className="w-full sm:w-auto">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Account
+              </Button>
+            </DialogTrigger>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingAccount ? "Edit Account" : "Add New Account"}</DialogTitle>
             </DialogHeader>
@@ -221,7 +235,19 @@ const Accounts = () => {
               </div>
               <div className="space-y-2">
                 <Label>Account Type</Label>
-                <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+                <Select 
+                  value={formData.type} 
+                  onValueChange={(value) => {
+                    setFormData({ 
+                      ...formData, 
+                      type: value,
+                      is_credit_card: value === "credit_card",
+                      balance: value === "credit_card" ? 0 : formData.balance,
+                      credit_limit: value === "credit_card" ? formData.credit_limit : 0,
+                      credit_used: 0
+                    });
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -240,12 +266,13 @@ const Accounts = () => {
               {formData.type === "credit_card" && (
                 <>
                   <div className="space-y-2">
-                    <Label>Credit Limit</Label>
+                    <Label>Credit Limit *</Label>
                     <Input
                       type="number"
                       step="0.01"
-                      value={formData.credit_limit}
-                      onChange={(e) => setFormData({ ...formData, credit_limit: parseFloat(e.target.value) || 0, is_credit_card: true })}
+                      min="0"
+                      value={formData.credit_limit || ''}
+                      onChange={(e) => setFormData({ ...formData, credit_limit: parseFloat(e.target.value) || 0 })}
                       placeholder="50000"
                       required
                     />
@@ -256,8 +283,8 @@ const Accounts = () => {
                       type="number"
                       min="1"
                       max="31"
-                      value={formData.bill_date}
-                      onChange={(e) => setFormData({ ...formData, bill_date: parseInt(e.target.value) || 1 })}
+                      value={formData.bill_date || ''}
+                      onChange={(e) => setFormData({ ...formData, bill_date: parseInt(e.target.value) || undefined })}
                       placeholder="1"
                     />
                   </div>
@@ -267,10 +294,15 @@ const Accounts = () => {
                       type="number"
                       min="1"
                       max="31"
-                      value={formData.due_date}
-                      onChange={(e) => setFormData({ ...formData, due_date: parseInt(e.target.value) || 5 })}
+                      value={formData.due_date || ''}
+                      onChange={(e) => setFormData({ ...formData, due_date: parseInt(e.target.value) || undefined })}
                       placeholder="5"
                     />
+                  </div>
+                  <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      💳 Credit card will track your usage against the credit limit
+                    </p>
                   </div>
                 </>
               )}
@@ -317,39 +349,64 @@ const Accounts = () => {
       </div>
 
       {accounts.length === 0 ? (
-        <Card>
+        <Card className="shadow-lg">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Wallet className="w-12 h-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-center mb-4">No accounts yet</p>
-            <Button onClick={() => setDialogOpen(true)}>Create your first account</Button>
+            <Wallet className="w-16 h-16 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground text-center mb-4 text-lg">No accounts yet</p>
+            <p className="text-sm text-muted-foreground text-center mb-6 max-w-md">
+              Add your first account to start tracking your finances. You can add cash, bank accounts, credit cards, and more!
+            </p>
+            <Button onClick={() => setDialogOpen(true)} size="lg">
+              <Plus className="w-4 h-4 mr-2" />
+              Create your first account
+            </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {accounts.map((account) => (
-            <Card key={account.id}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <Card key={account.id} className="shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <span className="text-2xl">{account.icon || "💼"}</span>
-                  {account.name}
+                  <span className="truncate">{account.name}</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-3">
                 {account.is_credit_card ? (
                   <>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Used / Limit</span>
-                      <span className="text-2xl font-bold">₹{account.credit_used?.toFixed(2)} / ₹{account.credit_limit?.toFixed(2)}</span>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Used / Limit</span>
+                        <div className="flex flex-col items-end">
+                          <span className="text-xl font-bold">₹{(account.credit_used || 0).toFixed(2)}</span>
+                          <span className="text-sm text-muted-foreground">of ₹{(account.credit_limit || 0).toFixed(2)}</span>
+                        </div>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-primary to-accent transition-all"
+                          style={{ 
+                            width: `${Math.min(100, ((account.credit_used || 0) / (account.credit_limit || 1)) * 100)}%` 
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Available</span>
-                      <span className="text-lg font-semibold text-green-600">₹{((account.credit_limit || 0) - (account.credit_used || 0)).toFixed(2)}</span>
+                    <div className="flex justify-between items-center p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                      <span className="text-xs text-muted-foreground">Available</span>
+                      <span className="text-lg font-semibold text-green-600 dark:text-green-400">
+                        ₹{((account.credit_limit || 0) - (account.credit_used || 0)).toFixed(2)}
+                      </span>
                     </div>
                     {account.bill_date && (
-                      <p className="text-sm text-muted-foreground">Bill Date: {account.bill_date}th of every month</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        📅 Bill: {account.bill_date}th of every month
+                      </p>
                     )}
                     {account.due_date && (
-                      <p className="text-sm text-muted-foreground">Due Date: {account.due_date}th of every month</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        ⏰ Due: {account.due_date}th of every month
+                      </p>
                     )}
                   </>
                 ) : (
@@ -359,15 +416,16 @@ const Accounts = () => {
                   </div>
                 )}
                 {account.bank_name && (
-                  <p className="text-sm text-muted-foreground">{account.bank_name}</p>
+                  <p className="text-sm text-muted-foreground">🏦 {account.bank_name}</p>
                 )}
                 {account.account_number && (
-                  <p className="text-sm text-muted-foreground">{account.account_number}</p>
+                  <p className="text-sm text-muted-foreground font-mono">🔢 {account.account_number}</p>
                 )}
                 <div className="flex gap-2 pt-2">
                   <Button
                     size="sm"
                     variant="outline"
+                    className="flex-1"
                     onClick={() => {
                       setEditingAccount(account);
                       setFormData({
@@ -386,7 +444,8 @@ const Accounts = () => {
                       setDialogOpen(true);
                     }}
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit className="w-4 h-4 mr-1" />
+                    Edit
                   </Button>
                   <Button
                     size="sm"
@@ -401,6 +460,7 @@ const Accounts = () => {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 };
