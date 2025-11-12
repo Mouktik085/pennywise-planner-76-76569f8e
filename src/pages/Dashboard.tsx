@@ -310,10 +310,10 @@ const Dashboard = () => {
             </Card>
           </Link>
 
-          <Link to="/savings">
+          <Link to="/budget/allocation">
             <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
-              <h3 className="font-semibold text-lg mb-2">Savings Goals</h3>
-              <p className="text-sm text-muted-foreground">Track your savings targets</p>
+              <h3 className="font-semibold text-lg mb-2">Budget Allocation</h3>
+              <p className="text-sm text-muted-foreground">Set spending percentages by category</p>
             </Card>
           </Link>
 

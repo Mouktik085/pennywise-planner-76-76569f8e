@@ -134,6 +134,45 @@ export type Database = {
         }
         Relationships: []
       }
+      category_budgets: {
+        Row: {
+          allocated_amount: number
+          category: string
+          created_at: string | null
+          id: string
+          month: number
+          percentage: number
+          spent_amount: number
+          updated_at: string | null
+          user_id: string
+          year: number
+        }
+        Insert: {
+          allocated_amount?: number
+          category: string
+          created_at?: string | null
+          id?: string
+          month: number
+          percentage?: number
+          spent_amount?: number
+          updated_at?: string | null
+          user_id: string
+          year: number
+        }
+        Update: {
+          allocated_amount?: number
+          category?: string
+          created_at?: string | null
+          id?: string
+          month?: number
+          percentage?: number
+          spent_amount?: number
+          updated_at?: string | null
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null

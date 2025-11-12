@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { DollarSign, TrendingDown, Wallet, PiggyBank } from "lucide-react";
+import { DollarSign, TrendingDown, Wallet, PiggyBank, PieChart as PieChartIcon } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { Link } from "react-router-dom";
 
 interface Budget {
   id?: string;
@@ -203,9 +204,17 @@ const Budget = () => {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Monthly Budget</h1>
-        <p className="text-muted-foreground">Set and track your spending limits</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Monthly Budget</h1>
+          <p className="text-muted-foreground">Set and track your spending limits</p>
+        </div>
+        <Link to="/budget/allocation">
+          <Button className="gap-2">
+            <PieChartIcon className="h-4 w-4" />
+            Category Allocation
+          </Button>
+        </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
