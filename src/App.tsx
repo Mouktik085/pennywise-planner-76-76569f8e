@@ -23,31 +23,29 @@ import Transfer from "./pages/Transfer";
 
 const queryClient = new QueryClient();
 
-const AppContent = () => {
+const AppRoutes = () => {
   useTheme();
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/install" element={<Install />} />
-        <Route element={<Layout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/transactions" element={<Transactions />} />
-          <Route path="/add-transaction" element={<AddTransaction />} />
-          <Route path="/savings" element={<Savings />} />
-          <Route path="/statistics" element={<Statistics />} />
-          <Route path="/budget" element={<Budget />} />
-          <Route path="/budget/allocation" element={<BudgetAllocation />} />
-          <Route path="/calendar" element={<FullCalendar />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/accounts" element={<Accounts />} />
-          <Route path="/transfer" element={<Transfer />} />
-        </Route>
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/install" element={<Install />} />
+      <Route element={<Layout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/transactions" element={<Transactions />} />
+        <Route path="/add-transaction" element={<AddTransaction />} />
+        <Route path="/savings" element={<Savings />} />
+        <Route path="/statistics" element={<Statistics />} />
+        <Route path="/budget" element={<Budget />} />
+        <Route path="/budget/allocation" element={<BudgetAllocation />} />
+        <Route path="/calendar" element={<FullCalendar />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/accounts" element={<Accounts />} />
+        <Route path="/transfer" element={<Transfer />} />
+      </Route>
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
 
@@ -56,7 +54,9 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AppContent />
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );

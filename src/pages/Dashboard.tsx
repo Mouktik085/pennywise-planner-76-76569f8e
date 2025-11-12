@@ -55,7 +55,6 @@ const Dashboard = () => {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
-      navigate('/auth');
     } catch (error: any) {
       toast({
         title: "Error",
