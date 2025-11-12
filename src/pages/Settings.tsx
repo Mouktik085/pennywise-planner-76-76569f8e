@@ -5,12 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Settings as SettingsIcon, Bell, Shield, Palette, Database, Plus, Trash2 } from "lucide-react";
+import { Settings as SettingsIcon, Bell, Shield, Palette, Database, Plus, Trash2, Moon, Sun } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SMSPermissionHandler } from "@/components/SMSPermissionHandler";
+import { useTheme } from "next-themes";
 
 interface Account {
   id: string;
@@ -20,18 +21,21 @@ interface Account {
 
 const Settings = () => {
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [username, setUsername] = useState("");
   const [smsSync, setSmsSync] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedAccount, setSelectedAccount] = useState("");
-  const [primaryColor, setPrimaryColor] = useState("#8B5CF6");
   const [currency, setCurrency] = useState("INR");
   const [language, setLanguage] = useState("en");
+  const [phoneNumber, setPhoneNumber] = useState("");
   
   // Notification settings
   const [notifBudgetAlerts, setNotifBudgetAlerts] = useState(true);
   const [notifTransactionReminders, setNotifTransactionReminders] = useState(true);
   const [notifSavingsMilestones, setNotifSavingsMilestones] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [smsNotifications, setSmsNotifications] = useState(false);
   
   // Security settings
   const [securityAppLock, setSecurityAppLock] = useState(false);
@@ -77,12 +81,14 @@ const Settings = () => {
         setUsername(data.username || "");
         setSmsSync(data.sms_auto_import || false);
         setSelectedAccount(data.default_account_id || "");
-        setPrimaryColor(data.theme_primary_color || "#8B5CF6");
         setCurrency(data.preferred_currency || "INR");
         setLanguage(data.preferred_language || "en");
+        setPhoneNumber(data.phone_number || "");
         setNotifBudgetAlerts(data.notification_budget_alerts ?? true);
         setNotifTransactionReminders(data.notification_transaction_reminders ?? true);
         setNotifSavingsMilestones(data.notification_savings_milestones ?? true);
+        setEmailNotifications(data.email_notifications ?? true);
+        setSmsNotifications(data.sms_notifications ?? false);
         setSecurityAppLock(data.security_app_lock || false);
         setSecurityHideBalance(data.security_hide_balance || false);
       }
@@ -104,20 +110,21 @@ const Settings = () => {
           username: username.trim() || null,
           sms_auto_import: smsSync,
           default_account_id: selectedAccount || null,
-          theme_primary_color: primaryColor,
           preferred_currency: currency,
           preferred_language: language,
+          phone_number: phoneNumber.trim() || null,
           notification_budget_alerts: notifBudgetAlerts,
           notification_transaction_reminders: notifTransactionReminders,
           notification_savings_milestones: notifSavingsMilestones,
+          email_notifications: emailNotifications,
+          sms_notifications: smsNotifications,
           security_app_lock: securityAppLock,
           security_hide_balance: securityHideBalance,
         })
         .eq("user_id", user?.id);
 
       if (error) throw error;
-      toast.success("Settings saved successfully! Refresh the page to see changes.");
-      // Refresh settings to show saved values
+      toast.success("Settings saved successfully!");
       await fetchSettings();
     } catch (error) {
       console.error("Error saving settings:", error);
@@ -208,6 +215,36 @@ const Settings = () => {
         {/* SMS Auto-Import */}
         <SMSPermissionHandler />
 
+        {/* Dark Mode Toggle */}
+        <Card className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-primary/10 rounded-lg">
+              {theme === "dark" ? <Moon className="h-6 w-6 text-primary" /> : <Sun className="h-6 w-6 text-primary" />}
+            </div>
+            <div className="flex-1 space-y-4">
+              <div>
+                <h3 className="font-bold text-xl">Dark Mode</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Switch between light and dark theme
+                </p>
+              </div>
+              
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                <div className="space-y-0.5">
+                  <Label>Dark Mode</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {theme === "dark" ? "Currently using dark theme" : "Currently using light theme"}
+                  </p>
+                </div>
+                <Switch 
+                  checked={theme === "dark"} 
+                  onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")} 
+                />
+              </div>
+            </div>
+          </div>
+        </Card>
+
         {/* Notifications */}
         <Card className="p-6">
           <div className="flex items-start gap-4">
@@ -218,11 +255,39 @@ const Settings = () => {
               <div>
                 <h3 className="font-bold text-xl">Notifications</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Manage your notification preferences
+                  Manage your notification preferences for browser, email, and SMS
                 </p>
               </div>
               
               <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label>Phone Number (for SMS notifications)</Label>
+                  <Input
+                    type="tel"
+                    placeholder="+1234567890"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label>Email Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Receive notifications via email</p>
+                  </div>
+                  <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label>SMS Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Receive notifications via SMS</p>
+                  </div>
+                  <Switch checked={smsNotifications} onCheckedChange={setSmsNotifications} />
+                </div>
+
+                <Separator className="my-2" />
+
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="space-y-0.5">
                     <Label>Budget Alerts</Label>
@@ -234,7 +299,7 @@ const Settings = () => {
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="space-y-0.5">
                     <Label>Transaction Reminders</Label>
-                    <p className="text-sm text-muted-foreground">Remind to log daily expenses</p>
+                    <p className="text-sm text-muted-foreground">Remind about upcoming transactions</p>
                   </div>
                   <Switch checked={notifTransactionReminders} onCheckedChange={setNotifTransactionReminders} />
                 </div>
@@ -319,55 +384,6 @@ const Settings = () => {
                     </Button>
                   </div>
                 ))}
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Theme Customization */}
-        <Card className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Palette className="h-6 w-6 text-primary" />
-            </div>
-            <div className="flex-1 space-y-4">
-              <div>
-                <h3 className="font-bold text-xl">Theme & Appearance</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Customize the look and feel of your app
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <Label>Primary Color</Label>
-                  <Input 
-                    type="color" 
-                    value={primaryColor} 
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="h-12 w-24" 
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Background Style</Label>
-                  <select className="w-full px-3 py-2 rounded-md border border-input bg-background">
-                    <option value="ocean">Ocean (Default)</option>
-                    <option value="minimal">Minimal White</option>
-                    <option value="dark">Dark Mode</option>
-                    <option value="sunset">Sunset</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                  <div className="space-y-0.5">
-                    <Label>Auto Dark Mode</Label>
-                    <p className="text-sm text-muted-foreground">Switch theme based on time</p>
-                  </div>
-                  <Switch />
-                </div>
-
-                <Button className="w-full" onClick={handleSaveSettings}>Apply Theme</Button>
               </div>
             </div>
           </div>

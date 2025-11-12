@@ -20,175 +20,140 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Beautiful Ocean/Beach Theme - Turquoise & Vibrant */
-    --background: 190 100% 98%;
-    --foreground: 195 25% 15%;
-
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 195 25% 15%;
-
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 195 25% 15%;
-
+    --popover-foreground: 222.2 84% 4.9%;
     --primary: 175 75% 55%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 175 90% 70%;
-
-    --secondary: 175 60% 96%;
-    --secondary-foreground: 175 75% 35%;
-
-    --muted: 190 50% 96%;
-    --muted-foreground: 195 20% 45%;
-
-    --accent: 185 85% 45%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 85% 62%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 185 30% 85%;
-    --input: 185 30% 90%;
+    --primary-glow: 175 80% 65%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
     --ring: 175 75% 55%;
+    --radius: 1.5rem;
 
-    --radius: 1rem;
+    --ocean-deep: 200 95% 25%;
+    --ocean-mid: 195 85% 45%;
+    --ocean-light: 190 75% 55%;
+    --ocean-shallow: 185 70% 70%;
+    --seafoam: 165 60% 60%;
+    --coral: 0 85% 62%;
+    --sand: 45 60% 70%;
 
-    /* Ocean accent colors */
-    --ocean-deep: 195 95% 35%;
-    --ocean-shallow: 185 75% 75%;
-    --seafoam: 165 60% 85%;
-    --coral: 15 85% 65%;
-    --sand: 40 60% 90%;
-
-    /* Financial colors - Bright & Vibrant */
     --income: 145 75% 50%;
+    --income-light: 145 75% 92%;
     --income-foreground: 0 0% 100%;
-    --income-light: 145 75% 95%;
-    
     --expense: 0 85% 62%;
+    --expense-light: 0 85% 95%;
     --expense-foreground: 0 0% 100%;
-    --expense-light: 0 85% 97%;
-    
     --savings: 260 70% 60%;
-    --savings-foreground: 0 0% 100%;
     --savings-light: 260 70% 95%;
+    --savings-foreground: 0 0% 100%;
 
-    /* Chart colors - Vibrant Rainbow */
     --chart-1: 175 75% 55%;
     --chart-2: 145 75% 50%;
     --chart-3: 45 95% 55%;
     --chart-4: 260 70% 60%;
     --chart-5: 0 85% 62%;
-    --chart-6: 330 85% 65%;
-    --chart-7: 30 95% 60%;
+    --chart-6: 320 70% 60%;
+    --chart-7: 30 90% 58%;
 
-    /* Sidebar */
-    --sidebar-background: 180 100% 99%;
-    --sidebar-foreground: 195 25% 15%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222.2 84% 4.9%;
     --sidebar-primary: 175 75% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 180 60% 95%;
-    --sidebar-accent-foreground: 175 75% 35%;
-    --sidebar-border: 185 30% 85%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
+    --sidebar-border: 214.3 31.8% 91.4%;
     --sidebar-ring: 175 75% 55%;
 
-    /* Ocean Gradients */
-    --gradient-ocean: linear-gradient(135deg, hsl(175, 75%, 55%), hsl(195, 85%, 60%));
-    --gradient-ocean-light: linear-gradient(180deg, hsl(185, 75%, 95%), hsl(175, 60%, 98%));
-    --gradient-wave: linear-gradient(90deg, hsl(175, 75%, 55%) 0%, hsl(185, 85%, 45%) 50%, hsl(175, 75%, 55%) 100%);
-    --gradient-sunset: linear-gradient(135deg, hsl(15, 85%, 65%), hsl(330, 85%, 65%), hsl(260, 70%, 60%));
-
-    /* Ocean Shadows & Glows */
-    --shadow-ocean: 0 4px 20px -2px hsl(175 75% 55% / 0.15);
-    --shadow-ocean-lg: 0 10px 40px -5px hsl(175 75% 55% / 0.25);
-    --glow-ocean: 0 0 30px hsl(175 90% 70% / 0.3);
-    --glow-accent: 0 0 20px hsl(185 85% 45% / 0.4);
-
-    /* Animations */
+    --gradient-ocean: linear-gradient(135deg, hsl(var(--ocean-light)), hsl(var(--ocean-deep)));
+    --gradient-wave: linear-gradient(180deg, hsl(var(--ocean-shallow)), hsl(var(--ocean-mid)));
+    --gradient-sunset: linear-gradient(135deg, hsl(var(--coral)), hsl(var(--primary)));
+    
+    --shadow-ocean: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+    --shadow-elegant: 0 4px 20px -4px hsl(var(--primary) / 0.2);
+    --glow-ocean: 0 0 40px hsl(var(--primary-glow) / 0.4);
+    
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-wave: all 0.6s cubic-bezier(0.45, 0, 0.55, 1);
   }
 
   .dark {
-    /* Dark Ocean Depths Theme */
-    --background: 200 50% 8%;
-    --foreground: 190 30% 95%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 8%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 175 75% 55%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --primary-glow: 175 80% 65%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 175 75% 55%;
 
-    --card: 200 45% 10%;
-    --card-foreground: 190 30% 95%;
+    --ocean-deep: 200 95% 25%;
+    --ocean-mid: 195 85% 45%;
+    --ocean-light: 190 75% 55%;
+    --ocean-shallow: 185 70% 70%;
+    --seafoam: 165 60% 60%;
+    --coral: 0 85% 62%;
+    --sand: 45 60% 70%;
 
-    --popover: 200 45% 10%;
-    --popover-foreground: 190 30% 95%;
-
-    --primary: 180 85% 55%;
-    --primary-foreground: 200 50% 8%;
-    --primary-glow: 180 95% 70%;
-
-    --secondary: 195 40% 20%;
-    --secondary-foreground: 190 30% 95%;
-
-    --muted: 195 35% 15%;
-    --muted-foreground: 190 15% 60%;
-
-    --accent: 175 75% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 195 35% 20%;
-    --input: 195 35% 20%;
-    --ring: 180 85% 55%;
-
-    /* Ocean accent colors - Dark */
-    --ocean-deep: 200 80% 25%;
-    --ocean-shallow: 185 70% 45%;
-    --seafoam: 165 55% 55%;
-    --coral: 15 80% 60%;
-    --sand: 40 40% 50%;
-
-    /* Financial colors - Dark ocean */
-    --income: 155 75% 48%;
+    --income: 145 75% 50%;
+    --income-light: 145 75% 15%;
     --income-foreground: 0 0% 100%;
-    --income-light: 155 70% 20%;
-    
-    --expense: 0 80% 62%;
+    --expense: 0 85% 62%;
+    --expense-light: 0 85% 15%;
     --expense-foreground: 0 0% 100%;
-    --expense-light: 0 70% 25%;
-    
-    --savings: 200 85% 60%;
+    --savings: 260 70% 60%;
+    --savings-light: 260 70% 15%;
     --savings-foreground: 0 0% 100%;
-    --savings-light: 200 75% 30%;
 
-    /* Chart colors - Dark ocean */
-    --chart-1: 180 85% 55%;
-    --chart-2: 155 75% 48%;
-    --chart-3: 200 85% 60%;
+    --chart-1: 175 75% 55%;
+    --chart-2: 145 75% 50%;
+    --chart-3: 45 95% 55%;
     --chart-4: 260 70% 60%;
-    --chart-5: 0 80% 62%;
-    --chart-6: 330 80% 65%;
-    --chart-7: 30 90% 60%;
+    --chart-5: 0 85% 62%;
+    --chart-6: 320 70% 60%;
+    --chart-7: 30 90% 58%;
 
-    /* Sidebar - Dark ocean depths */
-    --sidebar-background: 200 45% 12%;
-    --sidebar-foreground: 190 30% 95%;
-    --sidebar-primary: 180 85% 55%;
-    --sidebar-primary-foreground: 200 50% 8%;
-    --sidebar-accent: 195 40% 18%;
-    --sidebar-accent-foreground: 190 30% 95%;
-    --sidebar-border: 195 35% 20%;
-    --sidebar-ring: 180 85% 55%;
+    --sidebar-background: 222.2 84% 8%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 175 75% 55%;
+    --sidebar-primary-foreground: 222.2 84% 4.9%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 175 75% 55%;
 
-    /* Ocean Gradients - Dark */
-    --gradient-ocean: linear-gradient(135deg, hsl(180, 85%, 55%), hsl(195, 80%, 50%));
-    --gradient-ocean-light: linear-gradient(180deg, hsl(195, 40%, 15%), hsl(200, 45%, 12%));
-    --gradient-wave: linear-gradient(90deg, hsl(180, 85%, 55%) 0%, hsl(175, 75%, 50%) 50%, hsl(180, 85%, 55%) 100%);
-    --gradient-sunset: linear-gradient(135deg, hsl(15, 80%, 60%), hsl(330, 80%, 65%), hsl(260, 70%, 60%));
-
-    /* Ocean Shadows & Glows - Dark */
-    --shadow-ocean: 0 4px 25px -2px hsl(180 85% 55% / 0.25);
-    --shadow-ocean-lg: 0 10px 50px -5px hsl(180 85% 55% / 0.35);
-    --glow-ocean: 0 0 40px hsl(180 95% 70% / 0.25);
-    --glow-accent: 0 0 30px hsl(175 75% 50% / 0.3);
+    --gradient-ocean: linear-gradient(135deg, hsl(var(--ocean-light)), hsl(var(--ocean-deep)));
+    --gradient-wave: linear-gradient(180deg, hsl(var(--ocean-shallow)), hsl(var(--ocean-mid)));
+    --gradient-sunset: linear-gradient(135deg, hsl(var(--coral)), hsl(var(--primary)));
+    
+    --shadow-ocean: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+    --shadow-elegant: 0 4px 20px -4px hsl(var(--primary) / 0.2);
+    --glow-ocean: 0 0 40px hsl(var(--primary-glow) / 0.4);
+    
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 

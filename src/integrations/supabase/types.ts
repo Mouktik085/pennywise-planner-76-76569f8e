@@ -179,6 +179,7 @@ export type Database = {
           default_account_id: string | null
           default_currency: string | null
           email: string | null
+          email_notifications: boolean | null
           id: string
           notification_bills: boolean | null
           notification_budget_alerts: boolean | null
@@ -186,14 +187,14 @@ export type Database = {
           notification_goals: boolean | null
           notification_savings_milestones: boolean | null
           notification_transaction_reminders: boolean | null
+          phone_number: string | null
           preferred_currency: string | null
           preferred_language: string | null
           reminder_days_before: number | null
           security_app_lock: boolean | null
           security_hide_balance: boolean | null
           sms_auto_import: boolean | null
-          theme_accent_color: string | null
-          theme_primary_color: string | null
+          sms_notifications: boolean | null
           updated_at: string | null
           user_id: string
           username: string | null
@@ -203,6 +204,7 @@ export type Database = {
           default_account_id?: string | null
           default_currency?: string | null
           email?: string | null
+          email_notifications?: boolean | null
           id?: string
           notification_bills?: boolean | null
           notification_budget_alerts?: boolean | null
@@ -210,14 +212,14 @@ export type Database = {
           notification_goals?: boolean | null
           notification_savings_milestones?: boolean | null
           notification_transaction_reminders?: boolean | null
+          phone_number?: string | null
           preferred_currency?: string | null
           preferred_language?: string | null
           reminder_days_before?: number | null
           security_app_lock?: boolean | null
           security_hide_balance?: boolean | null
           sms_auto_import?: boolean | null
-          theme_accent_color?: string | null
-          theme_primary_color?: string | null
+          sms_notifications?: boolean | null
           updated_at?: string | null
           user_id: string
           username?: string | null
@@ -227,6 +229,7 @@ export type Database = {
           default_account_id?: string | null
           default_currency?: string | null
           email?: string | null
+          email_notifications?: boolean | null
           id?: string
           notification_bills?: boolean | null
           notification_budget_alerts?: boolean | null
@@ -234,14 +237,14 @@ export type Database = {
           notification_goals?: boolean | null
           notification_savings_milestones?: boolean | null
           notification_transaction_reminders?: boolean | null
+          phone_number?: string | null
           preferred_currency?: string | null
           preferred_language?: string | null
           reminder_days_before?: number | null
           security_app_lock?: boolean | null
           security_hide_balance?: boolean | null
           sms_auto_import?: boolean | null
-          theme_accent_color?: string | null
-          theme_primary_color?: string | null
+          sms_notifications?: boolean | null
           updated_at?: string | null
           user_id?: string
           username?: string | null
@@ -303,6 +306,8 @@ export type Database = {
           id: string
           is_planned: boolean | null
           is_recurring: boolean | null
+          last_processed_date: string | null
+          next_occurrence_date: string | null
           recurring_frequency: string | null
           type: string
           user_id: string
@@ -317,6 +322,8 @@ export type Database = {
           id?: string
           is_planned?: boolean | null
           is_recurring?: boolean | null
+          last_processed_date?: string | null
+          next_occurrence_date?: string | null
           recurring_frequency?: string | null
           type: string
           user_id: string
@@ -331,6 +338,8 @@ export type Database = {
           id?: string
           is_planned?: boolean | null
           is_recurring?: boolean | null
+          last_processed_date?: string | null
+          next_occurrence_date?: string | null
           recurring_frequency?: string | null
           type?: string
           user_id?: string
