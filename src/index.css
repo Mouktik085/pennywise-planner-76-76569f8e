@@ -20,66 +20,66 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Vibrant Colorful Theme */
-    --background: 210 100% 97%;
-    --foreground: 222 47% 11%;
+    /* Beach Vibes - Colorful & Energetic */
+    --background: 195 100% 98%;
+    --foreground: 210 50% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 210 50% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 210 50% 15%;
 
-    --primary: 262 83% 58%;
+    --primary: 195 85% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 270 95% 95%;
-    --secondary-foreground: 262 83% 58%;
+    --secondary: 45 100% 95%;
+    --secondary-foreground: 195 85% 50%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 195 30% 94%;
+    --muted-foreground: 210 15% 45%;
 
-    --accent: 199 89% 48%;
+    --accent: 330 85% 60%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 262 83% 58%;
+    --border: 195 25% 88%;
+    --input: 195 25% 88%;
+    --ring: 195 85% 50%;
 
     --radius: 1rem;
 
-    /* Financial colors - Vibrant & Bold */
-    --income: 142 76% 36%;
+    /* Financial colors - Beach & Tropical */
+    --income: 155 70% 45%;
     --income-foreground: 0 0% 100%;
-    --income-light: 142 76% 94%;
+    --income-light: 155 70% 95%;
     
-    --expense: 0 72% 51%;
+    --expense: 15 90% 65%;
     --expense-foreground: 0 0% 100%;
-    --expense-light: 0 72% 97%;
+    --expense-light: 15 90% 96%;
     
-    --savings: 45 93% 47%;
+    --savings: 280 75% 60%;
     --savings-foreground: 0 0% 100%;
-    --savings-light: 45 93% 95%;
+    --savings-light: 280 75% 96%;
 
-    /* Chart colors - Rainbow palette */
-    --chart-1: 262 83% 58%;
-    --chart-2: 199 89% 48%;
-    --chart-3: 142 76% 36%;
-    --chart-4: 45 93% 47%;
-    --chart-5: 0 72% 51%;
+    /* Chart colors - Tropical palette */
+    --chart-1: 195 85% 50%;
+    --chart-2: 155 70% 45%;
+    --chart-3: 45 95% 55%;
+    --chart-4: 330 85% 60%;
+    --chart-5: 280 75% 60%;
 
-    /* Sidebar - Colorful gradient */
+    /* Sidebar - Beach theme */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 262 83% 58%;
+    --sidebar-foreground: 210 50% 15%;
+    --sidebar-primary: 195 85% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 270 95% 97%;
-    --sidebar-accent-foreground: 262 83% 58%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-accent: 195 30% 96%;
+    --sidebar-accent-foreground: 195 85% 50%;
+    --sidebar-border: 195 25% 88%;
+    --sidebar-ring: 195 85% 50%;
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

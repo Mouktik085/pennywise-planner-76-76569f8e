@@ -81,10 +81,15 @@ const Accounts = () => {
     e.preventDefault();
     
     try {
+      const accountData = {
+        ...formData,
+        is_credit_card: formData.type === "credit_card"
+      };
+      
       if (editingAccount) {
         const { error } = await supabase
           .from("accounts")
-          .update(formData)
+          .update(accountData)
           .eq("id", editingAccount.id);
         
         if (error) throw error;
@@ -92,7 +97,7 @@ const Accounts = () => {
       } else {
         const { error } = await supabase
           .from("accounts")
-          .insert([{ ...formData, user_id: user?.id }]);
+          .insert([{ ...accountData, user_id: user?.id }]);
         
         if (error) throw error;
         toast({ title: "Account created successfully" });

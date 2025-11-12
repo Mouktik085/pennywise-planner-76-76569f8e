@@ -121,7 +121,6 @@ const Dashboard = () => {
         ?.filter(a => a.is_credit_card)
         .reduce((sum, a) => sum + Number(a.credit_used), 0) || 0;
       
-      setTotalAccountBalance(regularAccountBalance);
       setCreditCardLiability(creditLiability);
       
       // Fetch user currency preference
@@ -147,7 +146,7 @@ const Dashboard = () => {
 
       const savings = savingsData?.reduce((sum, s) => sum + Number(s.current_amount), 0) || 0;
       setTotalSavings(savings);
-      setTotalAccountBalance(totalAccountBalance);
+      setTotalAccountBalance(regularAccountBalance);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {

@@ -225,17 +225,17 @@ const Transactions = () => {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h1 className="text-4xl font-bold text-foreground">Transactions</h1>
+            <h1 className="text-2xl sm:text-4xl font-bold text-foreground">Transactions</h1>
             <p className="text-muted-foreground mt-1">Manage your income and expenses</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <ManualSMSImport />
-            <Link to="/add-transaction">
-              <Button className="gap-2">
+            <Link to="/add-transaction" className="flex-1 sm:flex-none">
+              <Button className="gap-2 w-full">
                 <Plus className="h-4 w-4" />
-                Add Transaction
+                <span className="sm:inline">Add</span>
               </Button>
             </Link>
           </div>
@@ -304,21 +304,22 @@ const Transactions = () => {
               {transfers.map((transfer) => (
                 <div
                   key={transfer.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors border border-primary/20"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors border border-primary/20 gap-3"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-full bg-primary/20 text-primary">
-                      <ArrowLeftRight className="h-5 w-5" />
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="p-2 sm:p-3 rounded-full bg-primary/20 text-primary flex-shrink-0">
+                      <ArrowLeftRight className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
-                    <div>
-                      <p className="font-semibold">{transfer.description || "Transfer"}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {transfer.from_type === 'account' ? 'Account' : 'Savings'} → {transfer.to_type === 'account' ? 'Account' : 'Savings'} • {transfer.date}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold truncate">{transfer.description || "Transfer"}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        {transfer.from_type === 'account' ? 'Account' : 'Savings'} → {transfer.to_type === 'account' ? 'Account' : 'Savings'}
                       </p>
+                      <p className="text-xs text-muted-foreground">{transfer.date}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <p className="font-bold text-primary">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                    <p className="font-bold text-primary text-lg">
                       ₹{Number(transfer.amount).toLocaleString()}
                     </p>
                     <div className="flex gap-1">
@@ -326,7 +327,7 @@ const Transactions = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEditTransfer(transfer)}
-                        className="text-primary hover:text-primary"
+                        className="text-primary hover:text-primary h-8 w-8"
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
@@ -334,7 +335,7 @@ const Transactions = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDeleteTransfer(transfer.id)}
-                        className="text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive h-8 w-8"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -362,32 +363,32 @@ const Transactions = () => {
               {transactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors gap-3"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div
-                      className={`p-3 rounded-full ${
+                      className={`p-2 sm:p-3 rounded-full flex-shrink-0 ${
                         transaction.type === "income"
                           ? "bg-income-light text-income"
                           : "bg-expense-light text-expense"
                       }`}
                     >
                       {transaction.type === "income" ? (
-                        <TrendingUp className="h-5 w-5" />
+                        <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
                       ) : (
-                        <TrendingDown className="h-5 w-5" />
+                        <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5" />
                       )}
                     </div>
-                    <div>
-                      <p className="font-semibold">{transaction.description || "No description"}</p>
-                      <div className="flex gap-2 items-center">
-                        <p className="text-sm text-muted-foreground">{transaction.category}</p>
-                        <span className="text-muted-foreground">•</span>
-                        <p className="text-sm text-muted-foreground">{transaction.date}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold truncate">{transaction.description || "No description"}</p>
+                      <div className="flex flex-col sm:flex-row sm:gap-2 sm:items-center">
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{transaction.category}</p>
+                        <span className="text-muted-foreground hidden sm:inline">•</span>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{transaction.date}</p>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                     <p
                       className={`font-bold text-lg ${
                         transaction.type === "income" ? "text-income" : "text-expense"
@@ -400,7 +401,7 @@ const Transactions = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEdit(transaction)}
-                        className="text-primary hover:text-primary"
+                        className="text-primary hover:text-primary h-8 w-8"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -408,7 +409,7 @@ const Transactions = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(transaction.id, transaction.account_id || undefined)}
-                        className="text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive h-8 w-8"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
