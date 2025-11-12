@@ -241,63 +241,63 @@ const Dashboard = () => {
 
         {/* Balance Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
-          <Card className="p-4 md:p-6 bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground border-0 shadow-xl shadow-primary/30">
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground border-0 shadow-xl shadow-primary/30 rounded-3xl">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  <Wallet className="h-4 w-4 md:h-5 md:w-5" />
+                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                  <Wallet className="h-6 w-6 md:h-8 md:w-8" />
                 </div>
-                <p className="text-xs md:text-sm opacity-90">Balance</p>
+                <p className="text-xs md:text-sm opacity-90 font-semibold">Balance</p>
               </div>
-              <h3 className="text-lg md:text-2xl font-bold">{currency}{totalAccountBalance.toLocaleString()}</h3>
+              <h3 className="text-xl md:text-3xl font-bold">{currency}{totalAccountBalance.toLocaleString()}</h3>
             </div>
           </Card>
 
-          <Card className="p-4 md:p-6 bg-gradient-to-br from-red-500 via-red-500/90 to-red-500/70 text-white border-0 shadow-xl shadow-red-500/20">
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-expense via-expense/90 to-expense/70 text-expense-foreground border-0 shadow-xl shadow-expense/20 rounded-3xl">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  <TrendingDown className="h-4 w-4 md:h-5 md:w-5" />
+                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                  <TrendingDown className="h-6 w-6 md:h-8 md:w-8" />
                 </div>
-                <p className="text-xs md:text-sm opacity-90">Credit Card Due</p>
+                <p className="text-xs md:text-sm opacity-90 font-semibold">Credit Card Due</p>
               </div>
-              <h3 className="text-lg md:text-2xl font-bold">{currency}{creditCardLiability.toLocaleString()}</h3>
+              <h3 className="text-xl md:text-3xl font-bold">{currency}{creditCardLiability.toLocaleString()}</h3>
             </div>
           </Card>
 
-          <Card className="p-4 md:p-6 bg-gradient-to-br from-income via-income/90 to-income/70 text-income-foreground border-0 shadow-xl shadow-income/20">
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-income via-income/90 to-income/70 text-income-foreground border-0 shadow-xl shadow-income/20 rounded-3xl">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  <TrendingUp className="h-4 w-4 md:h-5 md:w-5" />
+                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                  <TrendingUp className="h-6 w-6 md:h-8 md:w-8" />
                 </div>
-                <p className="text-xs md:text-sm opacity-90">Income</p>
+                <p className="text-xs md:text-sm opacity-90 font-semibold">Income</p>
               </div>
-              <h3 className="text-lg md:text-2xl font-bold">{currency}{totalIncome.toLocaleString()}</h3>
+              <h3 className="text-xl md:text-3xl font-bold">{currency}{totalIncome.toLocaleString()}</h3>
             </div>
           </Card>
 
-          <Card className="p-4 md:p-6 bg-gradient-to-br from-expense via-expense/90 to-expense/70 text-expense-foreground border-0 shadow-xl shadow-expense/20">
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-coral via-coral/90 to-coral/70 text-white border-0 shadow-xl shadow-coral/20 rounded-3xl">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  <TrendingDown className="h-4 w-4 md:h-5 md:w-5" />
+                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                  <TrendingDown className="h-6 w-6 md:h-8 md:w-8" />
                 </div>
-                <p className="text-xs md:text-sm opacity-90">Expenses</p>
+                <p className="text-xs md:text-sm opacity-90 font-semibold">Expenses</p>
               </div>
-              <h3 className="text-lg md:text-2xl font-bold">{currency}{totalExpenses.toLocaleString()}</h3>
+              <h3 className="text-xl md:text-3xl font-bold">{currency}{totalExpenses.toLocaleString()}</h3>
             </div>
           </Card>
 
-          <Card className="p-4 md:p-6 bg-gradient-to-br from-savings via-savings/90 to-savings/70 text-savings-foreground border-0 shadow-xl shadow-savings/20">
+          <Card className="p-4 md:p-6 bg-gradient-to-br from-savings via-savings/90 to-savings/70 text-savings-foreground border-0 shadow-xl shadow-savings/20 rounded-3xl">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  <PiggyBank className="h-4 w-4 md:h-5 md:w-5" />
+                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                  <PiggyBank className="h-6 w-6 md:h-8 md:w-8" />
                 </div>
-                <p className="text-xs md:text-sm opacity-90">Savings</p>
+                <p className="text-xs md:text-sm opacity-90 font-semibold">Savings</p>
               </div>
-              <h3 className="text-lg md:text-2xl font-bold">{currency}{totalSavings.toLocaleString()}</h3>
+              <h3 className="text-xl md:text-3xl font-bold">{currency}{totalSavings.toLocaleString()}</h3>
             </div>
           </Card>
         </div>

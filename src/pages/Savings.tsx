@@ -321,11 +321,11 @@ const Savings = () => {
           {goals.map((goal) => {
             const progress = goal.target_amount > 0 ? (goal.current_amount / goal.target_amount) * 100 : 0;
             return (
-              <Card key={goal.id}>
+              <Card key={goal.id} className="rounded-3xl">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <span className="text-2xl">{goal.icon || "🎯"}</span>
-                    {goal.name}
+                  <CardTitle className="flex items-center gap-3">
+                    <div className="text-6xl p-4 bg-primary/10 rounded-3xl">{goal.icon || "🎯"}</div>
+                    <span className="text-2xl">{goal.name}</span>
                   </CardTitle>
                   {goal.description && (
                     <p className="text-sm text-muted-foreground">{goal.description}</p>
@@ -333,14 +333,14 @@ const Savings = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm font-semibold">
                       <span>Progress</span>
-                      <span>{progress.toFixed(1)}%</span>
+                      <span className="text-primary">{progress.toFixed(1)}%</span>
                     </div>
-                    <Progress value={progress} />
-                    <div className="flex justify-between text-sm">
-                      <span>₹{goal.current_amount.toFixed(2)}</span>
-                      <span>₹{goal.target_amount.toFixed(2)}</span>
+                    <Progress value={progress} className="h-3" />
+                    <div className="flex justify-between text-base font-bold">
+                      <span className="text-savings">₹{goal.current_amount.toFixed(2)}</span>
+                      <span className="text-muted-foreground">₹{goal.target_amount.toFixed(2)}</span>
                     </div>
                   </div>
                   {goal.deadline && (
@@ -351,12 +351,12 @@ const Savings = () => {
                   )}
                   <div className="flex gap-2">
                     <Button
-                      size="sm"
+                      size="lg"
                       variant="default"
-                      className="flex-1"
+                      className="flex-1 bg-primary hover:bg-primary/90 rounded-2xl"
                       onClick={() => setAddMoneyDialog(goal)}
                     >
-                      <Plus className="w-4 h-4 mr-1" />
+                      <Plus className="w-5 h-5 mr-2" />
                       Add Money
                     </Button>
                     <Button
