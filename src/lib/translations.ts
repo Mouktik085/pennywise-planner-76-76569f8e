@@ -135,6 +135,28 @@ export const translations = {
     receiveEmail: 'Receive notifications via email',
     receiveSMS: 'Receive notifications via SMS',
     saveNotificationSettings: 'Save Notification Settings',
+    
+    // Budget page specific
+    budgetLimit: 'Budget Limit',
+    monthlySpendingLimit: 'Monthly spending limit',
+    totalExpensesMonth: 'Total expenses this month',
+    availableToSpend: 'Available to spend',
+    monthlyBudgetLimit: 'Monthly Budget Limit',
+    spendingProgress: 'Spending Progress',
+    exceededBudgetBy: 'You\'ve exceeded your budget by',
+    warningCloseToLimit: '⚠️ Warning: You\'re close to your budget limit!',
+    youHaveRemaining: 'You have',
+    remainingThisMonth: 'remaining this month',
+    
+    // Savings page specific
+    emergencyFund: 'Emergency Fund',
+    noSavingsYet: 'No savings goals yet',
+    createFirstGoal: 'Create your first goal',
+    
+    // Accounts page specific
+    createFirstAccount: 'Create your first account',
+    noAccountsYet: 'No accounts yet',
+    addFirstAccountDesc: 'Add your first account to start tracking your finances. You can add cash, bank accounts, credit cards, and more!',
   },
   es: {
     // Common
@@ -270,6 +292,28 @@ export const translations = {
     receiveEmail: 'Recibir notificaciones por email',
     receiveSMS: 'Recibir notificaciones por SMS',
     saveNotificationSettings: 'Guardar Configuración de Notificaciones',
+    
+    // Budget page specific
+    budgetLimit: 'Límite de Presupuesto',
+    monthlySpendingLimit: 'Límite de gasto mensual',
+    totalExpensesMonth: 'Gastos totales este mes',
+    availableToSpend: 'Disponible para gastar',
+    monthlyBudgetLimit: 'Límite de Presupuesto Mensual',
+    spendingProgress: 'Progreso de Gastos',
+    exceededBudgetBy: 'Has excedido tu presupuesto por',
+    warningCloseToLimit: '⚠️ Advertencia: ¡Estás cerca de tu límite de presupuesto!',
+    youHaveRemaining: 'Tienes',
+    remainingThisMonth: 'restante este mes',
+    
+    // Savings page specific
+    emergencyFund: 'Fondo de Emergencia',
+    noSavingsYet: 'Aún no hay objetivos de ahorro',
+    createFirstGoal: 'Crea tu primer objetivo',
+    
+    // Accounts page specific
+    createFirstAccount: 'Crea tu primera cuenta',
+    noAccountsYet: 'Aún no hay cuentas',
+    addFirstAccountDesc: '¡Agrega tu primera cuenta para comenzar a rastrear tus finanzas. Puedes agregar efectivo, cuentas bancarias, tarjetas de crédito y más!',
   },
   hi: {
     // Common
@@ -405,6 +449,28 @@ export const translations = {
     receiveEmail: 'ईमेल के माध्यम से सूचनाएं प्राप्त करें',
     receiveSMS: 'एसएमएस के माध्यम से सूचनाएं प्राप्त करें',
     saveNotificationSettings: 'सूचना सेटिंग्स सहेजें',
+    
+    // Budget page specific
+    budgetLimit: 'बजट सीमा',
+    monthlySpendingLimit: 'मासिक खर्च सीमा',
+    totalExpensesMonth: 'इस महीने कुल खर्च',
+    availableToSpend: 'खर्च करने के लिए उपलब्ध',
+    monthlyBudgetLimit: 'मासिक बजट सीमा',
+    spendingProgress: 'खर्च प्रगति',
+    exceededBudgetBy: 'आपने अपने बजट को इससे पार कर लिया है',
+    warningCloseToLimit: '⚠️ चेतावनी: आप अपनी बजट सीमा के करीब हैं!',
+    youHaveRemaining: 'आपके पास है',
+    remainingThisMonth: 'इस महीने शेष',
+    
+    // Savings page specific
+    emergencyFund: 'आपातकालीन फंड',
+    noSavingsYet: 'अभी तक कोई बचत लक्ष्य नहीं',
+    createFirstGoal: 'अपना पहला लक्ष्य बनाएं',
+    
+    // Accounts page specific
+    createFirstAccount: 'अपना पहला खाता बनाएं',
+    noAccountsYet: 'अभी तक कोई खाता नहीं',
+    addFirstAccountDesc: 'अपने वित्त को ट्रैक करना शुरू करने के लिए अपना पहला खाता जोड़ें। आप नकद, बैंक खाते, क्रेडिट कार्ड और बहुत कुछ जोड़ सकते हैं!',
   },
   fr: {
     // Common
@@ -540,6 +606,28 @@ export const translations = {
     receiveEmail: 'Recevoir des notifications par email',
     receiveSMS: 'Recevoir des notifications par SMS',
     saveNotificationSettings: 'Enregistrer les Paramètres de Notification',
+    
+    // Budget page specific
+    budgetLimit: 'Limite de Budget',
+    monthlySpendingLimit: 'Limite de dépenses mensuelle',
+    totalExpensesMonth: 'Dépenses totales ce mois',
+    availableToSpend: 'Disponible à dépenser',
+    monthlyBudgetLimit: 'Limite de Budget Mensuel',
+    spendingProgress: 'Progrès des Dépenses',
+    exceededBudgetBy: 'Vous avez dépassé votre budget de',
+    warningCloseToLimit: '⚠️ Attention: Vous êtes proche de votre limite de budget!',
+    youHaveRemaining: 'Vous avez',
+    remainingThisMonth: 'restant ce mois',
+    
+    // Savings page specific
+    emergencyFund: 'Fonds d\'Urgence',
+    noSavingsYet: 'Aucun objectif d\'épargne pour le moment',
+    createFirstGoal: 'Créez votre premier objectif',
+    
+    // Accounts page specific
+    createFirstAccount: 'Créez votre premier compte',
+    noAccountsYet: 'Aucun compte pour le moment',
+    addFirstAccountDesc: 'Ajoutez votre premier compte pour commencer à suivre vos finances. Vous pouvez ajouter de l\'argent liquide, des comptes bancaires, des cartes de crédit et plus encore!',
   },
 };
 

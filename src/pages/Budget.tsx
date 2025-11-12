@@ -225,36 +225,36 @@ const Budget = () => {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Budget Limit</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('budgetLimit')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold"><CurrencyAmount amount={budget?.monthly_limit || 0} /></div>
-            <p className="text-xs text-muted-foreground">Monthly spending limit</p>
+            <p className="text-xs text-muted-foreground">{t('monthlySpendingLimit')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Spent</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('spent')}</CardTitle>
             <TrendingDown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold"><CurrencyAmount amount={budget?.current_spent || 0} /></div>
-            <p className="text-xs text-muted-foreground">Total expenses this month</p>
+            <p className="text-xs text-muted-foreground">{t('totalExpensesMonth')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Remaining</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('remaining')}</CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               <CurrencyAmount amount={(budget?.monthly_limit || 0) - (budget?.current_spent || 0)} />
             </div>
-            <p className="text-xs text-muted-foreground">Available to spend</p>
+            <p className="text-xs text-muted-foreground">{t('availableToSpend')}</p>
           </CardContent>
         </Card>
 
@@ -277,14 +277,14 @@ const Budget = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="monthly-limit">Monthly Budget Limit</Label>
+              <Label htmlFor="monthly-limit">{t('monthlyBudgetLimit')}</Label>
               <Input
                 id="monthly-limit"
                 type="number"
                 step="0.01"
                 value={monthlyLimit}
                 onChange={(e) => setMonthlyLimit(e.target.value)}
-                placeholder="Enter your monthly budget"
+                placeholder={t('monthlyBudgetLimit')}
                 required
               />
             </div>
@@ -314,16 +314,16 @@ const Budget = () => {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Spending Progress</span>
+                <span>{t('spendingProgress')}</span>
                 <span>{percentage.toFixed(1)}%</span>
               </div>
               <Progress value={Math.min(percentage, 100)} />
               <p className="text-sm text-muted-foreground">
                 {percentage > 100
-                  ? <>You've exceeded your budget by <CurrencyAmount amount={Math.abs(remaining)} /></>
+                  ? <>{t('exceededBudgetBy')} <CurrencyAmount amount={Math.abs(remaining)} /></>
                   : percentage > 80
-                  ? `⚠️ Warning: You're close to your budget limit!`
-                  : <>You have <CurrencyAmount amount={remaining} /> remaining this month</>}
+                  ? t('warningCloseToLimit')
+                  : <>{t('youHaveRemaining')} <CurrencyAmount amount={remaining} /> {t('remainingThisMonth')}</>}
               </p>
             </div>
           </CardContent>

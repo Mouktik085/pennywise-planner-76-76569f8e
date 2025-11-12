@@ -232,7 +232,7 @@ const Savings = () => {
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Emergency Fund"
+                  placeholder={t('emergencyFund')}
                   required
                 />
               </div>
@@ -315,8 +315,8 @@ const Savings = () => {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Target className="w-12 h-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-center mb-4">No savings goals yet</p>
-            <Button onClick={() => setDialogOpen(true)}>Create your first goal</Button>
+            <p className="text-muted-foreground text-center mb-4">{t('noSavingsYet')}</p>
+            <Button onClick={() => setDialogOpen(true)}>{t('createFirstGoal')}</Button>
           </CardContent>
         </Card>
       ) : (

@@ -366,13 +366,13 @@ const Accounts = () => {
         <Card className="shadow-lg">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Wallet className="w-16 h-16 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-center mb-4 text-lg">No accounts yet</p>
+            <p className="text-muted-foreground text-center mb-4 text-lg">{t('noAccountsYet')}</p>
             <p className="text-sm text-muted-foreground text-center mb-6 max-w-md">
-              Add your first account to start tracking your finances. You can add cash, bank accounts, credit cards, and more!
+              {t('addFirstAccountDesc')}
             </p>
             <Button onClick={() => setDialogOpen(true)} size="lg">
               <Plus className="w-4 h-4 mr-2" />
-              Create your first account
+              {t('createFirstAccount')}
             </Button>
           </CardContent>
         </Card>
