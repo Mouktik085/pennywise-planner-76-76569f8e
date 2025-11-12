@@ -13,7 +13,7 @@ import { notificationService } from "@/lib/notificationService";
 
 const Notifications = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -26,13 +26,16 @@ const Notifications = () => {
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
 
   useEffect(() => {
+    if (authLoading) return;
+    
     if (!user) {
       navigate('/auth');
       return;
     }
+    
     fetchSettings();
     checkNotificationPermission();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const checkNotificationPermission = () => {
     if ('Notification' in window) {
@@ -126,7 +129,7 @@ const Notifications = () => {
     }
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -135,7 +138,7 @@ const Notifications = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-cyan-50/20 to-pink-50/10 dark:from-background dark:via-cyan-950/5 dark:to-pink-950/5 p-4 md:p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
           <Link to="/">

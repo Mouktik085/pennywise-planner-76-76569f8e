@@ -45,19 +45,17 @@ const Layout = () => {
   }
 
   const navItems = [
-    { path: "/", icon: Home, label: "Dashboard" },
+    { path: "/", icon: Home, label: "Home" },
     { path: "/accounts", icon: Wallet, label: "Accounts" },
     { path: "/transactions", icon: Receipt, label: "Transactions" },
     { path: "/savings", icon: PiggyBank, label: "Savings" },
     { path: "/budget", icon: DollarSign, label: "Budget" },
     { path: "/transfer", icon: ArrowLeftRight, label: "Transfer" },
-    { path: "/statistics", icon: BarChart3, label: "Statistics" },
-    { path: "/notifications", icon: Bell, label: "Notifications" },
+    { path: "/statistics", icon: BarChart3, label: "Stats" },
+    { path: "/notifications", icon: Bell, label: "Alerts" },
   ];
 
-  const mobileNavItems = navItems.filter(item => 
-    !["/settings", "/calendar"].includes(item.path)
-  );
+  const mobileNavItems = navItems;
 
   return (
     <div className="min-h-screen bg-background">

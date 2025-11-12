@@ -168,12 +168,15 @@ const Dashboard = () => {
         {/* Header with Notifications */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h1 className="text-2xl md:text-4xl font-bold text-foreground">Budget Manager</h1>
-          <Link to="/notifications">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Bell className="h-4 w-4" />
-              <span className="hidden sm:inline">Notifications</span>
-            </Button>
-          </Link>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2"
+            onClick={() => navigate('/notifications')}
+          >
+            <Bell className="h-4 w-4" />
+            <span className="hidden sm:inline">Notifications</span>
+          </Button>
         </div>
 
         <div className="flex flex-wrap gap-2">
