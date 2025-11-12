@@ -446,6 +446,35 @@ const AddTransaction = () => {
                     onCheckedChange={setIsRecurring}
                   />
                 </div>
+
+                {isRecurring && (
+                  <div className="space-y-2">
+                    <Label>Recurring Frequency</Label>
+                    <Select value={recurringFrequency} onValueChange={setRecurringFrequency}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="yearly">Yearly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="income-planned">Planned Income</Label>
+                    <p className="text-sm text-muted-foreground">Schedule for future date</p>
+                  </div>
+                  <Switch
+                    id="income-planned"
+                    checked={isPlanned}
+                    onCheckedChange={setIsPlanned}
+                  />
+                </div>
               </TabsContent>
             </Tabs>
 
