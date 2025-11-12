@@ -20,7 +20,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Vibrant Teal Theme - Original */
+    /* Vibrant Teal Theme - Original Bright Colors */
     --background: 0 0% 100%;
     --foreground: 210 40% 10%;
 
@@ -30,16 +30,16 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 210 40% 10%;
 
-    --primary: 174 62% 47%;
+    --primary: 174 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 174 62% 97%;
-    --secondary-foreground: 174 62% 47%;
+    --secondary: 174 100% 97%;
+    --secondary-foreground: 174 100% 40%;
 
-    --muted: 174 20% 96%;
+    --muted: 210 20% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 174 62% 47%;
+    --accent: 174 100% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -47,39 +47,39 @@ All colors MUST be HSL.
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 174 62% 47%;
+    --ring: 174 100% 50%;
 
     --radius: 1rem;
 
-    /* Financial colors - Vibrant */
-    --income: 142 76% 40%;
+    /* Financial colors - Super Vibrant */
+    --income: 145 80% 50%;
     --income-foreground: 0 0% 100%;
-    --income-light: 142 76% 94%;
+    --income-light: 145 80% 94%;
     
-    --expense: 0 84% 60%;
+    --expense: 0 85% 60%;
     --expense-foreground: 0 0% 100%;
-    --expense-light: 0 84% 97%;
+    --expense-light: 0 85% 97%;
     
-    --savings: 260 60% 50%;
+    --savings: 260 70% 60%;
     --savings-foreground: 0 0% 100%;
-    --savings-light: 260 60% 95%;
+    --savings-light: 260 70% 95%;
 
     /* Chart colors - Vibrant palette */
-    --chart-1: 174 62% 47%;
-    --chart-2: 142 76% 40%;
-    --chart-3: 45 93% 47%;
+    --chart-1: 174 100% 50%;
+    --chart-2: 145 80% 50%;
+    --chart-3: 45 93% 50%;
     --chart-4: 330 85% 60%;
-    --chart-5: 0 84% 60%;
+    --chart-5: 0 85% 60%;
 
-    /* Sidebar - Teal theme */
+    /* Sidebar - Bright Teal theme */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 210 40% 10%;
-    --sidebar-primary: 174 62% 47%;
+    --sidebar-primary: 174 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 174 20% 96%;
-    --sidebar-accent-foreground: 174 62% 47%;
+    --sidebar-accent-foreground: 174 100% 40%;
     --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 174 62% 47%;
+    --sidebar-ring: 174 100% 50%;
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
