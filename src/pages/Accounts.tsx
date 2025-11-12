@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CurrencyAmount } from "@/components/CurrencyAmount";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Account {
   id: string;
@@ -30,6 +32,7 @@ interface Account {
 const Accounts = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -185,14 +188,14 @@ const Accounts = () => {
       <div className="container mx-auto space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Accounts</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">{t('accounts')}</h1>
             <p className="text-muted-foreground text-sm sm:text-base">Manage your payment accounts</p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={() => setEditingAccount(null)} className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
-                Add Account
+                {t('addAccount')}
               </Button>
             </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -390,8 +393,8 @@ const Accounts = () => {
                       <div className="flex justify-between items-center">
                         <span className="text-xs text-muted-foreground">Used / Limit</span>
                         <div className="flex flex-col items-end">
-                          <span className="text-xl font-bold">₹{(account.credit_used || 0).toFixed(2)}</span>
-                          <span className="text-sm text-muted-foreground">of ₹{(account.credit_limit || 0).toFixed(2)}</span>
+                          <span className="text-xl font-bold"><CurrencyAmount amount={account.credit_used || 0} /></span>
+                          <span className="text-sm text-muted-foreground">of <CurrencyAmount amount={account.credit_limit || 0} /></span>
                         </div>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
@@ -406,7 +409,7 @@ const Accounts = () => {
                     <div className="flex justify-between items-center p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
                       <span className="text-xs text-muted-foreground">Available</span>
                       <span className="text-lg font-semibold text-green-600 dark:text-green-400">
-                        ₹{((account.credit_limit || 0) - (account.credit_used || 0)).toFixed(2)}
+                        <CurrencyAmount amount={(account.credit_limit || 0) - (account.credit_used || 0)} />
                       </span>
                     </div>
                     {account.bill_date && (
@@ -423,7 +426,7 @@ const Accounts = () => {
                 ) : (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Balance</span>
-                    <span className="text-2xl font-bold">₹{account.balance.toFixed(2)}</span>
+                    <span className="text-2xl font-bold"><CurrencyAmount amount={account.balance} /></span>
                   </div>
                 )}
                 {account.bank_name && (

@@ -4,10 +4,12 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const Layout = () => {
   const location = useLocation();
   const { user, loading } = useAuth();
+  const { t } = useTranslation();
   const [username, setUsername] = useState<string>("");
 
   useEffect(() => {
@@ -45,13 +47,13 @@ const Layout = () => {
   }
 
   const navItems = [
-    { path: "/", icon: Home, label: "Home" },
-    { path: "/accounts", icon: Wallet, label: "Accounts" },
-    { path: "/transactions", icon: Receipt, label: "Transactions" },
-    { path: "/savings", icon: PiggyBank, label: "Savings" },
-    { path: "/budget", icon: DollarSign, label: "Budget" },
+    { path: "/", icon: Home, label: t('dashboard') },
+    { path: "/accounts", icon: Wallet, label: t('accounts') },
+    { path: "/transactions", icon: Receipt, label: t('transactions') },
+    { path: "/savings", icon: PiggyBank, label: t('savings') },
+    { path: "/budget", icon: DollarSign, label: t('budget') },
     { path: "/transfer", icon: ArrowLeftRight, label: "Transfer" },
-    { path: "/statistics", icon: BarChart3, label: "Stats" },
+    { path: "/statistics", icon: BarChart3, label: t('statistics') },
     { path: "/notifications", icon: Bell, label: "Alerts" },
   ];
 

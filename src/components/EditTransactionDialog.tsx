@@ -104,7 +104,7 @@ export const EditTransactionDialog = ({ transaction, open, onOpenChange, onSucce
           </div>
 
           <div className="space-y-2">
-            <Label>Amount (₹)</Label>
+            <Label>Amount</Label>
             <Input
               type="number"
               step="0.01"

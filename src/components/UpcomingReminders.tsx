@@ -4,6 +4,7 @@ import { Bell, Calendar, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { addDays, format, isAfter, isBefore, parseISO } from "date-fns";
+import { CurrencyAmount } from "@/components/CurrencyAmount";
 
 interface UpcomingTransaction {
   id: string;
@@ -119,8 +120,7 @@ export const UpcomingReminders = () => {
                       : "text-red-600 dark:text-red-400"
                   }`}
                 >
-                  {transaction.type === "income" ? "+" : "-"}₹
-                  {Number(transaction.amount).toLocaleString()}
+                  <CurrencyAmount amount={Number(transaction.amount)} showSign />
                 </p>
               </div>
             </div>

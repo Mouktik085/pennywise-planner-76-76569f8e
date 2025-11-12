@@ -8,10 +8,13 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Ba
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
+import { CurrencyAmount } from "@/components/CurrencyAmount";
 
 const Statistics = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { format: formatCurrency } = useCurrency();
   const [loading, setLoading] = useState(true);
   const [expenseData, setExpenseData] = useState<any[]>([]);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
@@ -313,13 +316,13 @@ const Statistics = () => {
                       cx="50%" 
                       cy="50%" 
                       outerRadius={100}
-                      label={(entry) => `${entry.name}: ₹${entry.value.toFixed(0)}`}
+                      label={(entry) => `${entry.name}: ${formatCurrency(entry.value)}`}
                     >
                       {expenseData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => `₹${value.toFixed(2)}`} />
+                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
@@ -373,7 +376,7 @@ const Statistics = () => {
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => `₹${value.toFixed(2)}`} />
+                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>

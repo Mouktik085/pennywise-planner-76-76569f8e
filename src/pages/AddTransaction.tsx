@@ -16,6 +16,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface Account {
   id: string;
@@ -30,6 +31,7 @@ interface Account {
 const AddTransaction = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { format: formatCurrency } = useCurrency();
   const [date, setDate] = useState<Date>(new Date());
   const [isRecurring, setIsRecurring] = useState(false);
   const [isPlanned, setIsPlanned] = useState(false);
@@ -229,7 +231,7 @@ const AddTransaction = () => {
 
               <TabsContent value="expense" className="space-y-4 mt-6">
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Amount (₹)</Label>
+                  <Label htmlFor="amount">Amount</Label>
                   <Input
                     id="amount"
                     type="number"
@@ -271,7 +273,7 @@ const AddTransaction = () => {
                     <SelectContent>
                       {accounts.map((account) => (
                         <SelectItem key={account.id} value={account.id}>
-                          {account.icon} {account.name} {account.is_credit_card ? `(Available: ₹${((account.credit_limit || 0) - (account.credit_used || 0)).toFixed(2)})` : `(₹${account.balance.toFixed(2)})`}
+                          {account.icon} {account.name} {account.is_credit_card ? `(Available: ${formatCurrency((account.credit_limit || 0) - (account.credit_used || 0))})` : `(${formatCurrency(account.balance)})`}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -354,7 +356,7 @@ const AddTransaction = () => {
 
               <TabsContent value="income" className="space-y-4 mt-6">
                 <div className="space-y-2">
-                  <Label htmlFor="income-amount">Amount (₹)</Label>
+                  <Label htmlFor="income-amount">Amount</Label>
                   <Input
                     id="income-amount"
                     type="number"
@@ -394,7 +396,7 @@ const AddTransaction = () => {
                     <SelectContent>
                       {accounts.map((account) => (
                         <SelectItem key={account.id} value={account.id}>
-                          {account.icon} {account.name} {account.is_credit_card ? `(Available: ₹${((account.credit_limit || 0) - (account.credit_used || 0)).toFixed(2)})` : `(₹${account.balance.toFixed(2)})`}
+                          {account.icon} {account.name} {account.is_credit_card ? `(Available: ${formatCurrency((account.credit_limit || 0) - (account.credit_used || 0))})` : `(${formatCurrency(account.balance)})`}
                         </SelectItem>
                       ))}
                     </SelectContent>

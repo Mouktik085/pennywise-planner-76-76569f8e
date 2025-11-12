@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Save, TrendingDown } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CurrencyAmount } from "@/components/CurrencyAmount";
 
 interface CategoryBudget {
   id?: string;
@@ -206,7 +207,7 @@ const BudgetAllocation = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Monthly Budget</p>
-                <p className="text-2xl md:text-3xl font-bold">₹{monthlyBudget.toLocaleString()}</p>
+                <p className="text-2xl md:text-3xl font-bold"><CurrencyAmount amount={monthlyBudget} /></p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground mb-1">
@@ -279,7 +280,7 @@ const BudgetAllocation = () => {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Allocated</span>
                       <span className="font-semibold">
-                        ₹{budget.allocated_amount.toFixed(0)}
+                        <CurrencyAmount amount={budget.allocated_amount} />
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
@@ -291,7 +292,7 @@ const BudgetAllocation = () => {
                             : "text-green-600"
                         }`}
                       >
-                        ₹{budget.spent_amount.toFixed(0)}
+                        <CurrencyAmount amount={budget.spent_amount} />
                       </span>
                     </div>
                     <Progress
