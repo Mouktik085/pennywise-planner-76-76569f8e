@@ -11,9 +11,12 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { usePreferences } from "@/contexts/PreferencesContext";
 import { SMSPermissionHandler } from "@/components/SMSPermissionHandler";
 import { useTheme } from "next-themes";
 import { z } from "zod";
+import { SUPPORTED_CURRENCIES, getCurrencySymbol } from "@/lib/currencyFormatter";
+import { SUPPORTED_LANGUAGES } from "@/lib/translations";
 
 interface Account {
   id: string;
@@ -36,12 +39,13 @@ const settingsSchema = z.object({
 const Settings = () => {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { currency: prefCurrency, language: prefLanguage, setCurrency: updateCurrency, setLanguage: updateLanguage } = usePreferences();
   const [username, setUsername] = useState("");
   const [smsSync, setSmsSync] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedAccount, setSelectedAccount] = useState("");
-  const [currency, setCurrency] = useState("INR");
-  const [language, setLanguage] = useState("en");
+  const [currency, setCurrency] = useState(prefCurrency);
+  const [language, setLanguage] = useState(prefLanguage);
   const [phoneNumber, setPhoneNumber] = useState("");
   
   // Notification settings
@@ -167,6 +171,11 @@ const Settings = () => {
         .eq("user_id", user?.id);
 
       if (error) throw error;
+      
+      // Update preferences context
+      await updateCurrency(currency);
+      await updateLanguage(language);
+      
       toast.success("Settings saved successfully!");
       await fetchSettings();
     } catch (error) {
@@ -218,14 +227,11 @@ const Settings = () => {
                       onChange={(e) => setCurrency(e.target.value)}
                       className="w-full px-3 py-2 rounded-md border border-input bg-background"
                     >
-                      <option value="INR">₹ Indian Rupee (INR)</option>
-                      <option value="USD">$ US Dollar (USD)</option>
-                      <option value="EUR">€ Euro (EUR)</option>
-                      <option value="GBP">£ British Pound (GBP)</option>
-                      <option value="JPY">¥ Japanese Yen (JPY)</option>
-                      <option value="PLN">zł Polish Zloty (PLN)</option>
-                      <option value="AUD">A$ Australian Dollar (AUD)</option>
-                      <option value="CAD">C$ Canadian Dollar (CAD)</option>
+                      {SUPPORTED_CURRENCIES.map((curr) => (
+                        <option key={curr} value={curr}>
+                          {getCurrencySymbol(curr)} {curr}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   
@@ -237,14 +243,11 @@ const Settings = () => {
                       onChange={(e) => setLanguage(e.target.value)}
                       className="w-full px-3 py-2 rounded-md border border-input bg-background"
                     >
-                      <option value="en">English</option>
-                      <option value="hi">हिन्दी (Hindi)</option>
-                      <option value="es">Español (Spanish)</option>
-                      <option value="fr">Français (French)</option>
-                      <option value="de">Deutsch (German)</option>
-                      <option value="zh">中文 (Chinese)</option>
-                      <option value="ja">日本語 (Japanese)</option>
-                      <option value="pt">Português (Portuguese)</option>
+                      {SUPPORTED_LANGUAGES.map((lang) => (
+                        <option key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
