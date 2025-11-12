@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, Mail, MessageSquare, Save, ArrowLeft } from "lucide-react";
+import { Bell, Mail, MessageSquare, Save, ArrowLeft, Check } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { notificationService } from "@/lib/notificationService";
 
 const Notifications = () => {
   const { toast } = useToast();
@@ -22,6 +23,7 @@ const Notifications = () => {
   const [transactionReminders, setTransactionReminders] = useState(true);
   const [savingsMilestones, setSavingsMilestones] = useState(true);
   const [reminderDaysBefore, setReminderDaysBefore] = useState(2);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
 
   useEffect(() => {
     if (!user) {
@@ -29,7 +31,14 @@ const Notifications = () => {
       return;
     }
     fetchSettings();
+    checkNotificationPermission();
   }, [user, navigate]);
+
+  const checkNotificationPermission = () => {
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
+  };
 
   const fetchSettings = async () => {
     try {
@@ -91,20 +100,29 @@ const Notifications = () => {
   };
 
   const requestNotificationPermission = async () => {
-    if ("Notification" in window) {
-      const permission = await Notification.requestPermission();
-      if (permission === "granted") {
-        toast({
-          title: "Notifications Enabled",
-          description: "You will now receive browser notifications",
-        });
-      } else {
-        toast({
-          title: "Notifications Denied",
-          description: "Please enable notifications in your browser settings",
-          variant: "destructive",
-        });
-      }
+    const granted = await notificationService.requestPermission();
+    if (granted) {
+      setNotificationPermission('granted');
+      toast({
+        title: "Notifications Enabled",
+        description: "You will now receive browser notifications for budget alerts, reminders, and more!",
+      });
+      
+      // Send a test notification
+      await notificationService.sendNotification(
+        "🎉 Notifications Enabled!",
+        {
+          body: "You'll now receive important financial alerts and reminders.",
+          tag: "welcome-notification"
+        }
+      );
+    } else {
+      setNotificationPermission(Notification.permission);
+      toast({
+        title: "Notifications Denied",
+        description: "Please enable notifications in your browser settings to receive alerts",
+        variant: "destructive",
+      });
     }
   };
 
@@ -138,13 +156,44 @@ const Notifications = () => {
               Browser Notifications
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <Button onClick={requestNotificationPermission} className="w-full">
-              Enable Browser Notifications
-            </Button>
-            <p className="text-sm text-muted-foreground mt-2">
-              Get instant alerts in your browser when important events happen
-            </p>
+          <CardContent className="space-y-4">
+            {notificationPermission === 'granted' ? (
+              <div className="p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                  <Check className="w-5 h-5" />
+                  <span className="font-semibold">Notifications Enabled</span>
+                </div>
+                <p className="text-sm text-green-600 dark:text-green-300 mt-1">
+                  You'll receive alerts for budget limits, upcoming bills, and savings goals
+                </p>
+              </div>
+            ) : (
+              <>
+                <Button 
+                  onClick={requestNotificationPermission} 
+                  className="w-full"
+                  variant={notificationPermission === 'denied' ? 'destructive' : 'default'}
+                >
+                  {notificationPermission === 'denied' ? 'Notifications Blocked' : 'Enable Browser Notifications'}
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  {notificationPermission === 'denied' 
+                    ? 'Please enable notifications in your browser settings to receive alerts'
+                    : 'Get instant alerts on mobile and desktop when important financial events happen'
+                  }
+                </p>
+              </>
+            )}
+            
+            <div className="pt-2 space-y-2 text-sm text-muted-foreground border-t">
+              <p className="font-medium text-foreground">What you'll be notified about:</p>
+              <ul className="space-y-1 list-disc list-inside">
+                <li>When you reach 75% or 90% of your budget limit</li>
+                <li>Upcoming recurring bills and transactions</li>
+                <li>Credit card payment due dates</li>
+                <li>Savings goal milestones and achievements</li>
+              </ul>
+            </div>
           </CardContent>
         </Card>
 
