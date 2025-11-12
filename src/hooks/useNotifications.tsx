@@ -21,14 +21,16 @@ export const useNotifications = () => {
         // Fetch user's notification settings
         const { data: profile } = await supabase
           .from('profiles')
-          .select('notification_budget_alerts, notification_transaction_reminders, notification_savings_milestones, reminder_days_before, last_notification_check')
+          .select('notification_budget_alerts, notification_transaction_reminders, notification_savings_milestones, reminder_days_before')
           .eq('user_id', user.id)
           .maybeSingle();
 
         if (!profile) return;
 
-        // Check if we already checked today
-        const lastCheck = profile.last_notification_check ? new Date(profile.last_notification_check) : null;
+        // Use localStorage to track last check (temporary until DB column is available)
+        const lastCheckKey = `notification_last_check_${user.id}`;
+        const lastCheckStr = localStorage.getItem(lastCheckKey);
+        const lastCheck = lastCheckStr ? new Date(lastCheckStr) : null;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
@@ -65,11 +67,8 @@ export const useNotifications = () => {
         // Check credit card dues (once per day)
         await checkCreditCardDues();
 
-        // Update last check time
-        await supabase
-          .from('profiles')
-          .update({ last_notification_check: new Date().toISOString() })
-          .eq('user_id', user.id);
+        // Update last check time in localStorage (temporary until DB column is available)
+        localStorage.setItem(lastCheckKey, new Date().toISOString());
 
       } catch (error) {
         console.error('Error checking notifications:', error);

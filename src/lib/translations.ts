@@ -1,4 +1,5 @@
 // Translation keys and their values in different languages
+// Updated with new keys for currency and language support
 export const translations = {
   en: {
     // Common
