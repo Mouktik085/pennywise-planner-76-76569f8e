@@ -181,6 +181,7 @@ export type Database = {
           email: string | null
           email_notifications: boolean | null
           id: string
+          last_notification_check: string | null
           notification_bills: boolean | null
           notification_budget_alerts: boolean | null
           notification_expenses: boolean | null
@@ -206,6 +207,7 @@ export type Database = {
           email?: string | null
           email_notifications?: boolean | null
           id?: string
+          last_notification_check?: string | null
           notification_bills?: boolean | null
           notification_budget_alerts?: boolean | null
           notification_expenses?: boolean | null
@@ -231,6 +233,7 @@ export type Database = {
           email?: string | null
           email_notifications?: boolean | null
           id?: string
+          last_notification_check?: string | null
           notification_bills?: boolean | null
           notification_budget_alerts?: boolean | null
           notification_expenses?: boolean | null

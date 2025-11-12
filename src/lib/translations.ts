@@ -22,11 +22,16 @@ export const translations = {
     settings: 'Settings',
     
     // Dashboard
+    appTitle: 'Budget Manager',
     totalBalance: 'Total Balance',
+    balance: 'Balance',
     income: 'Income',
     expenses: 'Expenses',
+    creditCardDue: 'Credit Card Due',
     recentTransactions: 'Recent Transactions',
     budgetOverview: 'Budget Overview',
+    aiAssistant: 'AI Chat',
+    signOut: 'Sign Out',
     
     // Transactions
     addTransaction: 'Add Transaction',
@@ -79,11 +84,16 @@ export const translations = {
     settings: 'Ajustes',
     
     // Dashboard
+    appTitle: 'Gestor de Presupuesto',
     totalBalance: 'Balance Total',
+    balance: 'Saldo',
     income: 'Ingresos',
     expenses: 'Gastos',
+    creditCardDue: 'Vencimiento de Tarjeta',
     recentTransactions: 'Transacciones Recientes',
     budgetOverview: 'Resumen del Presupuesto',
+    aiAssistant: 'Chat IA',
+    signOut: 'Cerrar Sesión',
     
     // Transactions
     addTransaction: 'Agregar Transacción',
@@ -136,11 +146,16 @@ export const translations = {
     settings: 'सेटिंग्स',
     
     // Dashboard
+    appTitle: 'बजट प्रबंधक',
     totalBalance: 'कुल शेष',
+    balance: 'शेष राशि',
     income: 'आय',
     expenses: 'खर्च',
+    creditCardDue: 'क्रेडिट कार्ड देय',
     recentTransactions: 'हाल के लेनदेन',
     budgetOverview: 'बजट विवरण',
+    aiAssistant: 'एआई चैट',
+    signOut: 'साइन आउट',
     
     // Transactions
     addTransaction: 'लेनदेन जोड़ें',
@@ -193,11 +208,16 @@ export const translations = {
     settings: 'Paramètres',
     
     // Dashboard
+    appTitle: 'Gestionnaire de Budget',
     totalBalance: 'Solde Total',
+    balance: 'Solde',
     income: 'Revenus',
     expenses: 'Dépenses',
+    creditCardDue: 'Carte de Crédit Due',
     recentTransactions: 'Transactions Récentes',
     budgetOverview: 'Aperçu du Budget',
+    aiAssistant: 'Chat IA',
+    signOut: 'Déconnexion',
     
     // Transactions
     addTransaction: 'Ajouter une Transaction',
