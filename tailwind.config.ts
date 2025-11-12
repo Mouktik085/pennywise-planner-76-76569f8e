@@ -22,7 +22,15 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          glow: "hsl(var(--primary-glow))",
         },
+        ocean: {
+          deep: "hsl(var(--ocean-deep))",
+          shallow: "hsl(var(--ocean-shallow))",
+        },
+        seafoam: "hsl(var(--seafoam))",
+        coral: "hsl(var(--coral))",
+        sand: "hsl(var(--sand))",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -68,6 +76,8 @@ export default {
           "3": "hsl(var(--chart-3))",
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
+          "6": "hsl(var(--chart-6))",
+          "7": "hsl(var(--chart-7))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -102,10 +112,42 @@ export default {
             height: "0",
           },
         },
+        wave: {
+          "0%, 100%": {
+            transform: "translateX(-25%)",
+          },
+          "50%": {
+            transform: "translateX(0%)",
+          },
+        },
+        ripple: {
+          "0%": {
+            transform: "scale(1)",
+            opacity: "1",
+          },
+          "100%": {
+            transform: "scale(1.5)",
+            opacity: "0",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        wave: "wave 3s ease-in-out infinite",
+        ripple: "ripple 0.6s ease-out",
+      },
+      backgroundImage: {
+        "gradient-ocean": "var(--gradient-ocean)",
+        "gradient-ocean-light": "var(--gradient-ocean-light)",
+        "gradient-wave": "var(--gradient-wave)",
+        "gradient-sunset": "var(--gradient-sunset)",
+      },
+      boxShadow: {
+        ocean: "var(--shadow-ocean)",
+        "ocean-lg": "var(--shadow-ocean-lg)",
+        glow: "var(--glow-ocean)",
+        "glow-accent": "var(--glow-accent)",
       },
     },
   },
