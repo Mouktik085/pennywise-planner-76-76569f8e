@@ -120,7 +120,10 @@ export const UpcomingReminders = () => {
                       : "text-red-600 dark:text-red-400"
                   }`}
                 >
-                  <CurrencyAmount amount={Number(transaction.amount)} showSign />
+                  <CurrencyAmount 
+                    amount={transaction.type === "expense" ? -Number(transaction.amount) : Number(transaction.amount)} 
+                    showSign 
+                  />
                 </p>
               </div>
             </div>

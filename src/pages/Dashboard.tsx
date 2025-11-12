@@ -357,7 +357,10 @@ const Dashboard = () => {
                         transaction.type === "income" ? "text-income" : "text-expense"
                       }`}
                     >
-                      <CurrencyAmount amount={Number(transaction.amount)} showSign />
+                      <CurrencyAmount 
+                        amount={transaction.type === "expense" ? -Number(transaction.amount) : Number(transaction.amount)} 
+                        showSign 
+                      />
                     </p>
                     <p className="text-sm text-muted-foreground">{transaction.date}</p>
                   </div>
@@ -411,7 +414,10 @@ const Dashboard = () => {
                         transaction.type === "income" ? "text-income" : "text-expense"
                       }`}
                     >
-                      <CurrencyAmount amount={Number(transaction.amount)} showSign />
+                      <CurrencyAmount 
+                        amount={transaction.type === "expense" ? -Number(transaction.amount) : Number(transaction.amount)} 
+                        showSign 
+                      />
                     </p>
                     <p className="text-sm text-muted-foreground">{transaction.date}</p>
                   </div>
