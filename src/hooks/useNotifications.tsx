@@ -158,20 +158,23 @@ export const useNotifications = () => {
         .eq('year', currentYear)
         .maybeSingle();
 
+      // Only send if budget is over 80%
       if (budget && budget.monthly_limit > 0) {
-        await notificationService.sendBudgetAlert(
-          budget.current_spent,
-          budget.monthly_limit
-        );
-        
-        // Send email and SMS notifications
-        await sendMultiChannelNotification('budget_alert', {
-          spent: budget.current_spent,
-          limit: budget.monthly_limit
-        });
+        const percentage = (budget.current_spent / budget.monthly_limit) * 100;
+        if (percentage >= 80) {
+          await notificationService.sendBudgetAlert(
+            budget.current_spent,
+            budget.monthly_limit
+          );
+          
+          await sendMultiChannelNotification('budget_alert', {
+            spent: budget.current_spent,
+            limit: budget.monthly_limit
+          });
+        }
       }
 
-      // Check category budgets
+      // Check category budgets - only if over 80%
       const { data: categoryBudgets } = await supabase
         .from('category_budgets')
         .select('*')
@@ -182,18 +185,20 @@ export const useNotifications = () => {
       if (categoryBudgets) {
         for (const catBudget of categoryBudgets) {
           if (catBudget.allocated_amount > 0) {
-            await notificationService.sendBudgetAlert(
-              catBudget.spent_amount,
-              catBudget.allocated_amount,
-              catBudget.category
-            );
-            
-            // Send email and SMS notifications
-            await sendMultiChannelNotification('budget_alert', {
-              spent: catBudget.spent_amount,
-              limit: catBudget.allocated_amount,
-              category: catBudget.category
-            });
+            const percentage = (catBudget.spent_amount / catBudget.allocated_amount) * 100;
+            if (percentage >= 80) {
+              await notificationService.sendBudgetAlert(
+                catBudget.spent_amount,
+                catBudget.allocated_amount,
+                catBudget.category
+              );
+              
+              await sendMultiChannelNotification('budget_alert', {
+                spent: catBudget.spent_amount,
+                limit: catBudget.allocated_amount,
+                category: catBudget.category
+              });
+            }
           }
         }
       }
@@ -250,18 +255,24 @@ export const useNotifications = () => {
       if (goals) {
         for (const goal of goals) {
           if (goal.target_amount > 0) {
-            await notificationService.sendSavingsGoalAlert(
-              goal.name,
-              goal.current_amount || 0,
-              goal.target_amount
-            );
+            const percentage = ((goal.current_amount || 0) / goal.target_amount) * 100;
+            // Only notify at milestones: 25%, 50%, 75%, 100%
+            const milestones = [25, 50, 75, 100];
+            const currentMilestone = milestones.find(m => percentage >= m && percentage < m + 5);
             
-            // Send email and SMS notifications
-            await sendMultiChannelNotification('savings_milestone', {
-              goalName: goal.name,
-              currentAmount: goal.current_amount || 0,
-              targetAmount: goal.target_amount
-            });
+            if (currentMilestone) {
+              await notificationService.sendSavingsGoalAlert(
+                goal.name,
+                goal.current_amount || 0,
+                goal.target_amount
+              );
+              
+              await sendMultiChannelNotification('savings_milestone', {
+                goalName: goal.name,
+                currentAmount: goal.current_amount || 0,
+                targetAmount: goal.target_amount
+              });
+            }
           }
         }
       }

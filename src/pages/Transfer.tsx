@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeftRight } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface Account {
   id: string;
@@ -29,6 +30,7 @@ const Transfer = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { format: formatCurrency } = useCurrency();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
   const [fromAccountId, setFromAccountId] = useState("");
@@ -337,12 +339,12 @@ const Transfer = () => {
                   {fromType === "account" 
                     ? accounts.map((account) => (
                         <SelectItem key={account.id} value={account.id}>
-                          {account.name} (₹{account.balance.toFixed(2)})
+                          {account.name} ({formatCurrency(account.balance)})
                         </SelectItem>
                       ))
                     : savingsGoals.map((goal) => (
                         <SelectItem key={goal.id} value={goal.id}>
-                          {goal.icon} {goal.name} (₹{goal.current_amount.toFixed(2)})
+                          {goal.icon} {goal.name} ({formatCurrency(goal.current_amount)})
                         </SelectItem>
                       ))
                   }
@@ -369,12 +371,12 @@ const Transfer = () => {
                   {toType === "account" 
                     ? accounts.map((account) => (
                         <SelectItem key={account.id} value={account.id}>
-                          {account.name} (₹{account.balance.toFixed(2)})
+                          {account.name} ({formatCurrency(account.balance)})
                         </SelectItem>
                       ))
                     : savingsGoals.map((goal) => (
                         <SelectItem key={goal.id} value={goal.id}>
-                          {goal.icon} {goal.name} (₹{goal.current_amount.toFixed(2)})
+                          {goal.icon} {goal.name} ({formatCurrency(goal.current_amount)})
                         </SelectItem>
                       ))
                   }
@@ -383,7 +385,7 @@ const Transfer = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Amount (₹)</Label>
+              <Label>Amount</Label>
               <Input
                 type="number"
                 step="0.01"

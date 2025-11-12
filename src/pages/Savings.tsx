@@ -12,6 +12,7 @@ import { Plus, Target, TrendingUp, Calendar, Trash2, Edit, PiggyBank } from "luc
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CurrencyAmount } from "@/components/CurrencyAmount";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const emojiList = [
   "🎯", "💰", "🏠", "🚗", "✈️", "🎓", "💍", "🎉", "🏖️", "🎮",
@@ -33,6 +34,7 @@ interface SavingsGoal {
 const Savings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -185,7 +187,7 @@ const Savings = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Savings Goals</h1>
+          <h1 className="text-3xl font-bold">{t('savingsGoals')}</h1>
           <p className="text-muted-foreground">Track and achieve your financial targets</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

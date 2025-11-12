@@ -17,6 +17,7 @@ import { useTheme } from "next-themes";
 import { z } from "zod";
 import { SUPPORTED_CURRENCIES, getCurrencySymbol } from "@/lib/currencyFormatter";
 import { SUPPORTED_LANGUAGES } from "@/lib/translations";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Account {
   id: string;
@@ -40,6 +41,7 @@ const Settings = () => {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const { currency: prefCurrency, language: prefLanguage, setCurrency: updateCurrency, setLanguage: updateLanguage } = usePreferences();
+  const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [smsSync, setSmsSync] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -188,7 +190,7 @@ const Settings = () => {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <h1 className="text-4xl font-bold text-foreground">Settings</h1>
+          <h1 className="text-4xl font-bold text-foreground">{t('settings')}</h1>
           <p className="text-muted-foreground mt-1">Manage your app preferences</p>
         </div>
 

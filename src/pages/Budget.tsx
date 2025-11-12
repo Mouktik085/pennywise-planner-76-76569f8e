@@ -12,6 +12,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recha
 import { Link } from "react-router-dom";
 import { CurrencyAmount } from "@/components/CurrencyAmount";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Budget {
   id?: string;
@@ -31,6 +32,7 @@ const Budget = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { format: formatCurrency } = useCurrency();
+  const { t } = useTranslation();
   const [budget, setBudget] = useState<Budget | null>(null);
   const [monthlyLimit, setMonthlyLimit] = useState("");
   const [savingsTarget, setSavingsTarget] = useState("");
@@ -209,13 +211,13 @@ const Budget = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Monthly Budget</h1>
+          <h1 className="text-3xl font-bold">{t('monthlyBudget')}</h1>
           <p className="text-muted-foreground">Set and track your spending limits</p>
         </div>
         <Link to="/budget/allocation">
           <Button className="gap-2">
             <PieChartIcon className="h-4 w-4" />
-            Category Allocation
+            {t('categoryBudgets')}
           </Button>
         </Link>
       </div>
