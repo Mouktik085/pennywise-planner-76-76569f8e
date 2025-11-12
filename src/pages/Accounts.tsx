@@ -92,7 +92,7 @@ const Accounts = () => {
         icon: formData.icon,
         is_credit_card: isCreditCard,
         credit_limit: isCreditCard ? formData.credit_limit : 0,
-        credit_used: isCreditCard ? 0 : 0,
+        credit_used: isCreditCard ? formData.credit_used : 0,
         bill_date: isCreditCard && formData.bill_date ? formData.bill_date : null,
         due_date: isCreditCard && formData.due_date ? formData.due_date : null,
       };
@@ -275,6 +275,17 @@ const Accounts = () => {
                       onChange={(e) => setFormData({ ...formData, credit_limit: parseFloat(e.target.value) || 0 })}
                       placeholder="50000"
                       required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Used Credit Limit</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.credit_used || ''}
+                      onChange={(e) => setFormData({ ...formData, credit_used: parseFloat(e.target.value) || 0 })}
+                      placeholder="0"
                     />
                   </div>
                   <div className="space-y-2">

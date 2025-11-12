@@ -20,66 +20,66 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Vibrant Teal Theme - Original Bright Colors */
+    /* Vibrant Cyan/Teal Theme - Exact Original */
     --background: 0 0% 100%;
-    --foreground: 210 40% 10%;
+    --foreground: 0 0% 0%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 40% 10%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 40% 10%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 174 100% 50%;
+    --primary: 180 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 174 100% 97%;
-    --secondary-foreground: 174 100% 40%;
+    --secondary: 180 80% 96%;
+    --secondary-foreground: 180 100% 35%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 174 100% 50%;
+    --accent: 180 100% 45%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 174 100% 50%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 180 100% 50%;
 
     --radius: 1rem;
 
-    /* Financial colors - Super Vibrant */
-    --income: 145 80% 50%;
+    /* Financial colors - Bright & Vibrant */
+    --income: 140 75% 50%;
     --income-foreground: 0 0% 100%;
-    --income-light: 145 80% 94%;
+    --income-light: 140 75% 95%;
     
-    --expense: 0 85% 60%;
+    --expense: 0 85% 62%;
     --expense-foreground: 0 0% 100%;
     --expense-light: 0 85% 97%;
     
-    --savings: 260 70% 60%;
+    --savings: 270 75% 65%;
     --savings-foreground: 0 0% 100%;
-    --savings-light: 260 70% 95%;
+    --savings-light: 270 75% 95%;
 
-    /* Chart colors - Vibrant palette */
-    --chart-1: 174 100% 50%;
-    --chart-2: 145 80% 50%;
-    --chart-3: 45 93% 50%;
-    --chart-4: 330 85% 60%;
-    --chart-5: 0 85% 60%;
+    /* Chart colors - Vibrant */
+    --chart-1: 180 100% 50%;
+    --chart-2: 140 75% 50%;
+    --chart-3: 45 95% 55%;
+    --chart-4: 330 85% 65%;
+    --chart-5: 0 85% 62%;
 
-    /* Sidebar - Bright Teal theme */
+    /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 210 40% 10%;
-    --sidebar-primary: 174 100% 50%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 180 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 174 20% 96%;
-    --sidebar-accent-foreground: 174 100% 40%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 174 100% 50%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 180 100% 35%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 180 100% 50%;
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
