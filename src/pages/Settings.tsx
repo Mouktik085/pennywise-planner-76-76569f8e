@@ -5,19 +5,33 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Settings as SettingsIcon, Bell, Shield, Palette, Database, Plus, Trash2, Moon, Sun } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Settings as SettingsIcon, Bell, Shield, Palette, Database, Plus, Trash2, Moon, Sun, Check, X, Mail } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SMSPermissionHandler } from "@/components/SMSPermissionHandler";
 import { useTheme } from "next-themes";
+import { z } from "zod";
 
 interface Account {
   id: string;
   name: string;
   bank_name: string | null;
 }
+
+// Validation schemas
+const phoneSchema = z.string()
+  .regex(/^\+[1-9]\d{1,14}$/, {
+    message: "Phone number must be in international format (e.g., +1234567890)"
+  })
+  .optional()
+  .or(z.literal(''));
+
+const settingsSchema = z.object({
+  phoneNumber: phoneSchema,
+});
 
 const Settings = () => {
   const { user } = useAuth();
@@ -102,8 +116,37 @@ const Settings = () => {
     toast.success("Category added successfully!");
   };
 
+  const isValidPhone = (phone: string): boolean => {
+    if (!phone || phone === '') return true; // Empty is valid
+    return /^\+[1-9]\d{1,14}$/.test(phone);
+  };
+
   const handleSaveSettings = async () => {
     try {
+      // Validate phone number
+      const validationResult = settingsSchema.safeParse({
+        phoneNumber: phoneNumber,
+      });
+
+      if (!validationResult.success) {
+        const errors = validationResult.error.flatten().fieldErrors;
+        if (errors.phoneNumber) {
+          toast.error(errors.phoneNumber[0]);
+          return;
+        }
+      }
+
+      // Additional validations
+      if (smsNotifications && !phoneNumber.trim()) {
+        toast.error("Phone number is required for SMS notifications");
+        return;
+      }
+
+      if (emailNotifications && !user?.email) {
+        toast.error("Email address is required for email notifications");
+        return;
+      }
+
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -261,13 +304,59 @@ const Settings = () => {
               
               <div className="space-y-3">
                 <div className="space-y-2">
+                  <Label>Email Address (from your account)</Label>
+                  <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border border-input">
+                    <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-sm flex-1">{user?.email || 'No email address'}</span>
+                    {user?.email && (
+                      <Badge variant="outline" className="ml-auto bg-green-500/10 text-green-600 border-green-500/20">
+                        Verified
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Email notifications will be sent to this address
+                  </p>
+                </div>
+
+                <div className="space-y-2">
                   <Label>Phone Number (for SMS notifications)</Label>
-                  <Input
-                    type="tel"
-                    placeholder="+1234567890"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                  />
+                  <div className="relative">
+                    <Input
+                      type="tel"
+                      placeholder="+1234567890"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className={`pr-10 ${
+                        phoneNumber && !isValidPhone(phoneNumber) 
+                          ? 'border-red-500 focus-visible:ring-red-500' 
+                          : phoneNumber && isValidPhone(phoneNumber)
+                          ? 'border-green-500 focus-visible:ring-green-500'
+                          : ''
+                      }`}
+                    />
+                    {phoneNumber && isValidPhone(phoneNumber) && (
+                      <Check className="absolute right-3 top-3 h-4 w-4 text-green-500" />
+                    )}
+                    {phoneNumber && !isValidPhone(phoneNumber) && (
+                      <X className="absolute right-3 top-3 h-4 w-4 text-red-500" />
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Format: +[country code][number] (e.g., +12025550123 for US, +919876543210 for India)
+                  </p>
+                  {phoneNumber && !isValidPhone(phoneNumber) && (
+                    <p className="text-xs text-red-500 flex items-center gap-1">
+                      <X className="h-3 w-3" />
+                      Invalid phone number format. Must start with + followed by country code and number (no spaces or dashes).
+                    </p>
+                  )}
+                  {phoneNumber && isValidPhone(phoneNumber) && (
+                    <p className="text-xs text-green-600 flex items-center gap-1">
+                      <Check className="h-3 w-3" />
+                      Valid international phone number format
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
