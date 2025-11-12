@@ -20,11 +20,13 @@ const Statistics = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const chartColors = [
-    "hsl(var(--chart-1))",
-    "hsl(var(--chart-2))",
-    "hsl(var(--chart-3))",
-    "hsl(var(--chart-4))",
-    "hsl(var(--chart-5))",
+    "hsl(175, 75%, 55%)", // Turquoise (Food)
+    "hsl(145, 75%, 50%)", // Bright Green (Bills)
+    "hsl(50, 95%, 55%)",  // Yellow (Entertainment)
+    "hsl(260, 70%, 60%)", // Purple (Living)
+    "hsl(0, 85%, 62%)",   // Red (Transport)
+    "hsl(330, 85%, 65%)", // Pink (Additional)
+    "hsl(30, 95%, 55%)",  // Orange (Additional)
   ];
 
   useEffect(() => {

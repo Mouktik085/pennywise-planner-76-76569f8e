@@ -8,9 +8,6 @@ interface NotificationSettings {
   notification_transaction_reminders: boolean;
   notification_savings_milestones: boolean;
   reminder_days_before: number;
-  email_notifications: boolean;
-  sms_notifications: boolean;
-  phone_number: string | null;
 }
 
 export const useNotifications = () => {
@@ -24,7 +21,7 @@ export const useNotifications = () => {
         // Fetch user's notification settings
         const { data: profile } = await supabase
           .from('profiles')
-          .select('notification_budget_alerts, notification_transaction_reminders, notification_savings_milestones, reminder_days_before, email_notifications, sms_notifications, phone_number')
+          .select('notification_budget_alerts, notification_transaction_reminders, notification_savings_milestones, reminder_days_before')
           .eq('user_id', user.id)
           .maybeSingle();
 
@@ -34,29 +31,26 @@ export const useNotifications = () => {
           notification_budget_alerts: profile.notification_budget_alerts ?? true,
           notification_transaction_reminders: profile.notification_transaction_reminders ?? true,
           notification_savings_milestones: profile.notification_savings_milestones ?? true,
-          reminder_days_before: profile.reminder_days_before || 2,
-          email_notifications: profile.email_notifications ?? true,
-          sms_notifications: profile.sms_notifications ?? false,
-          phone_number: profile.phone_number
+          reminder_days_before: profile.reminder_days_before || 2
         };
 
         // Check budget alerts
         if (settings.notification_budget_alerts) {
-          await checkBudgetAlerts(settings);
+          await checkBudgetAlerts();
         }
 
         // Check upcoming transactions
         if (settings.notification_transaction_reminders) {
-          await checkUpcomingTransactions(settings.reminder_days_before, settings);
+          await checkUpcomingTransactions(settings.reminder_days_before);
         }
 
         // Check savings goals
         if (settings.notification_savings_milestones) {
-          await checkSavingsGoals(settings);
+          await checkSavingsGoals();
         }
 
         // Check credit card dues
-        await checkCreditCardDues(settings);
+        await checkCreditCardDues();
 
       } catch (error) {
         console.error('Error checking notifications:', error);
@@ -74,11 +68,19 @@ export const useNotifications = () => {
 
   const sendMultiChannelNotification = async (
     type: 'budget_alert' | 'transaction_reminder' | 'savings_milestone' | 'credit_card_due',
-    data: any,
-    settings: NotificationSettings
+    data: any
   ) => {
+    // Fetch user profile with notification preferences
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('email_notifications, sms_notifications, phone_number')
+      .eq('user_id', user?.id)
+      .maybeSingle();
+
+    if (!profile) return;
+
     // Email notification
-    if (settings.email_notifications && user?.email) {
+    if (profile.email_notifications && user?.email) {
       try {
         await supabase.functions.invoke('send-notification-email', {
           body: {
@@ -88,21 +90,23 @@ export const useNotifications = () => {
             data
           }
         });
+        console.log('Email notification sent:', type);
       } catch (error) {
         console.error('Error sending email notification:', error);
       }
     }
 
     // SMS notification
-    if (settings.sms_notifications && settings.phone_number) {
+    if (profile.sms_notifications && profile.phone_number) {
       try {
         await supabase.functions.invoke('send-notification-sms', {
           body: {
-            to: settings.phone_number,
+            to: profile.phone_number,
             type,
             data
           }
         });
+        console.log('SMS notification sent:', type);
       } catch (error) {
         console.error('Error sending SMS notification:', error);
       }
@@ -119,7 +123,7 @@ export const useNotifications = () => {
     }
   };
 
-  const checkBudgetAlerts = async (settings: NotificationSettings) => {
+  const checkBudgetAlerts = async () => {
     try {
       const currentMonth = new Date().getMonth() + 1;
       const currentYear = new Date().getFullYear();
@@ -138,12 +142,11 @@ export const useNotifications = () => {
           budget.monthly_limit
         );
         
-        // Send multi-channel notification
+        // Send email and SMS notifications
         await sendMultiChannelNotification('budget_alert', {
           spent: budget.current_spent,
-          limit: budget.monthly_limit,
-          category: 'Overall'
-        }, settings);
+          limit: budget.monthly_limit
+        });
       }
 
       // Check category budgets
@@ -163,12 +166,12 @@ export const useNotifications = () => {
               catBudget.category
             );
             
-            // Send multi-channel notification
+            // Send email and SMS notifications
             await sendMultiChannelNotification('budget_alert', {
               spent: catBudget.spent_amount,
               limit: catBudget.allocated_amount,
               category: catBudget.category
-            }, settings);
+            });
           }
         }
       }
@@ -177,7 +180,7 @@ export const useNotifications = () => {
     }
   };
 
-  const checkUpcomingTransactions = async (daysBefore: number, settings: NotificationSettings) => {
+  const checkUpcomingTransactions = async (daysBefore: number) => {
     try {
       const today = new Date();
       const futureDate = new Date();
@@ -202,12 +205,12 @@ export const useNotifications = () => {
             daysUntil
           );
           
-          // Send multi-channel notification
+          // Send email and SMS notifications
           await sendMultiChannelNotification('transaction_reminder', {
             description: transaction.description || transaction.category,
             amount: transaction.amount,
-            dueDate: transDate.toLocaleDateString()
-          }, settings);
+            dueDate: transaction.date
+          });
         }
       }
     } catch (error) {
@@ -215,7 +218,7 @@ export const useNotifications = () => {
     }
   };
 
-  const checkSavingsGoals = async (settings: NotificationSettings) => {
+  const checkSavingsGoals = async () => {
     try {
       const { data: goals } = await supabase
         .from('savings_goals')
@@ -231,12 +234,12 @@ export const useNotifications = () => {
               goal.target_amount
             );
             
-            // Send multi-channel notification
+            // Send email and SMS notifications
             await sendMultiChannelNotification('savings_milestone', {
               goalName: goal.name,
               currentAmount: goal.current_amount || 0,
               targetAmount: goal.target_amount
-            }, settings);
+            });
           }
         }
       }
@@ -245,7 +248,7 @@ export const useNotifications = () => {
     }
   };
 
-  const checkCreditCardDues = async (settings: NotificationSettings) => {
+  const checkCreditCardDues = async () => {
     try {
       const { data: creditCards } = await supabase
         .from('accounts')
@@ -262,13 +265,13 @@ export const useNotifications = () => {
               card.due_date
             );
             
-            // Send multi-channel notification
+            // Send email and SMS notifications
             const today = new Date();
             const dueDate = new Date(today.getFullYear(), today.getMonth(), card.due_date);
             await sendMultiChannelNotification('credit_card_due', {
               amount: card.credit_used,
               dueDate: dueDate.toLocaleDateString()
-            }, settings);
+            });
           }
         }
       }
