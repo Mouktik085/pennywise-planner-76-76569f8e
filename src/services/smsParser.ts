@@ -216,6 +216,24 @@ export class SMSParser {
       const parsed = this.parseSMS(message);
       if (!parsed) return false;
 
+      // Check for duplicate transactions (same amount, bank, and date)
+      const dateStr = parsed.date.toISOString().split('T')[0];
+      const { data: existingTransactions, error: checkError } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("amount", parsed.amount)
+        .eq("date", dateStr)
+        .eq("type", parsed.type)
+        .ilike("description", `%${parsed.bankName}%`);
+
+      if (checkError) {
+        console.error("Error checking duplicates:", checkError);
+      } else if (existingTransactions && existingTransactions.length > 0) {
+        console.log("Duplicate transaction detected, skipping import");
+        return false;
+      }
+
       // Find or create account
       const account = await this.findOrCreateAccount(userId, parsed.bankName, parsed.accountNumber);
       if (!account) return false;
@@ -230,7 +248,7 @@ export class SMSParser {
           type: parsed.type,
           category: parsed.category,
           description: parsed.description,
-          date: parsed.date.toISOString().split('T')[0],
+          date: dateStr,
         });
 
       if (transactionError) {

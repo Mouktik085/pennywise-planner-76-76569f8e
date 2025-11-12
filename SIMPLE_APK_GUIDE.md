@@ -114,6 +114,12 @@ The SMS auto-import feature will **ONLY work** after you:
 2. Install it on your phone
 3. Grant SMS permissions when the app asks
 
+**New Features Included:**
+- ✅ **Automatic Duplicate Detection** - Won't import the same transaction twice
+- ✅ **Manual SMS Import** - Paste SMS text manually if needed
+- ✅ **Smart Bank Recognition** - Recognizes major Indian banks automatically
+- ✅ **Auto Account Creation** - Creates bank accounts automatically from SMS
+
 It won't work in the browser - it needs to be a real app on your phone!
 
 ---
