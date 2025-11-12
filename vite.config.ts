@@ -10,6 +10,11 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    rollupOptions: {
+      external: ['@capacitor-community/sms-retriever']
+    }
+  },
   plugins: [
     react(),
     mode === "development" && componentTagger(),
