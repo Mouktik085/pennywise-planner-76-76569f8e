@@ -178,7 +178,7 @@ const Transactions = () => {
       if (transactionData && accountId) {
         const { data: accountData } = await supabase
           .from("accounts")
-          .select("balance")
+          .select("balance, is_credit_card, credit_used")
           .eq("id", accountId)
           .single();
 
@@ -187,9 +187,19 @@ const Transactions = () => {
             ? accountData.balance + transactionData.amount 
             : accountData.balance - transactionData.amount;
           
+          const updateData: any = { balance: newBalance };
+          
+          // Update credit_used for credit cards
+          if (accountData.is_credit_card) {
+            const newCreditUsed = transactionData.type === "expense"
+              ? Math.max(0, accountData.credit_used - transactionData.amount)
+              : accountData.credit_used + transactionData.amount;
+            updateData.credit_used = newCreditUsed;
+          }
+          
           await supabase
             .from("accounts")
-            .update({ balance: newBalance })
+            .update(updateData)
             .eq("id", accountId);
         }
       }

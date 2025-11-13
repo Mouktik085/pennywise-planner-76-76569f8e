@@ -85,12 +85,17 @@ export const EditTransactionDialog = ({ transaction, open, onOpenChange, onSucce
     setLoading(true);
 
     try {
+      const newAmount = parseFloat(amount);
+      const oldAmount = transaction.amount;
+      const amountDiff = newAmount - oldAmount;
+      
+      // Update the transaction
       const { error } = await supabase
         .from("transactions")
         .update({
           type,
           category,
-          amount: parseFloat(amount),
+          amount: newAmount,
           date,
           description,
           account_id: accountId || null,
@@ -98,6 +103,117 @@ export const EditTransactionDialog = ({ transaction, open, onOpenChange, onSucce
         .eq("id", transaction.id);
 
       if (error) throw error;
+
+      // Update old account balance if it existed and changed
+      if (transaction.account_id && transaction.account_id !== accountId) {
+        const { data: oldAccount } = await supabase
+          .from("accounts")
+          .select("balance, is_credit_card, credit_used")
+          .eq("id", transaction.account_id)
+          .single();
+
+        if (oldAccount) {
+          const revertedBalance = transaction.type === "expense"
+            ? oldAccount.balance + oldAmount
+            : oldAccount.balance - oldAmount;
+          
+          const updateData: any = { balance: revertedBalance };
+          
+          if (oldAccount.is_credit_card) {
+            const revertedCreditUsed = transaction.type === "expense"
+              ? Math.max(0, oldAccount.credit_used - oldAmount)
+              : oldAccount.credit_used + oldAmount;
+            updateData.credit_used = revertedCreditUsed;
+          }
+          
+          await supabase
+            .from("accounts")
+            .update(updateData)
+            .eq("id", transaction.account_id);
+        }
+      }
+
+      // Update new account balance
+      if (accountId) {
+        const { data: newAccount } = await supabase
+          .from("accounts")
+          .select("balance, is_credit_card, credit_used")
+          .eq("id", accountId)
+          .single();
+
+        if (newAccount) {
+          let newBalance = newAccount.balance;
+          
+          // If account changed, apply full amount, otherwise apply difference
+          if (transaction.account_id === accountId) {
+            newBalance = type === "expense"
+              ? newAccount.balance - amountDiff
+              : newAccount.balance + amountDiff;
+          } else {
+            newBalance = type === "expense"
+              ? newAccount.balance - newAmount
+              : newAccount.balance + newAmount;
+          }
+          
+          const updateData: any = { balance: newBalance };
+          
+          if (newAccount.is_credit_card) {
+            let newCreditUsed = newAccount.credit_used;
+            
+            if (transaction.account_id === accountId) {
+              newCreditUsed = type === "expense"
+                ? newAccount.credit_used + amountDiff
+                : newAccount.credit_used - amountDiff;
+            } else {
+              newCreditUsed = type === "expense"
+                ? newAccount.credit_used + newAmount
+                : Math.max(0, newAccount.credit_used - newAmount);
+            }
+            
+            updateData.credit_used = Math.max(0, newCreditUsed);
+          }
+          
+          await supabase
+            .from("accounts")
+            .update(updateData)
+            .eq("id", accountId);
+        }
+      }
+
+      // Update budget if type changed or amount changed
+      if (type === "expense" || transaction.type === "expense") {
+        const transDate = new Date(date);
+        const month = transDate.getMonth() + 1;
+        const year = transDate.getFullYear();
+
+        const { data: budgetData } = await supabase
+          .from("budget")
+          .select("*")
+          .eq("user_id", user?.id)
+          .eq("month", month)
+          .eq("year", year)
+          .maybeSingle();
+
+        if (budgetData) {
+          let newSpent = budgetData.current_spent;
+          
+          if (transaction.type === "expense" && type === "expense") {
+            // Both expense, apply difference
+            newSpent += amountDiff;
+          } else if (transaction.type === "expense" && type !== "expense") {
+            // Changed from expense to income, subtract old amount
+            newSpent -= oldAmount;
+          } else if (transaction.type !== "expense" && type === "expense") {
+            // Changed from income to expense, add new amount
+            newSpent += newAmount;
+          }
+
+          await supabase
+            .from("budget")
+            .update({ current_spent: Math.max(0, newSpent) })
+            .eq("id", budgetData.id);
+        }
+      }
 
       toast.success("Transaction updated successfully");
       onSuccess();
