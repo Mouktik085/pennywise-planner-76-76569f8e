@@ -147,12 +147,12 @@ export const EditTransactionDialog = ({ transaction, open, onOpenChange, onSucce
 
           <div className="space-y-2">
             <Label>Account</Label>
-            <Select value={accountId} onValueChange={setAccountId}>
+            <Select value={accountId || "none"} onValueChange={(value) => setAccountId(value === "none" ? "" : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select account (optional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No Account</SelectItem>
+                <SelectItem value="none">No Account</SelectItem>
                 {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
                     {account.name}
