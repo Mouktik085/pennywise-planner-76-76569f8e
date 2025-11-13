@@ -319,8 +319,8 @@ const Statistics = () => {
                       label={(entry) => {
                         const total = expenseData.reduce((sum, c) => sum + c.value, 0);
                         const percent = ((entry.value / total) * 100).toFixed(0);
-                        // Show percentage on mobile, full label on desktop
-                        return window.innerWidth < 768 ? `${percent}%` : `${entry.name}: ${formatCurrency(entry.value)}`;
+                        // Show percentage and amount
+                        return `${percent}%\n${formatCurrency(entry.value, true)}`;
                       }}
                       labelLine={window.innerWidth >= 768}
                     >
@@ -378,8 +378,8 @@ const Statistics = () => {
                     label={(entry) => {
                       const total = expenseData.reduce((sum, c) => sum + c.value, 0);
                       const percent = ((entry.value / total) * 100).toFixed(0);
-                      // Always show percentage for consistency
-                      return `${percent}%`;
+                      // Show percentage and amount
+                      return `${percent}%\n${formatCurrency(entry.value, true)}`;
                     }}
                     labelLine={false}
                   >
