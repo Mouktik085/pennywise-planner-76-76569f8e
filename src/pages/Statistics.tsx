@@ -10,11 +10,13 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { CurrencyAmount } from "@/components/CurrencyAmount";
+import { useNavigate } from "react-router-dom";
 
 const Statistics = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { format: formatCurrency } = useCurrency();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [expenseData, setExpenseData] = useState<any[]>([]);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
@@ -369,7 +371,12 @@ const Statistics = () => {
                       }}
                     >
                       {expenseData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={entry.fill} 
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => navigate(`/transactions?category=${entry.name}`)}
+                        />
                       ))}
                     </Pie>
                     <Tooltip 
@@ -472,7 +479,12 @@ const Statistics = () => {
                     }}
                   >
                     {expenseData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.fill} 
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => navigate(`/transactions?category=${entry.name}`)}
+                      />
                     ))}
                   </Pie>
                   <Tooltip 

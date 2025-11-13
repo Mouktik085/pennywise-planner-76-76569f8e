@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { DollarSign, TrendingDown, Wallet, PiggyBank, PieChart as PieChartIcon } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CurrencyAmount } from "@/components/CurrencyAmount";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -33,6 +33,7 @@ const Budget = () => {
   const { toast } = useToast();
   const { format: formatCurrency } = useCurrency();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [budget, setBudget] = useState<Budget | null>(null);
   const [monthlyLimit, setMonthlyLimit] = useState("");
   const [savingsTarget, setSavingsTarget] = useState("");
@@ -398,7 +399,12 @@ const Budget = () => {
                   }}
                 >
                   {categoryExpenses.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.fill} 
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => navigate(`/transactions?category=${entry.name}`)}
+                    />
                   ))}
                 </Pie>
                 <Tooltip 

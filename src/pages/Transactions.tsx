@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Plus, Search, Calendar as CalendarIcon, TrendingUp, TrendingDown, Trash2, ArrowLeftRight, Edit, Edit2, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -45,8 +45,10 @@ interface Transfer {
 const Transactions = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [date, setDate] = useState<Date>();
   const [typeFilter, setTypeFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get("category") || "all");
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transfers, setTransfers] = useState<Transfer[]>([]);
@@ -55,13 +57,39 @@ const Transactions = () => {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingTransfer, setEditingTransfer] = useState<Transfer | null>(null);
   const [showEditTransferDialog, setShowEditTransferDialog] = useState(false);
+  const [categoryBudget, setCategoryBudget] = useState<number | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchTransactions();
       fetchTransfers();
+      if (categoryFilter !== "all") {
+        fetchCategoryBudget();
+      }
     }
-  }, [user, typeFilter, date, searchQuery]);
+  }, [user, typeFilter, date, searchQuery, categoryFilter]);
+
+  const fetchCategoryBudget = async () => {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear = currentDate.getFullYear();
+
+    try {
+      const { data, error } = await supabase
+        .from("category_budgets")
+        .select("allocated_amount")
+        .eq("user_id", user?.id)
+        .eq("category", categoryFilter)
+        .eq("month", currentMonth)
+        .eq("year", currentYear)
+        .maybeSingle();
+
+      if (error && error.code !== "PGRST116") throw error;
+      setCategoryBudget(data?.allocated_amount || null);
+    } catch (error) {
+      console.error("Error fetching category budget:", error);
+    }
+  };
 
   const fetchTransactions = async () => {
     try {
@@ -80,6 +108,10 @@ const Transactions = () => {
 
       if (searchQuery) {
         query = query.or(`description.ilike.%${searchQuery}%,category.ilike.%${searchQuery}%`);
+      }
+
+      if (categoryFilter !== "all") {
+        query = query.eq("category", categoryFilter);
       }
 
       const { data, error } = await query;
@@ -248,58 +280,69 @@ const Transactions = () => {
         </div>
 
         {/* Filters */}
-        <Card className="p-4 md:p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <Card className="p-4">
+          <div className="flex flex-col lg:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search transactions..."
-                className="pl-9"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
               />
             </div>
-
+            
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Transaction Type" />
+              <SelectTrigger className="w-full lg:w-[180px]">
+                <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Transactions</SelectItem>
-                <SelectItem value="income">Income Only</SelectItem>
-                <SelectItem value="expense">Expenses Only</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="income">{t('income')}</SelectItem>
+                <SelectItem value="expense">Expenses</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-full lg:w-[180px]">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="Food">Food</SelectItem>
+                <SelectItem value="Transport">Transport</SelectItem>
+                <SelectItem value="Entertainment">Entertainment</SelectItem>
+                <SelectItem value="Bills">Bills</SelectItem>
+                <SelectItem value="Shopping">Shopping</SelectItem>
+                <SelectItem value="Health">Health</SelectItem>
+                <SelectItem value="Education">Education</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "justify-start text-left font-normal w-full",
-                    !date && "text-muted-foreground"
-                  )}
-                >
+                <Button variant="outline" className={cn("w-full lg:w-[240px] justify-start text-left font-normal", !date && "text-muted-foreground")}>
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {date ? format(date, "PPP") : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                />
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
               </PopoverContent>
             </Popover>
-
-            {date && (
-              <Button variant="outline" onClick={() => setDate(undefined)} className="w-full">
-                Clear Date
-              </Button>
-            )}
           </div>
+
+          {categoryFilter !== "all" && categoryBudget && (
+            <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                Budget allocated for <span className="font-semibold text-foreground">{categoryFilter}</span>:
+                <span className="ml-2 font-bold text-primary">
+                  <CurrencyAmount amount={categoryBudget} />
+                </span>
+              </p>
+            </div>
+          )}
         </Card>
 
         {/* Transfers List */}

@@ -47,16 +47,78 @@ export const EditTransferDialog = ({ transfer, open, onOpenChange, onSuccess }: 
     setLoading(true);
 
     try {
-      const { error } = await supabase
+      const oldAmount = transfer.amount;
+      const newAmount = parseFloat(amount);
+      const amountDifference = newAmount - oldAmount;
+
+      // Update the transfer record
+      const { error: transferError } = await supabase
         .from("transfers")
         .update({
-          amount: parseFloat(amount),
+          amount: newAmount,
           date,
           description,
         })
         .eq("id", transfer.id);
 
-      if (error) throw error;
+      if (transferError) throw transferError;
+
+      // Update account balances based on transfer type
+      if (transfer.from_type === "account") {
+        const { data: fromAccount } = await supabase
+          .from("accounts")
+          .select("balance")
+          .eq("id", transfer.from_id)
+          .single();
+
+        if (fromAccount) {
+          await supabase
+            .from("accounts")
+            .update({ balance: fromAccount.balance - amountDifference })
+            .eq("id", transfer.from_id);
+        }
+      } else if (transfer.from_type === "savings") {
+        const { data: fromGoal } = await supabase
+          .from("savings_goals")
+          .select("current_amount")
+          .eq("id", transfer.from_id)
+          .single();
+
+        if (fromGoal) {
+          await supabase
+            .from("savings_goals")
+            .update({ current_amount: fromGoal.current_amount - amountDifference })
+            .eq("id", transfer.from_id);
+        }
+      }
+
+      if (transfer.to_type === "account") {
+        const { data: toAccount } = await supabase
+          .from("accounts")
+          .select("balance")
+          .eq("id", transfer.to_id)
+          .single();
+
+        if (toAccount) {
+          await supabase
+            .from("accounts")
+            .update({ balance: toAccount.balance + amountDifference })
+            .eq("id", transfer.to_id);
+        }
+      } else if (transfer.to_type === "savings") {
+        const { data: toGoal } = await supabase
+          .from("savings_goals")
+          .select("current_amount")
+          .eq("id", transfer.to_id)
+          .single();
+
+        if (toGoal) {
+          await supabase
+            .from("savings_goals")
+            .update({ current_amount: toGoal.current_amount + amountDifference })
+            .eq("id", transfer.to_id);
+        }
+      }
 
       toast.success("Transfer updated successfully");
       onSuccess();
