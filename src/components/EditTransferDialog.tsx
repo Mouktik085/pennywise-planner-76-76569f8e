@@ -4,9 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Transfer {
   id: string;
@@ -17,6 +23,9 @@ interface Transfer {
   amount: number;
   date: string;
   description: string | null;
+  is_recurring?: boolean;
+  recurring_frequency?: string | null;
+  is_planned?: boolean;
 }
 
 interface EditTransferDialogProps {
@@ -28,15 +37,21 @@ interface EditTransferDialogProps {
 
 export const EditTransferDialog = ({ transfer, open, onOpenChange, onSuccess }: EditTransferDialogProps) => {
   const [amount, setAmount] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState<Date>(new Date());
   const [description, setDescription] = useState("");
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [isPlanned, setIsPlanned] = useState(false);
+  const [recurringFrequency, setRecurringFrequency] = useState("monthly");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (transfer) {
       setAmount(transfer.amount.toString());
-      setDate(transfer.date);
+      setDate(parse(transfer.date, "yyyy-MM-dd", new Date()));
       setDescription(transfer.description || "");
+      setIsRecurring(transfer.is_recurring || false);
+      setIsPlanned(transfer.is_planned || false);
+      setRecurringFrequency(transfer.recurring_frequency || "monthly");
     }
   }, [transfer]);
 
@@ -51,20 +66,46 @@ export const EditTransferDialog = ({ transfer, open, onOpenChange, onSuccess }: 
       const newAmount = parseFloat(amount);
       const amountDifference = newAmount - oldAmount;
 
+      // Calculate next occurrence date if recurring
+      let nextOccurrence = null;
+      if (isRecurring && !isPlanned) {
+        const transferDate = new Date(date);
+        switch (recurringFrequency) {
+          case "daily":
+            nextOccurrence = new Date(transferDate.setDate(transferDate.getDate() + 1));
+            break;
+          case "weekly":
+            nextOccurrence = new Date(transferDate.setDate(transferDate.getDate() + 7));
+            break;
+          case "monthly":
+            nextOccurrence = new Date(transferDate.setMonth(transferDate.getMonth() + 1));
+            break;
+          case "yearly":
+            nextOccurrence = new Date(transferDate.setFullYear(transferDate.getFullYear() + 1));
+            break;
+        }
+      }
+
       // Update the transfer record
       const { error: transferError } = await supabase
         .from("transfers")
         .update({
           amount: newAmount,
-          date,
+          date: format(date, "yyyy-MM-dd"),
           description,
+          is_recurring: isRecurring,
+          recurring_frequency: isRecurring ? recurringFrequency : null,
+          next_occurrence_date: nextOccurrence ? format(nextOccurrence, "yyyy-MM-dd") : null,
+          is_planned: isPlanned,
         })
         .eq("id", transfer.id);
 
       if (transferError) throw transferError;
 
-      // Update account balances based on transfer type
-      if (transfer.from_type === "account") {
+      // Only update balances if not planned
+      if (!isPlanned) {
+        // Update account balances based on transfer type
+        if (transfer.from_type === "account") {
         const { data: fromAccount } = await supabase
           .from("accounts")
           .select("balance")
@@ -119,6 +160,7 @@ export const EditTransferDialog = ({ transfer, open, onOpenChange, onSuccess }: 
             .eq("id", transfer.to_id);
         }
       }
+      }
 
       toast.success("Transfer updated successfully");
       onSuccess();
@@ -151,13 +193,29 @@ export const EditTransferDialog = ({ transfer, open, onOpenChange, onSuccess }: 
 
           <div className="space-y-2">
             <Label htmlFor="date">Date</Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(newDate) => newDate && setDate(newDate)}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">
@@ -168,6 +226,44 @@ export const EditTransferDialog = ({ transfer, open, onOpenChange, onSuccess }: 
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional description"
             />
+          </div>
+
+          <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="edit-planned-transfer">Planned Transfer</Label>
+              <Switch
+                id="edit-planned-transfer"
+                checked={isPlanned}
+                onCheckedChange={setIsPlanned}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <Label htmlFor="edit-recurring-transfer">Recurring Transfer</Label>
+              <Switch
+                id="edit-recurring-transfer"
+                checked={isRecurring}
+                onCheckedChange={setIsRecurring}
+                disabled={isPlanned}
+              />
+            </div>
+
+            {isRecurring && !isPlanned && (
+              <div className="space-y-2">
+                <Label>Frequency</Label>
+                <Select value={recurringFrequency} onValueChange={setRecurringFrequency}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2">

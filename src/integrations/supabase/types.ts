@@ -366,6 +366,11 @@ export type Database = {
           from_id: string
           from_type: string
           id: string
+          is_planned: boolean | null
+          is_recurring: boolean | null
+          last_processed_date: string | null
+          next_occurrence_date: string | null
+          recurring_frequency: string | null
           to_id: string
           to_type: string
           user_id: string
@@ -378,6 +383,11 @@ export type Database = {
           from_id: string
           from_type?: string
           id?: string
+          is_planned?: boolean | null
+          is_recurring?: boolean | null
+          last_processed_date?: string | null
+          next_occurrence_date?: string | null
+          recurring_frequency?: string | null
           to_id: string
           to_type?: string
           user_id: string
@@ -390,6 +400,11 @@ export type Database = {
           from_id?: string
           from_type?: string
           id?: string
+          is_planned?: boolean | null
+          is_recurring?: boolean | null
+          last_processed_date?: string | null
+          next_occurrence_date?: string | null
+          recurring_frequency?: string | null
           to_id?: string
           to_type?: string
           user_id?: string

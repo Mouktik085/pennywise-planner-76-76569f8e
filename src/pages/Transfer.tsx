@@ -7,11 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, Calendar as CalendarIcon } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Account {
   id: string;
@@ -42,6 +47,10 @@ const Transfer = () => {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
+  const [date, setDate] = useState<Date>(new Date());
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [isPlanned, setIsPlanned] = useState(false);
+  const [recurringFrequency, setRecurringFrequency] = useState("monthly");
 
   useEffect(() => {
     if (user) {
@@ -122,66 +131,88 @@ const Transfer = () => {
     setLoading(true);
 
     try {
-      // Check source balance
-      let fromBalance = 0;
-      if (fromType === "account") {
-        const { data: fromAccount } = await supabase
-          .from("accounts")
-          .select("balance")
-          .eq("id", fromAccountId)
-          .single();
-        fromBalance = fromAccount?.balance || 0;
-      } else {
-        const { data: fromGoal } = await supabase
-          .from("savings_goals")
-          .select("current_amount")
-          .eq("id", fromAccountId)
-          .single();
-        fromBalance = fromGoal?.current_amount || 0;
+      // Check source balance only if not planned
+      if (!isPlanned) {
+        let fromBalance = 0;
+        if (fromType === "account") {
+          const { data: fromAccount } = await supabase
+            .from("accounts")
+            .select("balance")
+            .eq("id", fromAccountId)
+            .single();
+          fromBalance = fromAccount?.balance || 0;
+        } else {
+          const { data: fromGoal } = await supabase
+            .from("savings_goals")
+            .select("current_amount")
+            .eq("id", fromAccountId)
+            .single();
+          fromBalance = fromGoal?.current_amount || 0;
+        }
+
+        if (fromBalance < transferAmount) {
+          throw new Error("Insufficient balance");
+        }
+
+        // Update source
+        if (fromType === "account") {
+          const { error } = await supabase
+            .from("accounts")
+            .update({ balance: fromBalance - transferAmount })
+            .eq("id", fromAccountId);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase
+            .from("savings_goals")
+            .update({ current_amount: fromBalance - transferAmount })
+            .eq("id", fromAccountId);
+          if (error) throw error;
+        }
+
+        // Update destination
+        if (toType === "account") {
+          const { data: toAccount } = await supabase
+            .from("accounts")
+            .select("balance")
+            .eq("id", toAccountId)
+            .single();
+          const { error } = await supabase
+            .from("accounts")
+            .update({ balance: (toAccount?.balance || 0) + transferAmount })
+            .eq("id", toAccountId);
+          if (error) throw error;
+        } else {
+          const { data: toGoal } = await supabase
+            .from("savings_goals")
+            .select("current_amount")
+            .eq("id", toAccountId)
+            .single();
+          const { error } = await supabase
+            .from("savings_goals")
+            .update({ current_amount: (toGoal?.current_amount || 0) + transferAmount })
+            .eq("id", toAccountId);
+          if (error) throw error;
+        }
       }
 
-      if (fromBalance < transferAmount) {
-        throw new Error("Insufficient balance");
-      }
-
-      // Update source
-      if (fromType === "account") {
-        const { error } = await supabase
-          .from("accounts")
-          .update({ balance: fromBalance - transferAmount })
-          .eq("id", fromAccountId);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("savings_goals")
-          .update({ current_amount: fromBalance - transferAmount })
-          .eq("id", fromAccountId);
-        if (error) throw error;
-      }
-
-      // Update destination
-      if (toType === "account") {
-        const { data: toAccount } = await supabase
-          .from("accounts")
-          .select("balance")
-          .eq("id", toAccountId)
-          .single();
-        const { error } = await supabase
-          .from("accounts")
-          .update({ balance: (toAccount?.balance || 0) + transferAmount })
-          .eq("id", toAccountId);
-        if (error) throw error;
-      } else {
-        const { data: toGoal } = await supabase
-          .from("savings_goals")
-          .select("current_amount")
-          .eq("id", toAccountId)
-          .single();
-        const { error } = await supabase
-          .from("savings_goals")
-          .update({ current_amount: (toGoal?.current_amount || 0) + transferAmount })
-          .eq("id", toAccountId);
-        if (error) throw error;
+      // Calculate next occurrence date if recurring
+      let nextOccurrence = null;
+      if (isRecurring && !isPlanned) {
+        const transferDate = new Date(date);
+        switch (recurringFrequency) {
+          case "daily":
+            nextOccurrence = new Date(transferDate.setDate(transferDate.getDate() + 1));
+            break;
+          case "weekly":
+            nextOccurrence = new Date(transferDate.setDate(transferDate.getDate() + 7));
+            break;
+          case "monthly":
+            nextOccurrence = new Date(transferDate.setMonth(transferDate.getMonth() + 1));
+            break;
+          case "yearly":
+            nextOccurrence = new Date(transferDate.setFullYear(transferDate.getFullYear() + 1));
+            break;
+        }
       }
 
       // Record transfer in transfers table with proper type tracking
@@ -195,14 +226,20 @@ const Transfer = () => {
           to_type: toType,
           amount: transferAmount,
           description: description || `Transfer from ${fromType} to ${toType}`,
-          date: new Date().toISOString().split('T')[0],
+          date: format(date, "yyyy-MM-dd"),
+          is_recurring: isRecurring,
+          recurring_frequency: isRecurring ? recurringFrequency : null,
+          next_occurrence_date: nextOccurrence ? format(nextOccurrence, "yyyy-MM-dd") : null,
+          is_planned: isPlanned,
         }]);
 
       if (transferError) throw transferError;
 
-      // Update budget only when transferring account -> savings or savings -> account
-      // Reduce budget when: account -> savings goal
-      if (fromType === "account" && toType === "savings") {
+      // Only update budget and create transactions if not planned
+      if (!isPlanned) {
+        // Update budget only when transferring account -> savings or savings -> account
+        // Reduce budget when: account -> savings goal
+        if (fromType === "account" && toType === "savings") {
         const currentMonth = new Date().getMonth() + 1;
         const currentYear = new Date().getFullYear();
         
@@ -283,6 +320,7 @@ const Transfer = () => {
           if (txnError) console.error("Error creating transaction:", txnError);
         }
       }
+      }
 
       toast({
         title: "Success",
@@ -294,6 +332,10 @@ const Transfer = () => {
       setToAccountId("");
       setAmount("");
       setDescription("");
+      setDate(new Date());
+      setIsRecurring(false);
+      setIsPlanned(false);
+      setRecurringFrequency("monthly");
 
       // Navigate after a short delay to ensure state updates
       setTimeout(() => {
@@ -399,12 +441,77 @@ const Transfer = () => {
             </div>
 
             <div className="space-y-2">
+              <Label>Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(newDate) => newDate && setDate(newDate)}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
               <Label>{t('descriptionOptional')}</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={t('whatsThisFor')}
               />
+            </div>
+
+            <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="planned-transfer">Planned Transfer</Label>
+                <Switch
+                  id="planned-transfer"
+                  checked={isPlanned}
+                  onCheckedChange={setIsPlanned}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <Label htmlFor="recurring-transfer">Recurring Transfer</Label>
+                <Switch
+                  id="recurring-transfer"
+                  checked={isRecurring}
+                  onCheckedChange={setIsRecurring}
+                  disabled={isPlanned}
+                />
+              </div>
+
+              {isRecurring && !isPlanned && (
+                <div className="space-y-2">
+                  <Label>Frequency</Label>
+                  <Select value={recurringFrequency} onValueChange={setRecurringFrequency}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="yearly">Yearly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-2">
