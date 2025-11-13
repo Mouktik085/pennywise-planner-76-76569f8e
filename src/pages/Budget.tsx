@@ -345,7 +345,11 @@ const Budget = () => {
                   cx="50%" 
                   cy="50%" 
                   outerRadius={100}
-                  label={(entry) => `${entry.name}: ${formatCurrency(entry.value)}`}
+                  label={(entry) => {
+                    // Hide labels on mobile to prevent overlap
+                    if (window.innerWidth < 768) return '';
+                    return `${entry.name}: ${formatCurrency(entry.value)}`;
+                  }}
                 >
                   {categoryExpenses.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />

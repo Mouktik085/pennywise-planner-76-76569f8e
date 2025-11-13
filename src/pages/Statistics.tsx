@@ -307,7 +307,7 @@ const Statistics = () => {
 
               <Card className="p-6">
                 <h3 className="font-bold text-xl mb-4">Expense Distribution</h3>
-                <ResponsiveContainer width="100%" height={300}>
+                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie 
                       data={expenseData} 
@@ -316,7 +316,11 @@ const Statistics = () => {
                       cx="50%" 
                       cy="50%" 
                       outerRadius={100}
-                      label={(entry) => `${entry.name}: ${formatCurrency(entry.value)}`}
+                      label={(entry) => {
+                        // Hide labels on mobile to prevent overlap
+                        if (window.innerWidth < 768) return '';
+                        return `${entry.name}: ${formatCurrency(entry.value)}`;
+                      }}
                     >
                       {expenseData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -370,6 +374,8 @@ const Statistics = () => {
                     cy="50%" 
                     outerRadius={100}
                     label={(entry) => {
+                      // Hide labels on mobile to prevent overlap
+                      if (window.innerWidth < 768) return '';
                       const total = expenseData.reduce((sum, c) => sum + c.value, 0);
                       const percent = ((entry.value / total) * 100).toFixed(1);
                       return `${entry.name}: ${percent}%`;
