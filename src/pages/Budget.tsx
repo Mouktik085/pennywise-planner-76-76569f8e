@@ -346,10 +346,12 @@ const Budget = () => {
                   cy="50%" 
                   outerRadius={100}
                   label={(entry) => {
-                    // Hide labels on mobile to prevent overlap
-                    if (window.innerWidth < 768) return '';
-                    return `${entry.name}: ${formatCurrency(entry.value)}`;
+                    const total = categoryExpenses.reduce((sum, c) => sum + c.value, 0);
+                    const percent = ((entry.value / total) * 100).toFixed(0);
+                    // Show percentage on mobile, full label on desktop
+                    return window.innerWidth < 768 ? `${percent}%` : `${entry.name}: ${formatCurrency(entry.value)}`;
                   }}
+                  labelLine={window.innerWidth >= 768}
                 >
                   {categoryExpenses.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
