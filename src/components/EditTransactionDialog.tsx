@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Transaction {
   id: string;
@@ -15,6 +16,12 @@ interface Transaction {
   amount: number;
   date: string;
   description: string | null;
+  account_id?: string | null;
+}
+
+interface Account {
+  id: string;
+  name: string;
 }
 
 interface EditTransactionDialogProps {
@@ -25,12 +32,46 @@ interface EditTransactionDialogProps {
 }
 
 export const EditTransactionDialog = ({ transaction, open, onOpenChange, onSuccess }: EditTransactionDialogProps) => {
+  const { user } = useAuth();
   const [type, setType] = useState(transaction?.type || "expense");
   const [category, setCategory] = useState(transaction?.category || "");
   const [amount, setAmount] = useState(transaction?.amount.toString() || "");
   const [date, setDate] = useState(transaction?.date || "");
   const [description, setDescription] = useState(transaction?.description || "");
+  const [accountId, setAccountId] = useState(transaction?.account_id || "");
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open && user) {
+      fetchAccounts();
+    }
+  }, [open, user]);
+
+  useEffect(() => {
+    if (transaction) {
+      setType(transaction.type);
+      setCategory(transaction.category);
+      setAmount(transaction.amount.toString());
+      setDate(transaction.date);
+      setDescription(transaction.description || "");
+      setAccountId(transaction.account_id || "");
+    }
+  }, [transaction]);
+
+  const fetchAccounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("accounts")
+        .select("id, name")
+        .order("name");
+
+      if (error) throw error;
+      setAccounts(data || []);
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+    }
+  };
 
   const categories = {
     income: ["Salary", "Freelance", "Business", "Investment", "Gift", "Other"],
@@ -52,6 +93,7 @@ export const EditTransactionDialog = ({ transaction, open, onOpenChange, onSucce
           amount: parseFloat(amount),
           date,
           description,
+          account_id: accountId || null,
         })
         .eq("id", transaction.id);
 
@@ -97,6 +139,23 @@ export const EditTransactionDialog = ({ transaction, open, onOpenChange, onSucce
                 {categories[type as keyof typeof categories].map((cat) => (
                   <SelectItem key={cat} value={cat}>
                     {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Account</Label>
+            <Select value={accountId} onValueChange={setAccountId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select account (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No Account</SelectItem>
+                {accounts.map((account) => (
+                  <SelectItem key={account.id} value={account.id}>
+                    {account.name}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -322,7 +322,10 @@ const Statistics = () => {
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                    <Tooltip 
+                      formatter={(value: number) => formatCurrency(value)}
+                      labelFormatter={(label) => `${label}`}
+                    />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
@@ -376,7 +379,10 @@ const Statistics = () => {
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                  <Tooltip 
+                    formatter={(value: number) => formatCurrency(value)}
+                    labelFormatter={(label) => `${label}`}
+                  />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>

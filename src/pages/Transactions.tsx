@@ -26,6 +26,9 @@ interface Transaction {
   date: string;
   description: string | null;
   account_id: string | null;
+  accounts?: {
+    name: string;
+  };
 }
 
 interface Transfer {
@@ -64,7 +67,7 @@ const Transactions = () => {
     try {
       let query = supabase
         .from("transactions")
-        .select("*")
+        .select("*, accounts(name)")
         .order("date", { ascending: false });
 
       if (typeFilter !== "all") {
@@ -384,10 +387,16 @@ const Transactions = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold truncate">{transaction.description || "No description"}</p>
-                      <div className="flex flex-col sm:flex-row sm:gap-2 sm:items-center">
-                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{transaction.category}</p>
-                        <span className="text-muted-foreground hidden sm:inline">•</span>
-                        <p className="text-xs sm:text-sm text-muted-foreground">{transaction.date}</p>
+                      <div className="flex flex-col sm:flex-row sm:gap-2 sm:items-center text-xs sm:text-sm text-muted-foreground">
+                        <p className="truncate">{transaction.category}</p>
+                        {transaction.accounts?.name && (
+                          <>
+                            <span className="hidden sm:inline">•</span>
+                            <p className="truncate">{transaction.accounts.name}</p>
+                          </>
+                        )}
+                        <span className="hidden sm:inline">•</span>
+                        <p>{transaction.date}</p>
                       </div>
                     </div>
                   </div>
