@@ -307,7 +307,7 @@ const Statistics = () => {
 
               <Card className="p-6">
                 <h3 className="font-bold text-xl mb-4">Expense Distribution</h3>
-                 <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie 
                       data={expenseData} 
@@ -315,14 +315,58 @@ const Statistics = () => {
                       nameKey="name" 
                       cx="50%" 
                       cy="50%" 
-                      outerRadius={100}
-                      label={(entry) => {
+                      outerRadius={80}
+                      innerRadius={0}
+                      label={({
+                        cx,
+                        cy,
+                        midAngle,
+                        innerRadius,
+                        outerRadius,
+                        value,
+                        index
+                      }) => {
+                        const RADIAN = Math.PI / 180;
+                        // Position for amount (inside)
+                        const radiusInside = innerRadius + (outerRadius - innerRadius) * 0.5;
+                        const xInside = cx + radiusInside * Math.cos(-midAngle * RADIAN);
+                        const yInside = cy + radiusInside * Math.sin(-midAngle * RADIAN);
+                        
+                        // Position for percentage (outside)
+                        const radiusOutside = outerRadius + 25;
+                        const xOutside = cx + radiusOutside * Math.cos(-midAngle * RADIAN);
+                        const yOutside = cy + radiusOutside * Math.sin(-midAngle * RADIAN);
+                        
                         const total = expenseData.reduce((sum, c) => sum + c.value, 0);
-                        const percent = ((entry.value / total) * 100).toFixed(0);
-                        // Show percentage and amount
-                        return `${percent}%\n${formatCurrency(entry.value, true)}`;
+                        const percent = ((value / total) * 100).toFixed(0);
+                        
+                        return (
+                          <g>
+                            {/* Amount inside */}
+                            <text
+                              x={xInside}
+                              y={yInside}
+                              fill="white"
+                              textAnchor="middle"
+                              dominantBaseline="central"
+                              className="text-xs font-bold"
+                            >
+                              {formatCurrency(value, true)}
+                            </text>
+                            {/* Percentage outside */}
+                            <text
+                              x={xOutside}
+                              y={yOutside}
+                              fill="currentColor"
+                              textAnchor={xOutside > cx ? 'start' : 'end'}
+                              dominantBaseline="central"
+                              className="text-sm font-semibold"
+                            >
+                              {percent}%
+                            </text>
+                          </g>
+                        );
                       }}
-                      labelLine={window.innerWidth >= 768}
                     >
                       {expenseData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -374,14 +418,58 @@ const Statistics = () => {
                     nameKey="name" 
                     cx="50%" 
                     cy="50%" 
-                    outerRadius={100}
-                    label={(entry) => {
+                    outerRadius={80}
+                    innerRadius={0}
+                    label={({
+                      cx,
+                      cy,
+                      midAngle,
+                      innerRadius,
+                      outerRadius,
+                      value,
+                      index
+                    }) => {
+                      const RADIAN = Math.PI / 180;
+                      // Position for amount (inside)
+                      const radiusInside = innerRadius + (outerRadius - innerRadius) * 0.5;
+                      const xInside = cx + radiusInside * Math.cos(-midAngle * RADIAN);
+                      const yInside = cy + radiusInside * Math.sin(-midAngle * RADIAN);
+                      
+                      // Position for percentage (outside)
+                      const radiusOutside = outerRadius + 25;
+                      const xOutside = cx + radiusOutside * Math.cos(-midAngle * RADIAN);
+                      const yOutside = cy + radiusOutside * Math.sin(-midAngle * RADIAN);
+                      
                       const total = expenseData.reduce((sum, c) => sum + c.value, 0);
-                      const percent = ((entry.value / total) * 100).toFixed(0);
-                      // Show percentage and amount
-                      return `${percent}%\n${formatCurrency(entry.value, true)}`;
+                      const percent = ((value / total) * 100).toFixed(0);
+                      
+                      return (
+                        <g>
+                          {/* Amount inside */}
+                          <text
+                            x={xInside}
+                            y={yInside}
+                            fill="white"
+                            textAnchor="middle"
+                            dominantBaseline="central"
+                            className="text-xs font-bold"
+                          >
+                            {formatCurrency(value, true)}
+                          </text>
+                          {/* Percentage outside */}
+                          <text
+                            x={xOutside}
+                            y={yOutside}
+                            fill="currentColor"
+                            textAnchor={xOutside > cx ? 'start' : 'end'}
+                            dominantBaseline="central"
+                            className="text-sm font-semibold"
+                          >
+                            {percent}%
+                          </text>
+                        </g>
+                      );
                     }}
-                    labelLine={false}
                   >
                     {expenseData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
