@@ -236,12 +236,80 @@ const Transactions = () => {
 
   const handleDeleteTransfer = async (id: string) => {
     try {
-      const { error } = await supabase
+      // First, get the transfer details before deleting
+      const { data: transfer, error: fetchError } = await supabase
+        .from("transfers")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!transfer) throw new Error("Transfer not found");
+
+      // Reverse the balance changes
+      if (transfer.from_type === "account") {
+        const { data: fromAccount } = await supabase
+          .from("accounts")
+          .select("balance")
+          .eq("id", transfer.from_id)
+          .single();
+
+        if (fromAccount) {
+          await supabase
+            .from("accounts")
+            .update({ balance: fromAccount.balance + transfer.amount })
+            .eq("id", transfer.from_id);
+        }
+      } else if (transfer.from_type === "savings") {
+        const { data: fromGoal } = await supabase
+          .from("savings_goals")
+          .select("current_amount")
+          .eq("id", transfer.from_id)
+          .single();
+
+        if (fromGoal) {
+          await supabase
+            .from("savings_goals")
+            .update({ current_amount: fromGoal.current_amount + transfer.amount })
+            .eq("id", transfer.from_id);
+        }
+      }
+
+      if (transfer.to_type === "account") {
+        const { data: toAccount } = await supabase
+          .from("accounts")
+          .select("balance")
+          .eq("id", transfer.to_id)
+          .single();
+
+        if (toAccount) {
+          await supabase
+            .from("accounts")
+            .update({ balance: toAccount.balance - transfer.amount })
+            .eq("id", transfer.to_id);
+        }
+      } else if (transfer.to_type === "savings") {
+        const { data: toGoal } = await supabase
+          .from("savings_goals")
+          .select("current_amount")
+          .eq("id", transfer.to_id)
+          .single();
+
+        if (toGoal) {
+          await supabase
+            .from("savings_goals")
+            .update({ current_amount: toGoal.current_amount - transfer.amount })
+            .eq("id", transfer.to_id);
+        }
+      }
+
+      // Now delete the transfer
+      const { error: deleteError } = await supabase
         .from("transfers")
         .delete()
         .eq("id", id);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
 
       toast.success("Transfer deleted successfully");
       fetchTransfers();
