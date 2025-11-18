@@ -108,14 +108,21 @@ export const EditTransferDialog = ({ transfer, open, onOpenChange, onSuccess }: 
         if (transfer.from_type === "account") {
         const { data: fromAccount } = await supabase
           .from("accounts")
-          .select("balance")
+          .select("balance, is_credit_card, credit_used")
           .eq("id", transfer.from_id)
           .single();
 
         if (fromAccount) {
+          const updateData: any = { balance: fromAccount.balance - amountDifference };
+          
+          // If it's a credit card, update credit_used (more spending = more credit_used)
+          if (fromAccount.is_credit_card) {
+            updateData.credit_used = (fromAccount.credit_used || 0) - amountDifference;
+          }
+          
           await supabase
             .from("accounts")
-            .update({ balance: fromAccount.balance - amountDifference })
+            .update(updateData)
             .eq("id", transfer.from_id);
         }
       } else if (transfer.from_type === "savings") {
@@ -136,14 +143,21 @@ export const EditTransferDialog = ({ transfer, open, onOpenChange, onSuccess }: 
       if (transfer.to_type === "account") {
         const { data: toAccount } = await supabase
           .from("accounts")
-          .select("balance")
+          .select("balance, is_credit_card, credit_used")
           .eq("id", transfer.to_id)
           .single();
 
         if (toAccount) {
+          const updateData: any = { balance: toAccount.balance + amountDifference };
+          
+          // If it's a credit card, decrease credit_used (payment reduces what you owe)
+          if (toAccount.is_credit_card) {
+            updateData.credit_used = Math.max(0, (toAccount.credit_used || 0) + amountDifference);
+          }
+          
           await supabase
             .from("accounts")
-            .update({ balance: toAccount.balance + amountDifference })
+            .update(updateData)
             .eq("id", transfer.to_id);
         }
       } else if (transfer.to_type === "savings") {
