@@ -23,6 +23,9 @@ interface Account {
   name: string;
   type: string;
   balance: number;
+  is_credit_card?: boolean;
+  credit_limit?: number;
+  credit_used?: number;
 }
 
 interface SavingsGoal {

@@ -117,9 +117,9 @@ export const EditTransferDialog = ({ transfer, open, onOpenChange, onSuccess }: 
           
           // If it's a credit card, update credit_used (more spending = more credit_used)
           if (fromAccount.is_credit_card) {
-            updateData.credit_used = (fromAccount.credit_used || 0) - amountDifference;
+            updateData.credit_used = (fromAccount.credit_used || 0) + amountDifference;
           }
-          
+
           await supabase
             .from("accounts")
             .update(updateData)
@@ -152,9 +152,9 @@ export const EditTransferDialog = ({ transfer, open, onOpenChange, onSuccess }: 
           
           // If it's a credit card, decrease credit_used (payment reduces what you owe)
           if (toAccount.is_credit_card) {
-            updateData.credit_used = Math.max(0, (toAccount.credit_used || 0) + amountDifference);
+            updateData.credit_used = Math.max(0, (toAccount.credit_used || 0) - amountDifference);
           }
-          
+
           await supabase
             .from("accounts")
             .update(updateData)
