@@ -156,9 +156,22 @@ const Transfer = () => {
 
         // Update source
         if (fromType === "account") {
+          const { data: fromAccount } = await supabase
+            .from("accounts")
+            .select("balance, is_credit_card, credit_used")
+            .eq("id", fromAccountId)
+            .single();
+          
+          const updateData: any = { balance: fromBalance - transferAmount };
+          
+          // If it's a credit card, also update credit_used (paying with card increases credit_used)
+          if (fromAccount?.is_credit_card) {
+            updateData.credit_used = (fromAccount.credit_used || 0) + transferAmount;
+          }
+          
           const { error } = await supabase
             .from("accounts")
-            .update({ balance: fromBalance - transferAmount })
+            .update(updateData)
             .eq("id", fromAccountId);
           if (error) throw error;
         } else {
@@ -173,12 +186,20 @@ const Transfer = () => {
         if (toType === "account") {
           const { data: toAccount } = await supabase
             .from("accounts")
-            .select("balance")
+            .select("balance, is_credit_card, credit_used")
             .eq("id", toAccountId)
             .single();
+          
+          const updateData: any = { balance: (toAccount?.balance || 0) + transferAmount };
+          
+          // If it's a credit card, decrease credit_used (making payment reduces what you owe)
+          if (toAccount?.is_credit_card) {
+            updateData.credit_used = Math.max(0, (toAccount.credit_used || 0) - transferAmount);
+          }
+          
           const { error } = await supabase
             .from("accounts")
-            .update({ balance: (toAccount?.balance || 0) + transferAmount })
+            .update(updateData)
             .eq("id", toAccountId);
           if (error) throw error;
         } else {
