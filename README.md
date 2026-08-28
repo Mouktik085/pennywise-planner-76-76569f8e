@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/3bf4ca69-0cfa-4dc2-bd7f-59d22f33b091
+**URL**: https://pennywise-planner-76.lovable.app/
 
 ## How can I edit this code?
 
